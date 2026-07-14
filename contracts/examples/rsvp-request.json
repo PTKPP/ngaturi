@@ -1,0 +1,6 @@
+{
+  "guest_token": "example-opaque-token-at-least-16-chars",
+  "attendance": "attending",
+  "attendee_count": 2,
+  "note": "Insya Allah hadir"
+}

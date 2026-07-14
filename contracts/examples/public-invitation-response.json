@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": {
+    "slug": "budi-ani",
+    "template": { "key": "classic-garden", "version": "1.0.0" },
+    "title": "The Wedding of Budi & Ani",
+    "timezone": "Asia/Jakarta",
+    "couple": { "person_one_name": "Budi", "person_two_name": "Ani", "person_one_parent_names": null, "person_two_parent_names": null },
+    "events": [{ "id": "d290f1ee-6c54-4b01-90e6-d701748f0851", "name": "Akad Nikah", "starts_at": "2026-08-10T08:00:00+07:00", "ends_at": null, "timezone": "Asia/Jakarta", "location_name": "Pendopo", "address": "Jl. Contoh 1", "map_url": null, "sort_order": 0 }],
+    "gallery": [],
+    "music": null,
+    "gifts": [],
+    "settings": { "show_countdown": true },
+    "guest": { "name": "Siti", "max_attendees": 2 }
+  }
+}

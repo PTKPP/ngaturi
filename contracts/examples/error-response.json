@@ -1,0 +1,9 @@
+{
+  "success": false,
+  "error": {
+    "code": "INVITATION_NOT_FOUND",
+    "message": "Undangan tidak ditemukan",
+    "details": null,
+    "request_id": "req_01j0example"
+  }
+}

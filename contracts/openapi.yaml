@@ -1,0 +1,612 @@
+openapi: 3.1.0
+info:
+  title: Ngaturi Digital Invitation API
+  version: 0.1.0
+  description: API contract source of truth. Dates are YYYY-MM-DD, timestamps are RFC 3339 with timezone, and timezones use IANA names.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+tags:
+  - name: Public Invitations
+  - name: Authentication
+  - name: Invitations
+  - name: Guests
+paths:
+  /api/v1/public/invitations/{slug}:
+    get:
+      tags: [Public Invitations]
+      operationId: getPublicInvitation
+      summary: Get a published invitation by slug
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+        - $ref: '#/components/parameters/GuestToken'
+      responses:
+        '200':
+          description: Published public invitation
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicInvitationSuccess' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/v1/public/invitations/{slug}/rsvp:
+    post:
+      tags: [Public Invitations]
+      operationId: submitPublicRsvp
+      summary: Create or update a guest RSVP
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublicRsvpRequest' }
+      responses:
+        '200':
+          description: RSVP accepted or updated
+          content: { application/json: { schema: { $ref: '#/components/schemas/RsvpSuccess' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/v1/public/invitations/{slug}/guestbook:
+    get:
+      tags: [Public Invitations]
+      operationId: listPublicGuestbook
+      summary: List visible guestbook messages
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Paginated visible messages
+          content: { application/json: { schema: { $ref: '#/components/schemas/GuestbookListSuccess' } } }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+    post:
+      tags: [Public Invitations]
+      operationId: createPublicGuestbookMessage
+      summary: Submit a guestbook message
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/GuestbookMessageRequest' } } }
+      responses:
+        '201':
+          description: Message accepted
+          content: { application/json: { schema: { $ref: '#/components/schemas/GuestbookMessageSuccess' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/v1/auth/register:
+    post:
+      tags: [Authentication]
+      operationId: register
+      summary: Register an owner account
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/RegisterRequest' } } }
+      responses:
+        '201':
+          description: Account and session created
+          content: { application/json: { schema: { $ref: '#/components/schemas/AuthSuccess' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/auth/login:
+    post:
+      tags: [Authentication]
+      operationId: login
+      summary: Start an owner session
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/LoginRequest' } } }
+      responses:
+        '200':
+          description: Session created
+          content: { application/json: { schema: { $ref: '#/components/schemas/AuthSuccess' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/auth/refresh:
+    post:
+      tags: [Authentication]
+      operationId: refreshToken
+      summary: Refresh an owner session
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/RefreshRequest' } } }
+      responses:
+        '200':
+          description: Session refreshed
+          content: { application/json: { schema: { $ref: '#/components/schemas/AuthSuccess' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/auth/logout:
+    post:
+      tags: [Authentication]
+      operationId: logout
+      summary: End an owner session
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Session ended
+          content: { application/json: { schema: { $ref: '#/components/schemas/EmptySuccess' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/v1/invitations:
+    get:
+      tags: [Invitations]
+      operationId: listInvitations
+      summary: List invitations owned by current user
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+        - name: status
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/InvitationStatus' }
+      responses:
+        '200':
+          description: Paginated owner invitations
+          content: { application/json: { schema: { $ref: '#/components/schemas/InvitationListSuccess' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Invitations]
+      operationId: createInvitation
+      summary: Create an invitation draft
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateInvitationRequest' } } }
+      responses:
+        '201':
+          description: Draft created
+          content: { application/json: { schema: { $ref: '#/components/schemas/InvitationSuccess' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/invitations/{id}:
+    get:
+      tags: [Invitations]
+      operationId: getInvitation
+      summary: Get an owner invitation
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/InvitationId' }]
+      responses:
+        '200':
+          description: Invitation
+          content: { application/json: { schema: { $ref: '#/components/schemas/InvitationSuccess' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+    patch:
+      tags: [Invitations]
+      operationId: updateInvitation
+      summary: Update an owner invitation draft/configuration
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/InvitationId' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateInvitationRequest' } } }
+      responses:
+        '200':
+          description: Invitation updated
+          content: { application/json: { schema: { $ref: '#/components/schemas/InvitationSuccess' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    delete:
+      tags: [Invitations]
+      operationId: deleteInvitation
+      summary: Delete an owner invitation
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/InvitationId' }]
+      responses:
+        '200':
+          description: Invitation deleted
+          content: { application/json: { schema: { $ref: '#/components/schemas/EmptySuccess' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+  /api/v1/invitations/{id}/publish:
+    post:
+      tags: [Invitations]
+      operationId: publishInvitation
+      summary: Publish an owner invitation
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/InvitationId' }]
+      responses:
+        '200':
+          description: Invitation published
+          content: { application/json: { schema: { $ref: '#/components/schemas/InvitationSuccess' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+  /api/v1/invitations/{id}/unpublish:
+    post:
+      tags: [Invitations]
+      operationId: unpublishInvitation
+      summary: Unpublish an owner invitation
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/InvitationId' }]
+      responses:
+        '200':
+          description: Invitation unpublished
+          content: { application/json: { schema: { $ref: '#/components/schemas/InvitationSuccess' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+  /api/v1/invitations/{id}/guests:
+    get:
+      tags: [Guests]
+      operationId: listGuests
+      summary: List guests for an owner invitation
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/InvitationId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Paginated guests
+          content: { application/json: { schema: { $ref: '#/components/schemas/GuestListSuccess' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+    post:
+      tags: [Guests]
+      operationId: createGuest
+      summary: Add a guest and issue its personal link
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/InvitationId' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateGuestRequest' } } }
+      responses:
+        '201':
+          description: Guest created
+          content: { application/json: { schema: { $ref: '#/components/schemas/GuestSuccess' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+  /api/v1/invitations/{id}/guests/{guestId}:
+    patch:
+      tags: [Guests]
+      operationId: updateGuest
+      summary: Update a guest
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/InvitationId'
+        - $ref: '#/components/parameters/GuestId'
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateGuestRequest' } } }
+      responses:
+        '200':
+          description: Guest updated
+          content: { application/json: { schema: { $ref: '#/components/schemas/GuestSuccess' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+    delete:
+      tags: [Guests]
+      operationId: deleteGuest
+      summary: Delete a guest
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/InvitationId'
+        - $ref: '#/components/parameters/GuestId'
+      responses:
+        '200':
+          description: Guest deleted
+          content: { application/json: { schema: { $ref: '#/components/schemas/EmptySuccess' } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/InvitationNotFound' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$', minLength: 3, maxLength: 80 }
+    InvitationId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    GuestId:
+      name: guestId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    GuestToken:
+      name: guest_token
+      in: query
+      required: false
+      description: Opaque personalized guest token.
+      schema: { type: string, minLength: 16, maxLength: 512 }
+    Page:
+      name: page
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, default: 1 }
+    PerPage:
+      name: per_page
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+  responses:
+    ValidationError:
+      description: Invalid request
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } }
+    Unauthorized:
+      description: Authentication required or invalid
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } }
+    InvitationNotFound:
+      description: Invitation does not exist or is not public/owned
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } }
+    Conflict:
+      description: State or uniqueness conflict
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } }
+    RateLimited:
+      description: Too many requests
+      headers:
+        Retry-After: { schema: { type: integer, minimum: 1 } }
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorEnvelope' } } }
+  schemas:
+    UUID: { type: string, format: uuid }
+    InvitationStatus: { type: string, enum: [draft, published, archived] }
+    Attendance: { type: string, enum: [attending, not_attending, maybe] }
+    TemplateRef:
+      type: object
+      required: [key, version]
+      properties:
+        key: { type: string, pattern: '^[a-z0-9-]+$', maxLength: 80 }
+        version: { type: string, pattern: '^[0-9]+\.[0-9]+\.[0-9]+$', examples: ['1.0.0'] }
+    Event:
+      type: object
+      required: [id, name, starts_at, timezone, sort_order]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        starts_at: { type: string, format: date-time }
+        ends_at: { type: [string, 'null'], format: date-time }
+        timezone: { type: string, examples: ['Asia/Jakarta'] }
+        location_name: { type: [string, 'null'], maxLength: 160 }
+        address: { type: [string, 'null'], maxLength: 500 }
+        map_url: { type: [string, 'null'], format: uri }
+        sort_order: { type: integer, minimum: 0 }
+    MediaAsset:
+      type: object
+      required: [id, kind, url, sort_order]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        kind: { type: string, enum: [image, audio, video] }
+        url: { type: string, format: uri }
+        alt_text: { type: [string, 'null'], maxLength: 250 }
+        sort_order: { type: integer, minimum: 0 }
+    PublicGuest:
+      type: object
+      required: [name, max_attendees]
+      properties:
+        name: { type: string, maxLength: 160 }
+        max_attendees: { type: integer, minimum: 1, maximum: 100 }
+    PublicInvitation:
+      type: object
+      required: [slug, template, title, timezone, couple, events, gallery, settings]
+      properties:
+        slug: { type: string }
+        template: { $ref: '#/components/schemas/TemplateRef' }
+        title: { type: string, maxLength: 200 }
+        timezone: { type: string, examples: ['Asia/Jakarta'] }
+        couple:
+          type: object
+          required: [person_one_name, person_two_name]
+          properties:
+            person_one_name: { type: string, maxLength: 120 }
+            person_two_name: { type: string, maxLength: 120 }
+            person_one_parent_names: { type: [string, 'null'], maxLength: 250 }
+            person_two_parent_names: { type: [string, 'null'], maxLength: 250 }
+        events:
+          type: array
+          items: { $ref: '#/components/schemas/Event' }
+        gallery:
+          type: array
+          items: { $ref: '#/components/schemas/MediaAsset' }
+        music: { anyOf: [{ $ref: '#/components/schemas/MediaAsset' }, { type: 'null' }] }
+        gifts:
+          type: array
+          items:
+            type: object
+            required: [label, value]
+            properties:
+              label: { type: string, maxLength: 120 }
+              value: { type: string, maxLength: 300 }
+        settings:
+          type: object
+          additionalProperties: true
+        guest: { anyOf: [{ $ref: '#/components/schemas/PublicGuest' }, { type: 'null' }] }
+    Invitation:
+      type: object
+      required: [id, slug, status, template, timezone, couple, events, gallery, settings, created_at, updated_at]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        slug: { type: string }
+        status: { $ref: '#/components/schemas/InvitationStatus' }
+        template: { $ref: '#/components/schemas/TemplateRef' }
+        title: { type: string, maxLength: 200 }
+        timezone: { type: string }
+        couple: { type: object, additionalProperties: true }
+        events: { type: array, items: { $ref: '#/components/schemas/Event' } }
+        gallery: { type: array, items: { $ref: '#/components/schemas/MediaAsset' } }
+        settings: { type: object, additionalProperties: true }
+        published_at: { type: [string, 'null'], format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Guest:
+      type: object
+      required: [id, name, max_attendees, personalized_url, created_at]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        name: { type: string, maxLength: 160 }
+        max_attendees: { type: integer, minimum: 1, maximum: 100 }
+        personalized_url: { type: string, format: uri }
+        created_at: { type: string, format: date-time }
+    Rsvp:
+      type: object
+      required: [id, attendance, attendee_count, responded_at]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        attendance: { $ref: '#/components/schemas/Attendance' }
+        attendee_count: { type: integer, minimum: 0, maximum: 100 }
+        note: { type: [string, 'null'], maxLength: 1000 }
+        responded_at: { type: string, format: date-time }
+    GuestbookMessage:
+      type: object
+      required: [id, name, message, created_at]
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        name: { type: string, maxLength: 160 }
+        message: { type: string, maxLength: 1000 }
+        created_at: { type: string, format: date-time }
+    Pagination:
+      type: object
+      required: [page, per_page, total]
+      properties:
+        page: { type: integer, minimum: 1 }
+        per_page: { type: integer, minimum: 1 }
+        total: { type: integer, minimum: 0 }
+    ErrorEnvelope:
+      type: object
+      required: [success, error]
+      properties:
+        success: { const: false }
+        error:
+          type: object
+          required: [code, message, details, request_id]
+          properties:
+            code: { type: string, examples: [INVITATION_NOT_FOUND] }
+            message: { type: string, examples: ['Undangan tidak ditemukan'] }
+            details: { type: [object, array, string, number, boolean, 'null'] }
+            request_id: { type: string }
+    EmptySuccess:
+      type: object
+      required: [success, data]
+      properties: { success: { const: true }, data: { type: object, maxProperties: 0 } }
+    PublicInvitationSuccess:
+      type: object
+      required: [success, data]
+      properties: { success: { const: true }, data: { $ref: '#/components/schemas/PublicInvitation' } }
+    InvitationSuccess:
+      type: object
+      required: [success, data]
+      properties: { success: { const: true }, data: { $ref: '#/components/schemas/Invitation' } }
+    RsvpSuccess:
+      type: object
+      required: [success, data]
+      properties: { success: { const: true }, data: { $ref: '#/components/schemas/Rsvp' } }
+    GuestSuccess:
+      type: object
+      required: [success, data]
+      properties: { success: { const: true }, data: { $ref: '#/components/schemas/Guest' } }
+    GuestbookMessageSuccess:
+      type: object
+      required: [success, data]
+      properties: { success: { const: true }, data: { $ref: '#/components/schemas/GuestbookMessage' } }
+    InvitationListSuccess:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data: { type: array, items: { $ref: '#/components/schemas/Invitation' } }
+        meta: { $ref: '#/components/schemas/Pagination' }
+    GuestListSuccess:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data: { type: array, items: { $ref: '#/components/schemas/Guest' } }
+        meta: { $ref: '#/components/schemas/Pagination' }
+    GuestbookListSuccess:
+      type: object
+      required: [success, data, meta]
+      properties:
+        success: { const: true }
+        data: { type: array, items: { $ref: '#/components/schemas/GuestbookMessage' } }
+        meta: { $ref: '#/components/schemas/Pagination' }
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        password: { type: string, format: password, minLength: 12, maxLength: 128 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties: { refresh_token: { type: string, minLength: 20 } }
+    AuthSuccess:
+      type: object
+      required: [success, data]
+      properties:
+        success: { const: true }
+        data:
+          type: object
+          required: [access_token, refresh_token, token_type, expires_at]
+          properties:
+            access_token: { type: string }
+            refresh_token: { type: string }
+            token_type: { const: Bearer }
+            expires_at: { type: string, format: date-time }
+    CreateInvitationRequest:
+      type: object
+      required: [slug, template, title, timezone, couple]
+      properties:
+        slug: { type: string, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$', minLength: 3, maxLength: 80 }
+        template: { $ref: '#/components/schemas/TemplateRef' }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        timezone: { type: string, examples: ['Asia/Jakarta'] }
+        couple: { type: object, additionalProperties: true }
+        settings: { type: object, additionalProperties: true }
+    UpdateInvitationRequest:
+      type: object
+      minProperties: 1
+      properties:
+        slug: { type: string, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$', minLength: 3, maxLength: 80 }
+        template: { $ref: '#/components/schemas/TemplateRef' }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        timezone: { type: string }
+        couple: { type: object, additionalProperties: true }
+        events: { type: array, items: { $ref: '#/components/schemas/Event' } }
+        settings: { type: object, additionalProperties: true }
+    CreateGuestRequest:
+      type: object
+      required: [name, max_attendees]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 160 }
+        max_attendees: { type: integer, minimum: 1, maximum: 100 }
+    UpdateGuestRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 160 }
+        max_attendees: { type: integer, minimum: 1, maximum: 100 }
+    PublicRsvpRequest:
+      type: object
+      required: [guest_token, attendance, attendee_count]
+      properties:
+        guest_token: { type: string, minLength: 16, maxLength: 512 }
+        attendance: { $ref: '#/components/schemas/Attendance' }
+        attendee_count: { type: integer, minimum: 0, maximum: 100 }
+        note: { type: [string, 'null'], maxLength: 1000 }
+    GuestbookMessageRequest:
+      type: object
+      required: [name, message]
+      properties:
+        guest_token: { type: [string, 'null'], minLength: 16, maxLength: 512 }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        message: { type: string, minLength: 1, maxLength: 1000 }

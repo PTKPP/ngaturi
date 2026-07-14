@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "data": {
+    "id": "2b1c2d3e-4f50-4a23-a456-789012345678",
+    "attendance": "attending",
+    "attendee_count": 2,
+    "note": "Insya Allah hadir",
+    "responded_at": "2026-07-14T10:00:00+07:00"
+  }
+}
