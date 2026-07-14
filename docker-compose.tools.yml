@@ -7,7 +7,7 @@ services:
       PERSIST_DIRECTORY: /chroma/chroma
       ANONYMIZED_TELEMETRY: "FALSE"
     ports:
-      - "127.0.0.1:${CHROMA_PORT:-8000}:8000"
+      - "127.0.0.1:${CHROMA_PORT:-3333}:8000"
     volumes:
       - chroma-data:/chroma/chroma
     healthcheck:
