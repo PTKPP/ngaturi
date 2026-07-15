@@ -6,7 +6,7 @@ Establish an authenticated owner session.
 ### Preconditions
 Register data is valid; protected operations have a valid access token.
 ### Main Flow
-Register/login returns session tokens; refresh rotates/renews per final security design (TBD); logout invalidates the refresh session.
+Register/login returns session tokens. MVP access tokens expire after 15 minutes and refresh sessions after 30 days; both durations are configurable with validated `ACCESS_TOKEN_TTL` and `REFRESH_TOKEN_TTL`. Refresh rotates the refresh session; logout invalidates that session while an already-issued access token remains valid until expiry.
 ### Error Flow
 Duplicate email, invalid credentials, expired/revoked refresh token return standard errors.
 ### Business Rules

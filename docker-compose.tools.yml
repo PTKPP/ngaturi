@@ -11,7 +11,7 @@ services:
     volumes:
       - chroma-data:/chroma/chroma
     healthcheck:
-      test: ["CMD", "sh", "-c", "wget -q -O - http://localhost:8000/api/v2/heartbeat >/dev/null 2>&1 || wget -q -O - http://localhost:8000/api/v1/heartbeat >/dev/null 2>&1"]
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8000 && printf 'GET /api/v2/heartbeat HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && IFS= read -r status <&3 && [[ $$status == *' 200 '* ]]"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -21,7 +21,6 @@ services:
 
 networks:
   knowledge_internal:
-    internal: true
 
 volumes:
   chroma-data:

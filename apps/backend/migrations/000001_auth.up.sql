@@ -1,4 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -18,6 +17,7 @@ CREATE TABLE auth_sessions (
     expires_at TIMESTAMPTZ NOT NULL,
     revoked_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT auth_sessions_refresh_token_hash_size CHECK (octet_length(refresh_token_hash) = 32),
     CONSTRAINT auth_sessions_refresh_token_hash_unique UNIQUE (refresh_token_hash),
     CONSTRAINT auth_sessions_expiry_after_creation CHECK (expires_at > created_at)
 );
