@@ -26,6 +26,13 @@ describe("mock persistence", () => {
     expect(localStorage.getItem(STORAGE_KEYS.metadata)).not.toBeNull();
   });
 
+  it("requires controlled reset for the previous schema metadata", () => {
+    seedDemoData(localStorage);
+    const metadata = JSON.parse(localStorage.getItem(STORAGE_KEYS.metadata) ?? "{}");
+    localStorage.setItem(STORAGE_KEYS.metadata, JSON.stringify({ ...metadata, schemaVersion: SCHEMA_VERSION - 1 }));
+    expect(() => createDemoRuntime(localStorage)).toThrow("Versi data demo tidak kompatibel");
+  });
+
   it("reset removes project namespace without touching another application", () => {
     localStorage.setItem("other-app:value", "keep");
     localStorage.setItem("ngaturi:mock:v1:future-key", "remove");

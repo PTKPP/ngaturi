@@ -25,6 +25,14 @@ describe("invitation ownership and publication", () => {
     expect(runtime.invitationService.findPublished("dara-dan-bima")?.status).toBe("published");
     expect(runtime.invitationService.findPublished("raka-dan-sinta-draft")).toBeNull();
   });
+  it("moves published invitations through inactive and back to public", () => {
+    const runtime = createDemoRuntime(localStorage);
+    const admin = runtime.auth.login("admin@demo.local", "admin-demo");
+    expect(runtime.invitationService.unpublish(admin, "inv_admin_published").status).toBe("inactive");
+    expect(runtime.invitationService.findPublished("dara-dan-bima")).toBeNull();
+    expect(runtime.invitationService.publish(admin, "inv_admin_published").status).toBe("published");
+    expect(runtime.invitationService.findPublished("dara-dan-bima")).not.toBeNull();
+  });
   it("rejects duplicate and reserved slugs", () => {
     const runtime = createDemoRuntime(localStorage);
     const user = runtime.auth.login("user@demo.local", "user-demo");
@@ -48,5 +56,13 @@ describe("invitation ownership and publication", () => {
     const admin = runtime.auth.login("admin@demo.local", "admin-demo");
     const owned = runtime.invitationService.getOwned(admin, "inv_admin_published");
     expect(runtime.invitationService.update(admin, { ...owned, title: "Admin Edit" }).title).toBe("Admin Edit");
+  });
+  it("rejects inactive or missing templates during update", () => {
+    const runtime = createDemoRuntime(localStorage);
+    const user = runtime.auth.login("user@demo.local", "user-demo");
+    const owned = runtime.invitationService.getOwned(user, "inv_owner_draft");
+    const templates = runtime.templates.list();
+    localStorage.setItem("ngaturi:mock:v1:templates", JSON.stringify(templates.map((template) => template.key === "minimal-white" ? { ...template, status: "inactive" } : template)));
+    expect(() => runtime.invitationService.update(user, owned)).toThrow("Template tidak tersedia");
   });
 });

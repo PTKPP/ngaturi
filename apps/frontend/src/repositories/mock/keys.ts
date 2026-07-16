@@ -1,6 +1,6 @@
 export const STORAGE_NAMESPACE = "ngaturi:mock:";
 export const STORAGE_VERSION = 1;
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 export const STORAGE_PREFIX = `${STORAGE_NAMESPACE}v${STORAGE_VERSION}:`;
 
 export const STORAGE_KEYS = {

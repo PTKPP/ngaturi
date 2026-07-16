@@ -1,26 +1,55 @@
 import { z } from "zod";
 
 const OptionalUrlSchema = z.union([z.literal(""), z.string().url()]);
+const TimeSchema = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, "Waktu harus menggunakan format 24 jam HH:MM.");
 
 export const PartnerSchema = z.object({
-  fullName: z.string().min(1),
-  nickname: z.string().min(1),
-  parentNames: z.array(z.string()),
-  photo: z.string(),
+  fullName: z.string().trim().min(1),
+  nickname: z.string().trim().min(1),
+  parentNames: z.array(z.string().trim().min(1)),
+  photo: z.string().trim(),
 });
 
 export const EventSchema = z.object({
   id: z.string().min(1),
-  type: z.string().min(1),
-  title: z.string().min(1),
+  type: z.string().trim().min(1),
+  title: z.string().trim().min(1),
   date: z.string().date(),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/),
-  timezone: z.string().min(1),
-  venueName: z.string().min(1),
-  address: z.string().min(1),
+  startTime: TimeSchema,
+  endTime: TimeSchema,
+  timezone: z.string().trim().min(1),
+  venueName: z.string().trim().min(1),
+  address: z.string().trim().min(1),
   mapUrl: OptionalUrlSchema,
   sortOrder: z.number().int().nonnegative(),
+}).superRefine((event, context) => {
+  if (event.endTime <= event.startTime) {
+    context.addIssue({
+      code: "custom",
+      path: ["endTime"],
+      message: "Waktu selesai harus setelah waktu mulai.",
+    });
+  }
+});
+
+export const InvitationEventsSchema = z.array(EventSchema).min(1).superRefine((events, context) => {
+  const ids = new Set<string>();
+  const sortOrders = new Set<number>();
+  for (const [index, event] of events.entries()) {
+    if (ids.has(event.id)) {
+      context.addIssue({ code: "custom", path: [index, "id"], message: "ID acara harus unik." });
+    }
+    if (sortOrders.has(event.sortOrder)) {
+      context.addIssue({ code: "custom", path: [index, "sortOrder"], message: "Urutan acara harus unik." });
+    }
+    ids.add(event.id);
+    sortOrders.add(event.sortOrder);
+  }
+  const expected = events.map((_, index) => index);
+  const actual = [...sortOrders].sort((left, right) => left - right);
+  if (actual.some((value, index) => value !== expected[index])) {
+    context.addIssue({ code: "custom", message: "Urutan acara harus berurutan mulai dari 0." });
+  }
 });
 
 export const InvitationStatusSchema = z.enum(["draft", "published", "inactive"]);
@@ -28,12 +57,12 @@ export const InvitationSchema = z.object({
   id: z.string().min(1),
   ownerId: z.string().min(1),
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-  title: z.string().min(1),
-  templateKey: z.string().min(1),
+  title: z.string().trim().min(1),
+  templateKey: z.string().trim().min(1),
   templateVersion: z.number().int().positive(),
   status: InvitationStatusSchema,
   couple: z.object({ partnerOne: PartnerSchema, partnerTwo: PartnerSchema }),
-  events: z.array(EventSchema).min(1),
+  events: InvitationEventsSchema,
   content: z.object({
     openingText: z.string(),
     quote: z.string(),

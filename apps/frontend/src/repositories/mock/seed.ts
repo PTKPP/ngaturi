@@ -1,4 +1,4 @@
-import { InvitationsSchema, MockCredentialsSchema, SessionSchema, TemplatesSchema, UsersSchema } from "@/domain";
+import { FrontendContractSchema, InvitationsSchema, MockCredentialsSchema, SessionSchema, TemplatesSchema, UsersSchema } from "@/domain";
 import { z } from "zod";
 import invitationsJson from "../../../../../contracts/dummy-data/invitations.json";
 import templatesJson from "../../../../../contracts/dummy-data/templates.json";
@@ -23,11 +23,17 @@ export class MockStorageVersionError extends Error {
   }
 }
 
+const frontendContract = FrontendContractSchema.parse({
+  users: usersJson,
+  templates: templatesJson,
+  invitations: invitationsJson,
+});
+
 const seeds = [
-  [STORAGE_KEYS.users, UsersSchema.parse(usersJson)],
+  [STORAGE_KEYS.users, frontendContract.users],
   [STORAGE_KEYS.credentials, MockCredentialsSchema.parse(credentialsJson)],
-  [STORAGE_KEYS.invitations, InvitationsSchema.parse(invitationsJson)],
-  [STORAGE_KEYS.templates, TemplatesSchema.parse(templatesJson)],
+  [STORAGE_KEYS.invitations, frontendContract.invitations],
+  [STORAGE_KEYS.templates, frontendContract.templates],
 ] as const;
 
 function listKeys(storage: StoragePort): string[] {
@@ -50,10 +56,12 @@ function parseStored<T>(storage: StoragePort, key: string, schema: z.ZodType<T>)
 }
 
 function validateStoredData(storage: StoragePort): void {
-  parseStored(storage, STORAGE_KEYS.users, UsersSchema);
+  const users = parseStored(storage, STORAGE_KEYS.users, UsersSchema);
   parseStored(storage, STORAGE_KEYS.credentials, MockCredentialsSchema);
-  parseStored(storage, STORAGE_KEYS.invitations, InvitationsSchema);
-  parseStored(storage, STORAGE_KEYS.templates, TemplatesSchema);
+  const invitations = parseStored(storage, STORAGE_KEYS.invitations, InvitationsSchema);
+  const templates = parseStored(storage, STORAGE_KEYS.templates, TemplatesSchema);
+  try { FrontendContractSchema.parse({ users, invitations, templates }); }
+  catch (cause) { throw new MockDataError(`${STORAGE_PREFIX}contract`, cause); }
   if (storage.getItem(STORAGE_KEYS.session) !== null) parseStored(storage, STORAGE_KEYS.session, SessionSchema);
 }
 
