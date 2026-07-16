@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createDemoRuntime } from "@/lib/demo-runtime";
-import { resetDemoData, seedDemoData, STORAGE_KEYS } from "@/repositories/mock";
+import { resetDemoData, seedDemoData, STORAGE_KEYS, STORAGE_VERSION, SCHEMA_VERSION } from "@/repositories/mock";
 
 describe("mock persistence", () => {
   beforeEach(() => localStorage.clear());
@@ -12,6 +12,18 @@ describe("mock persistence", () => {
     localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
     seedDemoData(localStorage);
     expect(createDemoRuntime(localStorage).users.findById("usr_admin_demo")?.name).toBe("Nama yang diubah");
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.metadata) ?? "{}")).toMatchObject({ storageVersion: STORAGE_VERSION, schemaVersion: SCHEMA_VERSION });
+  });
+
+  it("migrates valid version-one storage without metadata in place", () => {
+    seedDemoData(localStorage);
+    const users = JSON.parse(localStorage.getItem(STORAGE_KEYS.users) ?? "[]");
+    users[0].name = "Perubahan Lama";
+    localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
+    localStorage.removeItem(STORAGE_KEYS.metadata);
+    const runtime = createDemoRuntime(localStorage);
+    expect(runtime.users.findById("usr_admin_demo")?.name).toBe("Perubahan Lama");
+    expect(localStorage.getItem(STORAGE_KEYS.metadata)).not.toBeNull();
   });
 
   it("reset removes project namespace without touching another application", () => {

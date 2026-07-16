@@ -1,9 +1,9 @@
-import { MockInvitationRepository, MockSessionRepository, MockTemplateRepository, MockUserRepository, seedDemoData } from "@/repositories/mock";
+import { initializeDemoData, MockInvitationRepository, MockSessionRepository, MockTemplateRepository, MockUserRepository } from "@/repositories/mock";
 import { AuthService, InvitationService, UserService } from "@/services";
 import type { StoragePort } from "@/repositories/contracts";
 
 export function createDemoRuntime(storage: StoragePort) {
-  seedDemoData(storage);
+  initializeDemoData(storage);
   const users = new MockUserRepository(storage);
   const sessions = new MockSessionRepository(storage);
   const invitations = new MockInvitationRepository(storage);
