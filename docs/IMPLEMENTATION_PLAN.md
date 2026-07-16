@@ -18,7 +18,9 @@
 
 ## TASK-FE-001 — Frontend Foundation and Mock Vertical Slice
 
-**Status:** Ready
+**Status:** Completed
+
+**Result:** Standalone Next.js 16 mock vertical slice implemented and verified with schema-valid fixtures, owner-scoped services, two registered themes, 20 automated tests, production build, and viewport checks from 360 px through 1440 px.
 
 **Dependency:** TASK-001 and accepted frontend-first decisions
 
@@ -43,7 +45,9 @@ Admin creates user -> owner selects template -> edits invitation -> previews
 - Add simple admin/user dashboards, admin dummy-user management, invitation list/create/editor, preview, publish/unpublish, and development reset.
 - Add explicit template registry and two simple themes: `elegant-gold@1`, `minimal-white@1`.
 - Add public guest route `/{slug}` and unit/component tests for the vertical slice.
-- Keep UI responsive/mobile-first; visual polish is not final.
+- Implement all routes, dashboards, editors, settings, previews, and public
+  invitation themes using a mobile-first layout with a 360 px baseline viewport.
+- Tablet and desktop layouts are progressive enhancements.
 
 ### Domain Contract
 
@@ -89,6 +93,14 @@ Themes are build-time modules, registered explicitly by key/version, and accept 
 - Duplicate slug and foreign-owner edits are rejected; guest cannot mutate or access dashboards.
 - Fixtures validate against runtime schemas; templates receive props and do not access repositories/storage.
 - `npm run lint`, `npm run typecheck`, `npm run test`, and `npm run build` succeed.
+- Login, dashboard, user management, invitation editor, preview, and public
+  invitation are usable at viewport widths 360 px and 390 px.
+- No unintended horizontal overflow occurs on mobile.
+- Primary actions remain visible or easily reachable without hover.
+- Forms use a readable single-column layout on mobile.
+- Buttons, navigation, dialogs, and form controls are touch-friendly.
+- Fixed bottom elements account for device safe area.
+- Layout remains usable at tablet and desktop widths.
 
 ### Out of Scope
 

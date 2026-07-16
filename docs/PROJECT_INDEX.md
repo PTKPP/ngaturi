@@ -10,11 +10,12 @@ Read this after `AGENTS.md`; retrieve only what the active task needs.
 | `../contracts/dummy-data/` | Seed, fixtures, agreed frontend shape | dummy, fixture, localStorage |
 | `SYSTEM_DESIGN.md` | Frontend architecture and future adapter swap | repository, registry, route |
 | `PRD.md` | Current product scope and actors | frontend-first, MVP, role |
-| `DECISIONS.md` | Accepted and superseded decisions | frontend-first, OpenAPI, SSR |
+| `DECISIONS.md` | Accepted and superseded decisions | frontend-first, mobile-first, responsive, viewport, touch, safe-area |
 | `DATABASE_DESIGN.md` | Completed auth persistence; future DB draft warning | users, auth_sessions, draft |
 
 ## Retrieval Routing
 
+| UI, layout, or responsive behavior | `DECISIONS.md`, `SYSTEM_DESIGN.md`, and active task acceptance |
 | Change | Retrieve first |
 |---|---|
 | Role or feature behavior | `FEATURES.md` plus task acceptance |

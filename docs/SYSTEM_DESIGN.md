@@ -47,3 +47,16 @@ Every template receives `InvitationTemplateProps`. It never reads repositories/s
 Go authentication and its PostgreSQL migration are completed but not integrated into this prototype. Backend invitation APIs, normalized persistence, production SSR, object storage, RSVP, and guestbook resume only after frontend data and flows are approved.
 
 ChromaDB remains private derived tooling, never an application dependency or source of truth.
+
+## Mobile-First UI Boundary
+
+Frontend menggunakan mobile-first responsive design.
+
+- Viewport utama pengembangan: 360–430 px.
+- CSS dasar berlaku untuk mobile; breakpoint menggunakan pendekatan min-width.
+- Dashboard, editor, dan halaman pengaturan menggunakan satu kolom pada mobile.
+- Navigasi dan aksi utama harus tetap mudah dijangkau dengan sentuhan.
+- Public invitation tidak boleh memiliki interaksi yang bergantung pada hover.
+- Fixed atau bottom UI menggunakan `env(safe-area-inset-bottom)` jika diperlukan.
+- Tablet dan desktop memperluas layout tanpa mengubah flow utama.
+- Template wajib menerima dan menampilkan seluruh data penting dengan baik pada mobile.

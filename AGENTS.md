@@ -35,6 +35,15 @@ Do not retrieve or consult archived OpenAPI for new features.
 - Preserve owner isolation. Admin cross-user invitation editing remains TBD.
 - Run relevant tests and reindex after active docs or dummy contracts change.
 - Never index application source, archives, `.env`, credentials, private keys, production data, or build output.
+- Semua frontend wajib mobile-first dengan viewport dasar 360 px.
+- Mulai styling dari mobile, kemudian tambahkan breakpoint untuk tablet dan desktop.
+- Jangan membuat desktop layout terlebih dahulu lalu mengecilkannya.
+- Halaman tidak boleh memiliki horizontal overflow pada viewport mobile.
+- Tombol dan kontrol interaktif utama memiliki area sentuh minimal sekitar 44x44 px.
+- Jangan membuat interaksi yang hanya dapat digunakan melalui hover.
+- Form dan halaman pengaturan menggunakan satu kolom pada mobile secara default.
+- Fixed header, bottom navigation, dan floating action harus memperhitungkan safe area.
+- Halaman undangan publik harus nyaman dibaca dan digunakan dengan satu tangan.
 
 ## Completion Report
 

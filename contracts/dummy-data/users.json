@@ -1,0 +1,29 @@
+[
+  {
+    "id": "usr_admin_demo",
+    "name": "Admin Demo",
+    "email": "admin@demo.local",
+    "role": "admin",
+    "status": "active",
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "usr_owner_demo",
+    "name": "Raka Demo",
+    "email": "user@demo.local",
+    "role": "user",
+    "status": "active",
+    "createdAt": "2026-01-02T00:00:00.000Z",
+    "updatedAt": "2026-01-02T00:00:00.000Z"
+  },
+  {
+    "id": "usr_inactive_demo",
+    "name": "Pengguna Nonaktif",
+    "email": "inactive@demo.local",
+    "role": "user",
+    "status": "inactive",
+    "createdAt": "2026-01-03T00:00:00.000Z",
+    "updatedAt": "2026-01-03T00:00:00.000Z"
+  }
+]

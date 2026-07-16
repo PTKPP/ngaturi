@@ -42,3 +42,16 @@ Status: Accepted. Dummy JSON seeds `localStorage` once; reload preserves edits. 
 
 ### DEC-013: Preserve Backend Authentication, Defer Integration
 Status: Accepted. Completed Go authentication and migrations remain unchanged until a later frontend integration task.
+
+### DEC-014: Mobile-First Frontend
+
+Status: Accepted.
+
+Semua tampilan frontend dirancang mulai dari viewport mobile, terutama halaman
+undangan publik, editor undangan, dashboard, form, dan pengaturan.
+
+Viewport dasar pengembangan adalah lebar 360–430 px. Tampilan tablet dan desktop
+merupakan progressive enhancement, bukan layout utama yang kemudian diperkecil.
+
+UI tidak boleh bergantung pada hover, tidak boleh memiliki horizontal overflow,
+dan kontrol utama harus mudah digunakan dengan sentuhan.

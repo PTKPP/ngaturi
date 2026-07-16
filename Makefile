@@ -1,4 +1,11 @@
-PYTHON ?= python
+PYTHON ?= $(shell \
+	if [ -x ".venv/bin/python" ]; then \
+		echo ".venv/bin/python"; \
+	elif command -v python3 >/dev/null 2>&1; then \
+		command -v python3; \
+	else \
+		echo "python"; \
+	fi)
 COMPOSE ?= docker compose -f docker-compose.tools.yml
 
 .PHONY: knowledge-up knowledge-down knowledge-health knowledge-index knowledge-reindex knowledge-search knowledge-test

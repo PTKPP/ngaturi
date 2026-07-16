@@ -1,0 +1,20 @@
+[
+  {
+    "key": "elegant-gold",
+    "version": 1,
+    "name": "Elegant Gold",
+    "description": "Nuansa hangat dengan aksen emas dan tipografi klasik.",
+    "thumbnail": "/templates/elegant-gold.svg",
+    "status": "active",
+    "supportedSections": ["hero", "couple", "events", "story", "closing"]
+  },
+  {
+    "key": "minimal-white",
+    "version": 1,
+    "name": "Minimal White",
+    "description": "Tampilan bersih, lapang, dan modern dengan fokus pada informasi.",
+    "thumbnail": "/templates/minimal-white.svg",
+    "status": "active",
+    "supportedSections": ["hero", "couple", "events", "story", "closing"]
+  }
+]
