@@ -1,42 +1,41 @@
 # Agent Workflow
 
-## Source of Truth
+## Active Source of Truth
 
-1. `contracts/openapi.yaml` — API contract.
-2. `docs/DATABASE_DESIGN.md` — persistence and constraints.
-3. `docs/FEATURES.md` — flow and business rules.
-4. `docs/IMPLEMENTATION_PLAN.md` — task order.
-5. `docs/SYSTEM_DESIGN.md` — architecture.
-6. `docs/PRD.md` — product scope.
+For frontend-first work, use this order:
+
+1. `docs/FEATURES.md` — flow and business rules.
+2. `docs/IMPLEMENTATION_PLAN.md` — active task order and acceptance.
+3. `apps/frontend/src/domain/` — executable schemas and types after TASK-FE-001 creates them.
+4. `contracts/dummy-data/` — agreed fixtures and cross-feature examples.
+5. `docs/SYSTEM_DESIGN.md` — architecture and boundaries.
+6. `docs/PRD.md` — product scope and actors.
 7. `docs/DECISIONS.md` — accepted decisions.
 
-ChromaDB is a derived index, never a source of truth. If retrieval conflicts with Git, use Git and reindex after correcting it.
+`docs/DATABASE_DESIGN.md` remains authoritative only for completed authentication persistence. Archived OpenAPI files are history, not an active contract. ChromaDB is a derived index; Git wins on conflict.
 
 ## Starting a Task
 
 1. Read this file and `docs/PROJECT_INDEX.md`.
-2. Identify task ID, feature, affected contract, and persistence area.
-3. Query Chroma separately for business rules, API contract, database constraints, and acceptance/tests. Use 4–6 chunks and configured context budget.
-4. Open exact source files only if retrieval is incomplete, conflicts, or an edit is imminent. Do not read all docs by default.
+2. Identify the active task, feature, affected frontend domain, fixture, and test.
+3. Retrieve 4–6 focused Chroma chunks for business flow, task acceptance, domain/dummy contract, and architecture.
+4. Open exact files only when retrieval is incomplete, conflicting, or an edit is imminent.
 
-Example:
-
-```text
-python tools/knowledge/search.py --query "TASK-014 public invitation business rules" --task-id TASK-014
-python tools/knowledge/search.py --query "getPublicInvitation" --operation-id getPublicInvitation
-```
+Do not retrieve or consult archived OpenAPI for new features.
 
 ## Implementation Rules
 
-- Keep to the active task; mark unknown product choices as TBD.
-- Update OpenAPI before changing request/response behavior; do not invent fields.
-- Use migrations and database constraints for persistence changes and races; never rely only on SELECT-before-INSERT.
-- Keep business logic out of Go HTTP handlers. Public templates are frontend code selected by `template_key` and `template_version`.
-- Do not put media blobs in PostgreSQL.
-- Run relevant tests and reindex after docs/contracts change.
-- Never index secrets, `.env` files, credentials, private keys, production data, or application source code.
-- Chroma failure may affect agent retrieval only, never invitation runtime or authorization.
+- Keep to the active task and mark unknown product choices as TBD.
+- Frontend tasks must not change the Go backend or create APIs.
+- Do not create backend invitation storage or endpoints until the frontend model and flow are approved.
+- When a frontend domain schema changes, update its dummy fixtures and tests together.
+- Runtime schemas produce TypeScript types; UI state never belongs in invitation domain data.
+- Components and templates use repositories/props, never `localStorage` directly.
+- Templates are build-time modules in an explicit registry; no `eval`, remote scripts, or arbitrary uploaded code.
+- Preserve owner isolation. Admin cross-user invitation editing remains TBD.
+- Run relevant tests and reindex after active docs or dummy contracts change.
+- Never index application source, archives, `.env`, credentials, private keys, production data, or build output.
 
 ## Completion Report
 
-Report task ID, Chroma queries/context used, source files checked, application files changed, API contract changes, migrations, tests/results, and unresolved risks or conflicts. Do not claim alignment with documentation without retrieval or a targeted source check.
+Report task ID, Chroma queries/context, source files checked, files changed, fixtures/schema impact, tests/results, and unresolved risks or conflicts. Do not claim alignment without retrieval or targeted source checks.

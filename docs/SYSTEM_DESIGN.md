@@ -1,33 +1,49 @@
 # System Design
 
-## Components
+## Frontend-First Prototype
 
-| Component | Responsibility |
+```text
+Next.js App Router
+  -> repository interfaces
+  -> mock repository adapters
+  -> dummy JSON seed + versioned localStorage
+  -> explicit template registry
+```
+
+Frontend does not call the backend. Seed runs only when storage is empty and never overwrites browser changes. A development-only reset restores fixtures. UI components and templates do not access storage directly.
+
+## Routes and Access
+
+| Route | Actor |
 |---|---|
-| Next.js App Router | SSR public pages, owner UI, template registry, client-only interactions |
-| Go REST API | Authentication, authorization, business rules, validation, persistence orchestration |
-| PostgreSQL | Transactional application source of truth |
-| S3-compatible storage | Original/derived media objects; database stores metadata and object keys |
-| ChromaDB | Internal derived documentation index for agents only |
+| `/login` | admin or user mock session |
+| `/admin`, `/admin/users`, `/admin/invitations` | admin only; invitations remain owner-scoped |
+| `/dashboard/**` | admin and user |
+| `/dashboard/invitations/[id]/preview` | invitation owner; admin cross-user access TBD |
+| `/{slug}` | guest; published invitation only |
 
-## Public Invitation Flow
+Drafts appear only in owner preview. Public pages have no edit controls. Prototype public rendering is client-side because its source is `localStorage`; production SSR is deferred, not cancelled.
 
-1. Visitor requests `/{slug}` (optionally with a guest token).
-2. Next.js SSR calls `getPublicInvitation` in Go.
-3. Go returns only published public invitation data, `template_key`, and `template_version`.
-4. Next.js selects the matching local template using its registry and SSR-renders it.
-5. Music, countdown, interactive gallery, RSVP, guestbook, copy actions, and section navigation hydrate as Client Components.
+## Domain and Repository Boundary
 
-Backend never sends template source code. An absent registry entry is a controlled frontend error and must be monitored.
+TASK-FE-001 will create Zod schemas and inferred TypeScript types in `apps/frontend/src/domain/` for `User`, `Session`, `Template`, and `Invitation`. Invitation contains neutral partners (`partnerOne`, `partnerTwo`), multiple ordered events, flexible content, gallery references, and settings—never modal/loading/form UI state.
 
-## Other Flows
+Repositories: `MockUserRepository`, `MockSessionRepository`, `MockInvitationRepository`, and `MockTemplateRepository`. Later they are replaced behind the same boundary:
 
-- **Upload:** owner requests/uses authorized upload flow (TBD endpoint), writes to object storage, then API persists metadata; no media blob is stored in PostgreSQL.
-- **RSVP:** public API validates published invitation and optional guest token, then atomically upserts registered guest RSVP under its unique constraint.
-- **Template registry:** frontend maps stable `(key, version)` to dynamically imported code. Backend validates a template reference against its template catalogue.
+```text
+mock repository -> API repository -> Go + PostgreSQL
+```
 
-## Cache and Risks
+Frontend nested data guides API mapping but must not be copied mechanically into relational tables.
 
-Initial public SSR is correctness-first. Later, cache published public payloads/pages and invalidate on publish or content change; never serve a draft from cache. Main risks are slug enumeration, guest-token leakage, media access control, spam, template-version mismatch, and duplicate RSVP. Mitigate with authorization, opaque tokens, signed uploads, rate limits/moderation, registry compatibility checks, and constraints.
+## Template Registry
 
-Chroma is private Docker infrastructure with persistence; it is not an application runtime dependency, authorization system, or replacement database.
+Templates live under `apps/frontend/src/templates/themes/<theme>/` with their own component, manifest, CSS module, components, assets, and optional build-time scripts. Shared code stays under `templates/shared/`; `registry.ts` explicitly maps `templateKey@templateVersion` such as `elegant-gold@1` and `minimal-white@1` to modules.
+
+Every template receives `InvitationTemplateProps`. It never reads repositories/storage, calls a backend, or defines a competing invitation shape. Theme JavaScript is bundled by Next.js; runtime folder auto-loading, `eval`, remote scripts, and arbitrary uploaded code are forbidden.
+
+## Preserved and Future Backend
+
+Go authentication and its PostgreSQL migration are completed but not integrated into this prototype. Backend invitation APIs, normalized persistence, production SSR, object storage, RSVP, and guestbook resume only after frontend data and flows are approved.
+
+ChromaDB remains private derived tooling, never an application dependency or source of truth.

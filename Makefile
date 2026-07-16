@@ -1,7 +1,7 @@
 PYTHON ?= python
 COMPOSE ?= docker compose -f docker-compose.tools.yml
 
-.PHONY: knowledge-up knowledge-down knowledge-health knowledge-index knowledge-reindex knowledge-search knowledge-test contract-validate
+.PHONY: knowledge-up knowledge-down knowledge-health knowledge-index knowledge-reindex knowledge-search knowledge-test
 
 knowledge-up:
 	$(COMPOSE) up -d chromadb
@@ -25,6 +25,3 @@ knowledge-search:
 
 knowledge-test:
 	$(PYTHON) -m pytest tools/knowledge/tests -q
-
-contract-validate:
-	$(PYTHON) tools/knowledge/validate_openapi.py contracts/openapi.yaml

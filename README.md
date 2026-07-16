@@ -1,14 +1,14 @@
 # Ngaturi — Digital Invitation Platform
 
-Fondasi API-first untuk platform undangan digital. Repository ini berisi kontrak, dokumentasi, knowledge base ChromaDB, serta backend autentikasi awal untuk mendukung pekerjaan frontend dan backend secara paralel.
+Ngaturi now follows a frontend-first workflow. The next active slice is a standalone Next.js prototype backed by dummy JSON and versioned browser storage; backend invitation work resumes only after its flow and data contract are approved.
 
-Backend Go untuk autentikasi pemilik berada di `apps/backend`. Terapkan migration `apps/backend/migrations/000001_auth.up.sql` pada PostgreSQL, set `DATABASE_URL` dan `JWT_SECRET`, lalu jalankan `go run ./cmd/api` dari direktori tersebut. Endpoint yang tersedia adalah register, login, refresh token, dan logout sesuai kontrak OpenAPI.
+The completed Go authentication service and PostgreSQL migration remain in `apps/backend`, but frontend integration is deferred. The former OpenAPI contract is preserved under `contracts/archive/` as TASK-002 history and is not an active source of truth.
 
-## Mulai
+## Knowledge Tooling
 
-1. Salin `.env.example` menjadi `.env` dan sesuaikan jika diperlukan.
-2. Jalankan `make knowledge-up`.
-3. Instal dependensi Python: `python -m pip install -r tools/knowledge/requirements.txt`.
-4. Jalankan `make knowledge-index`, lalu `make knowledge-health`.
+1. Copy `.env.example` to `.env` and configure local tooling.
+2. Run `make knowledge-up`.
+3. Install `tools/knowledge/requirements.txt`.
+4. Run `make knowledge-index` and `make knowledge-health`.
 
-Lihat `AGENTS.md` untuk workflow agent dan `docs/PROJECT_INDEX.md` untuk peta source of truth.
+Read `AGENTS.md`, then `docs/PROJECT_INDEX.md`, before starting a task. The next ready task is TASK-FE-001; this rebaseline does not implement it.

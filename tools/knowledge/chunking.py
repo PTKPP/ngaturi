@@ -103,8 +103,8 @@ def markdown_chunks(source_path: str, text: str, target_tokens: int, overlap_tok
         for part in parts:
             if _token_count(part) < 2:
                 continue
-            feature = section.removeprefix("Feature: ").split(" > ")[0] if "Feature:" in section else ""
-            task_match = re.search(r"\bTASK-\d{3}\b", part)
+            feature = section.split("Feature: ", 1)[1].split(" > ")[0] if "Feature:" in section else ""
+            task_match = re.search(r"\bTASK-(?:FE-)?\d{3}\b", part)
             phase_match = re.search(r"\bPhase\s+\d+[^|\n]*", part, re.IGNORECASE)
             extras = {"feature": feature}
             if task_match:

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from chunking import chunks_for_file, markdown_chunks, openapi_chunks
+from chunking import chunks_for_file, json_chunks, markdown_chunks
 from config import ROOT, is_allowed_source, iter_sources
 
 
@@ -13,17 +13,23 @@ def test_markdown_chunks_keep_headings_and_stable_ids():
     assert chunks[0].id == markdown_chunks("docs/example.md", text, 20, 4)[0].id
 
 
-def test_openapi_is_chunked_by_operation_and_schema():
-    text = (ROOT / "contracts/openapi.yaml").read_text(encoding="utf-8")
-    chunks = openapi_chunks("contracts/openapi.yaml", text)
-    assert any(c.extras.get("operation_id") == "getPublicInvitation" for c in chunks)
-    assert any(c.extras.get("schema_name") == "PublicInvitation" for c in chunks)
-    assert all(c.document_type != "markdown" for c in chunks)
+def test_dummy_json_is_chunked_as_contract_fixture():
+    chunks = json_chunks("contracts/dummy-data/users.json", '[{"id":"user-demo"}]')
+    assert len(chunks) == 1
+    assert chunks[0].document_type == "contract_example"
+    assert chunks[0].section == "users"
+
+
+def test_frontend_task_id_is_added_to_metadata():
+    chunks = markdown_chunks("docs/plan.md", "# Plan\n\n## TASK-FE-001\n\nFrontend foundation rules.", 700, 100)
+    assert any(chunk.extras.get("task_id") == "TASK-FE-001" for chunk in chunks)
 
 
 def test_whitelist_and_sensitive_exclusion():
     assert is_allowed_source(ROOT / "AGENTS.md")
     assert is_allowed_source(ROOT / "docs/PRD.md")
+    assert is_allowed_source(ROOT / "contracts/dummy-data/README.md")
+    assert not is_allowed_source(ROOT / "contracts/archive/openapi-task-002.yaml")
     assert not is_allowed_source(ROOT / ".env")
     assert not is_allowed_source(ROOT / "apps/backend/main.go")
     assert all(".env" not in source.name for source in iter_sources())

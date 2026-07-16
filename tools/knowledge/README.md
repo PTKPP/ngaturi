@@ -1,16 +1,16 @@
-# Knowledge Base Tooling
+# Knowledge Index
 
-ChromaDB holds a rebuildable, private index of only `AGENTS.md`, `docs/**/*.md`, `contracts/openapi.yaml`, and `contracts/examples/*.json`. Git files remain authoritative.
+ChromaDB stores a rebuildable private index of active sources only: `AGENTS.md`, `docs/**/*.md`, and `contracts/dummy-data/**/*.{json,md}`. Git remains authoritative.
+
+Archived contracts, application source, `.env`, credentials, production data, and build output are excluded.
 
 ## Commands
 
-- `make knowledge-up` / `make knowledge-down` — manage local ChromaDB.
-- `make knowledge-index` — sync changed source and remove stale chunks.
-- `make knowledge-reindex COLLECTION=digital-invitation-knowledge` — guarded full rebuild.
-- `make knowledge-health` — check service, collection, record count.
-- `make knowledge-search QUERY="getPublicInvitation"` — compact retrieval.
-- `make knowledge-test` — run deterministic unit tests.
+- `make knowledge-up` / `make knowledge-down` — manage local Chroma.
+- `make knowledge-index` — incremental sync; changed files replace old chunks and removed sources are deleted.
+- `make knowledge-health` — verify collection reachability/count.
+- `make knowledge-search QUERY="frontend-first roles"` — focused retrieval.
+- `make knowledge-test` — whitelist, chunking, sync, deduplication, filter, and budget tests.
+- `make knowledge-reindex COLLECTION=digital-invitation-knowledge` — explicit destructive rebuild.
 
-`search.py` supports `--document-type`, `--feature`, `--task-id`, `--phase`, `--operation-id`, `--schema-name`, and `--source-path`. Chroma runs on an internal Docker network and binds its configurable host port only to `127.0.0.1`; it must not be exposed publicly in deployment.
-
-`KNOWLEDGE_EMBEDDING_PROVIDER=local` uses Chroma's compatible default local model. `server` delegates embedding to a suitably configured Chroma server; a new remote provider must be added as an adapter in `embedding.py`, keeping the index format stable. No secret, user data, or application source code is indexed.
+Use 4–6 chunks and the configured context budget. Retrieval supports metadata filters such as feature, task, source path, and document type.

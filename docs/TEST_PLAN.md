@@ -1,23 +1,24 @@
 # Test Plan
 
+## Active Frontend Scope
+
 | Level | Scope |
 |---|---|
-| Unit | Go business rules; Next template registry/components; Python chunking/filtering |
-| Repository | PostgreSQL constraints, transactions, upsert, ownership queries |
-| API integration | Auth, invitation state, guest/RSVP/guestbook envelopes and status codes |
-| Contract | OpenAPI syntax/schema validation and examples against schemas |
-| E2E | Owner publish journey; guest public/RSVP/guestbook journey |
-| Load | Baseline public slug and guestbook/RSVP rate-limit behavior |
-| Security | Authz isolation, token validation, input validation, XSS-safe rendering, upload access |
+| Domain | Zod validation, inferred types, fixture validity, slug/status rules |
+| Repository | seed-once, persistence, reset, unique slug, owner isolation |
+| Component | mock login, guards, editor, preview, template props |
+| Flow | admin creates user; owner edits/publishes; guest opens published slug |
+| Build | lint, typecheck, unit/component tests, production build |
+| Knowledge | active-source whitelist, archive exclusion, sync/dedup, filters, context budget |
 
-## Required Scenarios
+Required TASK-FE-001 scenarios: admin/user demo login, inactive/role guard rejection, first-load seed without overwrite, reload persistence, duplicate slug rejection, foreign-owner edit rejection, both registered templates, preview with latest data, published guest visibility, and draft/inactive guest denial. Templates must not access repositories or storage.
 
-- Published invitation opens; draft/unpublished invitation is not public; missing slug is 404.
-- Duplicate slug is rejected by the database; unregistered template cannot publish.
-- Valid RSVP succeeds; repeated registered RSVP upserts; invalid token and guest-limit overflow fail.
-- Guestbook spam/rate-limit path is rejected and unapproved messages are not listed.
-- A user cannot read or modify another user's resource.
-- Contract examples validate and frontend never requires an undocumented response field.
-- Knowledge tests cover heading/OpenAPI chunks, stable IDs, unchanged/deleted sources, whitelist/sensitive exclusions, required metadata, context budget, and retrieval filter.
+## Preserved Authentication Verification
 
-Run focused tests per task, then affected integration/contract tests before merge. Production load/security thresholds remain TBD.
+Completed Go authentication retains unit, race, PostgreSQL migration/integration, refresh-rotation/reuse, logout, malformed token, and expiry tests. Frontend integration is deferred and these tests must not be removed.
+
+## Future Scope
+
+API contract/integration, normalized invitation persistence, production SSR/E2E, upload security, RSVP, guestbook, load, and deployment tests are defined only when their future tasks become active.
+
+Run focused task tests followed by affected lint/typecheck/test/build and knowledge tests. Archived OpenAPI validation is not an active frontend gate.

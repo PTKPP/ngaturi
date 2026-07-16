@@ -1,49 +1,44 @@
 # Architecture Decisions
 
-## DEC-001: PostgreSQL Is the Application Database
-Status: Accepted
+## Historical Decisions
 
-Context: Invitations need transactional ownership and constraints.
-Decision: Use PostgreSQL with UUID, TIMESTAMPTZ, relational constraints, and limited JSONB configuration.
-Reason: It supports transactional data integrity and query patterns.
-Consequence: Media bytes and agent knowledge are external services.
+### DEC-001: PostgreSQL Is the Application Database
+Status: Accepted. Authentication uses relational constraints. Invitation tables remain undecided until frontend approval; nested frontend objects will be mapped, not copied mechanically.
 
-## DEC-002: Hybrid SSR and Client Components
-Status: Accepted
+### DEC-002: Hybrid SSR and Client Components
+Status: Deferred. Production public SSR remains a goal; the browser-local prototype renders client-side because the server cannot read `localStorage`.
 
-Context: Public invitations need discoverable fast rendering plus interaction.
-Decision: SSR public invitation pages in Next.js; hydrate only interactive features.
-Reason: Good initial rendering without SPA-only tradeoffs.
-Consequence: Templates must separate server-safe rendering from client features.
+### DEC-003: API-First Development
+Status: Superseded. It produced the completed TASK-002 authentication contract, now archived. New feature work no longer starts from OpenAPI.
 
-## DEC-003: API-First Development
-Status: Accepted
+### DEC-004: Frontend Template Registry
+Status: Accepted and refined by DEC-011. Executable templates remain local build-time code.
 
-Context: Frontend and backend work in parallel.
-Decision: OpenAPI 3.1 is the official request/response contract.
-Reason: Prevents implicit field and breaking changes.
-Consequence: Contract changes precede implementation and are validated.
+### DEC-005: Object Storage for Media
+Status: Deferred until production media work resumes.
 
-## DEC-004: Frontend Template Registry
-Status: Accepted
+### DEC-006: ChromaDB Is a Derived Knowledge Index
+Status: Accepted. It indexes only active docs/dummy contracts, is rebuildable, and never participates in runtime or authorization.
 
-Context: Templates are executable presentation code.
-Decision: Backend returns key/version and data; frontend maps those to dynamic imports.
-Reason: No remote source-code execution and predictable SSR.
-Consequence: Registry/catalogue compatibility must be maintained.
+## Frontend-First Decisions
 
-## DEC-005: Object Storage for Media
-Status: Accepted
+### DEC-007: Frontend-First Development
+Status: Accepted. Build and approve the dummy-data vertical slice before invitation backend design.
 
-Context: Gallery media does not belong in relational blobs.
-Decision: Store objects in S3-compatible storage and metadata in PostgreSQL.
-Reason: Scalability and delivery flexibility.
-Consequence: Signed upload/access policy is needed.
+### DEC-008: Executable Frontend Contract Replaces Active OpenAPI
+Status: Accepted. Zod schemas, inferred TypeScript types, and validated dummy fixtures guide new features. Archived OpenAPI is TASK-002 history only.
 
-## DEC-006: ChromaDB Is a Derived Knowledge Index
-Status: Accepted
+### DEC-009: Repository Abstraction
+Status: Accepted. Components depend on repository interfaces; mock adapters use versioned browser storage and can later be replaced by API adapters.
 
-Context: Agents need focused documentation retrieval.
-Decision: Index whitelisted Git documentation into private persistent ChromaDB.
-Reason: Lower context use without duplicating source of truth.
-Consequence: It is rebuildable, contains no secrets/data, and cannot affect application runtime.
+### DEC-010: Guest Is a Public Actor
+Status: Accepted. Stored account roles are `admin` and `user`; guest has no user record or session.
+
+### DEC-011: Folder-Based Explicit Template Registry
+Status: Accepted. Each theme is self-contained and registered explicitly by key/version. No runtime auto-loader, `eval`, remote script, or arbitrary uploaded code.
+
+### DEC-012: Client-Side Prototype Persistence
+Status: Accepted. Dummy JSON seeds `localStorage` once; reload preserves edits. Cross-device sharing and production SSR are deferred.
+
+### DEC-013: Preserve Backend Authentication, Defer Integration
+Status: Accepted. Completed Go authentication and migrations remain unchanged until a later frontend integration task.

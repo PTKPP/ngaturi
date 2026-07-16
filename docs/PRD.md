@@ -1,34 +1,25 @@
 # Product Requirements
 
-## Product Summary
+## Direction
 
-Ngaturi lets users create, preview, publish, and share personalized digital invitations at a stable public slug such as `/budi-ani`.
+Ngaturi is a frontend-first digital invitation prototype. Dummy data and browser persistence establish the approved UI/domain shape before backend invitation schema or APIs are designed.
 
-## Problem and Users
+## Actors
 
-Hosts need a polished invitation, guest list, RSVP collection, and guestbook without building a site. Guests need a fast mobile-friendly page and a personal greeting link.
+- **Admin:** stored authenticated account (`admin`). Manages dummy users and can use all normal user features for invitations it owns. Editing or creating invitations for another user is TBD.
+- **User:** stored authenticated account (`user`). Creates, edits, previews, publishes, and deactivates only its own invitations.
+- **Guest:** public actor without account or session. Opens a published invitation by slug, cannot edit, and cannot access dashboards.
 
-## MVP Scope
+## Active Frontend Scope
 
-- Account authentication and invitation ownership.
-- Invitation CRUD, partner details, multiple events, template choice, music, gallery, gifts, preview, publish/unpublish.
-- Guest list and personalized guest links.
-- Public SSR invitation, RSVP, and guestbook.
+Mock admin/user login; admin and user dashboards; dummy user creation/status; owner invitation creation/editing; template selection; preview; publish/unpublish; public guest route; explicit template registry; and versioned `localStorage` persistence.
 
-## Out of Scope
+## Future Scope
 
-Payments, marketplace, custom template editor, real-time analytics, multi-language workflow, and production monetization are not MVP.
+Backend invitation CRUD, frontend integration with Go authentication, production SSR, media upload/object storage, guest management, RSVP, guestbook, payment, monetization, and production deployment.
 
-## Product Acceptance Criteria
+## Prototype Acceptance
 
-- An owner can create a draft, configure it, preview it, publish it, and unpublish it.
-- A published slug renders its registered frontend template with public data only.
-- A guest can submit one valid RSVP under configured guest limits and leave a moderated/rate-limited guestbook message.
-- A draft, missing slug, unauthorized resource, invalid guest token, or unregistered template is handled safely.
+The frontend runs without backend calls, persists changes across reloads on the same browser, enforces role/ownership rules, renders two registered templates, rejects duplicate slugs, and exposes only published invitations on public routes.
 
-## TBD
-
-- Supported invitation event categories and starter template catalogue.
-- Guestbook moderation policy and publication timing.
-- Account recovery, verification, and session lifetime.
-- Gift payment-provider integrations.
+Browser-local data cannot be shared across devices. Production persistence and server rendering follow after frontend approval.

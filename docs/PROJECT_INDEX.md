@@ -1,27 +1,26 @@
 # Project Index
 
-Read this after `AGENTS.md`; retrieve only the source relevant to the task.
+Read this after `AGENTS.md`; retrieve only what the active task needs.
 
-| Document | Used for / source of truth | Retrieval keywords |
+| Source | Active use | Retrieval keywords |
 |---|---|---|
-| `PRD.md` | Product goals and MVP scope | MVP, user, scope, out of scope |
-| `SYSTEM_DESIGN.md` | Architecture and data flows | SSR, template, upload, cache |
-| `DATABASE_DESIGN.md` | Tables, constraints, indexes | UUID, slug, RSVP, unique, migration |
-| `FEATURES.md` | Feature flow and business rules | publish, RSVP, guestbook, gallery |
-| `IMPLEMENTATION_PLAN.md` | Phase/task order | TASK, phase, dependency |
-| `TEST_PLAN.md` | Test strategy and scenarios | contract, E2E, security, duplicate |
-| `DECISIONS.md` | Accepted architecture decisions | DEC, PostgreSQL, ChromaDB |
-| `../contracts/openapi.yaml` | API request and response contract | operationId, endpoint, schema |
-| `../contracts/examples/` | Valid contract examples | response, error, RSVP |
+| `FEATURES.md` | Flows, roles, business rules | admin, user, guest, publish, preview |
+| `IMPLEMENTATION_PLAN.md` | Task status, scope, acceptance | TASK-FE, dependency, test |
+| `../apps/frontend/src/domain/` | Executable schema/type after TASK-FE-001 | user, session, template, invitation |
+| `../contracts/dummy-data/` | Seed, fixtures, agreed frontend shape | dummy, fixture, localStorage |
+| `SYSTEM_DESIGN.md` | Frontend architecture and future adapter swap | repository, registry, route |
+| `PRD.md` | Current product scope and actors | frontend-first, MVP, role |
+| `DECISIONS.md` | Accepted and superseded decisions | frontend-first, OpenAPI, SSR |
+| `DATABASE_DESIGN.md` | Completed auth persistence; future DB draft warning | users, auth_sessions, draft |
 
 ## Retrieval Routing
 
 | Change | Retrieve first |
 |---|---|
-| Endpoint/UI data | API operation and response schema |
-| Persistence/migration | Database table plus related feature |
-| Feature behavior | Feature section plus acceptance criteria |
-| Task planning | Implementation phase and dependencies |
-| Architecture | System design plus decisions |
+| Role or feature behavior | `FEATURES.md` plus task acceptance |
+| Frontend data | domain schema plus matching dummy fixture |
+| Template | template rules in `SYSTEM_DESIGN.md` plus dummy catalogue |
+| Task planning | `IMPLEMENTATION_PLAN.md` |
+| Authentication maintenance | `DATABASE_DESIGN.md` and completed backend tests |
 
-Git files are authoritative. ChromaDB is a searchable derived index.
+Archived contracts are historical only. Git is authoritative; ChromaDB is a searchable derived index.

@@ -29,8 +29,8 @@ class FakeCollection:
 
     def query(self, query_texts, n_results, where=None, include=None):
         records = list(self.records.values())
-        if where and "operation_id" in where:
-            records = [r for r in records if r["metadata"].get("operation_id") == where["operation_id"]]
+        if where and "source_path" in where:
+            records = [r for r in records if r["metadata"].get("source_path") == where["source_path"]]
         records = records[:n_results]
         return {"documents": [[r["document"] for r in records]], "metadatas": [[r["metadata"] for r in records]], "distances": [[0.1 for _ in records]]}
 
@@ -44,7 +44,8 @@ def _write(root: Path, relative: str, content: str):
 def test_unchanged_sources_do_not_duplicate_and_deleted_sources_are_removed(tmp_path):
     _write(tmp_path, "AGENTS.md", "# Agent\n\nUse rules.")
     _write(tmp_path, "docs/A.md", "# A\n\nFirst content.")
-    _write(tmp_path, "contracts/openapi.yaml", "openapi: 3.1.0\npaths:\n  /health:\n    get:\n      operationId: health\ncomponents:\n  schemas:\n    Health:\n      type: object")
+    _write(tmp_path, "contracts/dummy-data/users.json", '[{"id":"user-demo"}]')
+    _write(tmp_path, "contracts/archive/openapi-task-002.yaml", "openapi: 3.1.0\npaths: {}")
     collection = FakeCollection()
     config = KnowledgeConfig("x", 1, "test", "local", "model", 50, 1000, 20, 2)
     first = sync(collection, tmp_path, config)
@@ -61,9 +62,9 @@ def test_unchanged_sources_do_not_duplicate_and_deleted_sources_are_removed(tmp_
 
 def test_retrieval_filter_and_character_budget():
     collection = FakeCollection()
-    collection.upsert(["a", "b"], ["A" * 500, "B" * 500], [{"source_path": "x", "section": "a", "document_type": "api_operation", "operation_id": "getPublicInvitation"}, {"source_path": "x", "section": "b", "document_type": "api_operation", "operation_id": "other"}])
-    args = Namespace(document_type=None, feature=None, task_id=None, phase=None, operation_id="getPublicInvitation", schema_name=None, source_path=None)
-    assert build_filter(args) == {"operation_id": "getPublicInvitation"}
-    results = retrieve(collection, "public", 6, 300, build_filter(args))
+    collection.upsert(["a", "b"], ["A" * 500, "B" * 500], [{"source_path": "docs/FEATURES.md", "section": "a", "document_type": "markdown"}, {"source_path": "docs/PRD.md", "section": "b", "document_type": "markdown"}])
+    args = Namespace(document_type=None, feature=None, task_id=None, phase=None, operation_id=None, schema_name=None, source_path="docs/FEATURES.md")
+    assert build_filter(args) == {"source_path": "docs/FEATURES.md"}
+    results = retrieve(collection, "roles", 6, 300, build_filter(args))
     assert len(results) == 1
     assert sum(len(row["document"]) for row in results) <= 300

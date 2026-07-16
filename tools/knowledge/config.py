@@ -64,13 +64,16 @@ def is_allowed_source(path: Path, root: Path = ROOT) -> bool:
     return (
         relative == "AGENTS.md"
         or (relative.startswith("docs/") and relative.endswith(".md"))
-        or relative == "contracts/openapi.yaml"
-        or (relative.startswith("contracts/examples/") and relative.endswith(".json"))
+        or (
+            relative.startswith("contracts/dummy-data/")
+            and (relative.endswith(".json") or relative.endswith(".md"))
+        )
     )
 
 
 def iter_sources(root: Path = ROOT) -> list[Path]:
-    candidates = [root / "AGENTS.md", root / "contracts" / "openapi.yaml"]
+    candidates = [root / "AGENTS.md"]
     candidates.extend((root / "docs").glob("**/*.md"))
-    candidates.extend((root / "contracts" / "examples").glob("*.json"))
+    candidates.extend((root / "contracts" / "dummy-data").glob("**/*.json"))
+    candidates.extend((root / "contracts" / "dummy-data").glob("**/*.md"))
     return sorted((p for p in candidates if p.is_file() and is_allowed_source(p, root)), key=lambda p: p.as_posix())

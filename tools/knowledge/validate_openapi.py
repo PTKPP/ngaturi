@@ -29,7 +29,7 @@ EXAMPLE_SCHEMAS = {
 
 
 def main() -> int:
-    path = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "contracts/openapi.yaml"
+    path = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "contracts/archive/openapi-task-002.yaml"
     try:
         spec = yaml.safe_load(path.read_text(encoding="utf-8"))
         assert spec.get("openapi", "").startswith("3.1."), "openapi must be 3.1.x"
@@ -43,7 +43,7 @@ def main() -> int:
             assert name in schemas, f"missing schema {name}"
         resolver = RefResolver.from_schema(spec)
         for filename, schema_name in EXAMPLE_SCHEMAS.items():
-            example = ROOT / "contracts/examples" / filename
+            example = ROOT / "contracts/archive/examples" / filename
             instance = json.loads(example.read_text(encoding="utf-8"))
             validator = Draft202012Validator(schemas[schema_name], resolver=resolver, format_checker=FormatChecker())
             validator.validate(instance)
