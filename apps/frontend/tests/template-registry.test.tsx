@@ -7,12 +7,13 @@ import { TemplateRenderer } from "@/templates/renderer";
 
 describe("template registry", () => {
   beforeEach(() => localStorage.clear());
-  it("finds both versioned template modules", () => {
+  it("finds all versioned template modules", () => {
+    expect(getTemplateModule("daztore-inv1", 1)?.manifest.name).toBe("Daztore Invitation 1");
     expect(getTemplateModule("elegant-gold", 1)?.manifest.name).toBe("Elegant Gold");
     expect(getTemplateModule("minimal-white", 1)?.manifest.name).toBe("Minimal White");
   });
   it("keeps the dummy catalogue identical to registered manifests", () => {
-    expect(Object.keys(templateRegistry).sort()).toEqual(["elegant-gold@1", "minimal-white@1"]);
+    expect(Object.keys(templateRegistry).sort()).toEqual(["daztore-inv1@1", "elegant-gold@1", "minimal-white@1"]);
     for (const template of templates) {
       expect(getTemplateModule(template.key, template.version)?.manifest).toEqual(template);
     }

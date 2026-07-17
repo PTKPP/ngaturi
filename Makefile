@@ -7,8 +7,38 @@ PYTHON ?= $(shell \
 		echo "python"; \
 	fi)
 COMPOSE ?= docker compose -f docker-compose.tools.yml
+PM2 ?= pm2
+RUNTIME_DIR ?= .runtime
+BACKEND_BINARY ?= $(RUNTIME_DIR)/ngaturi-api
 
-.PHONY: knowledge-up knowledge-down knowledge-health knowledge-index knowledge-reindex knowledge-search knowledge-test
+.PHONY: app-build backend-build frontend-build pm2-start pm2-reload pm2-stop pm2-delete pm2-status pm2-logs knowledge-up knowledge-down knowledge-health knowledge-index knowledge-reindex knowledge-search knowledge-test
+
+frontend-build:
+	cd apps/frontend && npm run build
+
+backend-build:
+	mkdir -p "$(RUNTIME_DIR)"
+	cd apps/backend && go build -trimpath -o "../../$(BACKEND_BINARY)" ./cmd/api
+
+app-build: frontend-build backend-build
+
+pm2-start: app-build
+	$(PM2) startOrReload ecosystem.config.cjs --update-env
+
+pm2-reload: app-build
+	$(PM2) reload ecosystem.config.cjs --update-env
+
+pm2-stop:
+	$(PM2) stop ngaturi-backend ngaturi-frontend
+
+pm2-delete:
+	$(PM2) delete ngaturi-backend ngaturi-frontend
+
+pm2-status:
+	$(PM2) status
+
+pm2-logs:
+	$(PM2) logs ngaturi-backend ngaturi-frontend
 
 knowledge-up:
 	$(COMPOSE) up -d chromadb

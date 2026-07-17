@@ -6,7 +6,7 @@ import invitations from "../../../contracts/dummy-data/invitations.json";
 
 describe("dummy data contract", () => {
   it("validates dummy users", () => { expect(UsersSchema.parse(users)).toHaveLength(3); });
-  it("validates both dummy templates", () => { expect(TemplatesSchema.parse(templates).map((item) => `${item.key}@${item.version}`)).toEqual(["elegant-gold@1", "minimal-white@1"]); });
+  it("validates all dummy templates", () => { expect(TemplatesSchema.parse(templates).map((item) => `${item.key}@${item.version}`)).toEqual(["elegant-gold@1", "minimal-white@1", "daztore-inv1@1"]); });
   it("validates draft and published invitations with multiple events", () => {
     const parsed = InvitationsSchema.parse(invitations);
     expect(parsed.map((item) => item.status)).toEqual(expect.arrayContaining(["draft", "published"]));

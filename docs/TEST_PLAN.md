@@ -13,6 +13,8 @@
 
 Required TASK-FE-001 scenarios: admin/user demo login, inactive/role guard rejection, first-load seed without overwrite, reload persistence, duplicate slug rejection, foreign-owner edit rejection, both registered templates, preview with latest data, published guest visibility, and draft/inactive guest denial. Templates must not access repositories or storage.
 
+TASK-FE-002 adds unified fixture reference/uniqueness validation, event chronology and contiguous ordering, multi-event editor interaction, inactive-template rejection, publication transitions, catalogue/manifest equality, optional gift rendering, schema-version recovery, and 360/390 px editor/preview/public browser checks.
+
 ## Preserved Authentication Verification
 
 Completed Go authentication retains unit, race, PostgreSQL migration/integration, refresh-rotation/reuse, logout, malformed token, and expiry tests. Frontend integration is deferred and these tests must not be removed.

@@ -10,7 +10,7 @@ Next.js App Router
   -> explicit template registry
 ```
 
-Frontend does not call the backend. Seed runs only when storage is empty and never overwrites browser changes. A development-only reset restores fixtures. UI components and templates do not access storage directly.
+Frontend does not call the backend. Seed initializes only missing versioned keys and never overwrites valid browser changes; explicit metadata controls migration and recovery. A development-only reset restores fixtures. UI components and templates do not access storage directly.
 
 ## Routes and Access
 
@@ -26,7 +26,9 @@ Drafts appear only in owner preview. Public pages have no edit controls. Prototy
 
 ## Domain and Repository Boundary
 
-TASK-FE-001 will create Zod schemas and inferred TypeScript types in `apps/frontend/src/domain/` for `User`, `Session`, `Template`, and `Invitation`. Invitation contains neutral partners (`partnerOne`, `partnerTwo`), multiple ordered events, flexible content, gallery references, and settings—never modal/loading/form UI state.
+Zod schemas in `apps/frontend/src/domain/` produce the TypeScript types for `User`, `Session`, `Template`, and `Invitation`. `FrontendContractSchema` validates their cross-references and uniqueness as one executable contract. Invitation contains neutral partners (`partnerOne`, `partnerTwo`), multiple ordered events, flexible content, gallery references, and settings—never modal/loading/form UI state.
+
+Event order is explicit and contiguous from zero. The editor may add, reorder, and remove events but must keep at least one; event time ranges and cross-fixture owner/template references are runtime-validated.
 
 Repositories: `MockUserRepository`, `MockSessionRepository`, `MockInvitationRepository`, and `MockTemplateRepository`. Later they are replaced behind the same boundary:
 
@@ -40,7 +42,7 @@ Frontend nested data guides API mapping but must not be copied mechanically into
 
 Templates live under `apps/frontend/src/templates/themes/<theme>/` with their own component, manifest, CSS module, components, assets, and optional build-time scripts. Shared code stays under `templates/shared/`; `registry.ts` explicitly maps `templateKey@templateVersion` such as `elegant-gold@1` and `minimal-white@1` to modules.
 
-Every template receives `InvitationTemplateProps`. It never reads repositories/storage, calls a backend, or defines a competing invitation shape. Theme JavaScript is bundled by Next.js; runtime folder auto-loading, `eval`, remote scripts, and arbitrary uploaded code are forbidden.
+Every template receives `InvitationTemplateProps`. Dummy catalogue entries and registered manifests must match. Templates never read repositories/storage, call a backend, or define a competing invitation shape. Theme JavaScript is bundled by Next.js; runtime folder auto-loading, `eval`, remote scripts, and arbitrary uploaded code are forbidden.
 
 ## Preserved and Future Backend
 

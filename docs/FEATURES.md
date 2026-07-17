@@ -10,15 +10,15 @@ Admin lists, creates, activates, and deactivates dummy stored accounts with role
 
 ## Active: Owner Invitation Management
 
-Admin or user lists and manages only invitations where `ownerId` matches the session account. The editor supports title, neutral partner data, multiple events, location, flexible text content, template reference, slug, and draft/published/inactive status. Slugs are unique in the mock repository.
+Admin or user lists and manages only invitations where `ownerId` matches the session account. The editor supports title, neutral partner data, multiple ordered events, location, flexible text content, optional gift information, template reference, slug, and draft/published/inactive status. Owners may add, reorder, and remove events while keeping at least one. Event IDs/order and slugs are unique; each event ends after it starts.
 
 ## Active: Template Selection and Editor
 
-The catalogue starts with `elegant-gold@1` and `minimal-white@1`. Changing a template keeps domain data. Editor/UI state is separate from invitation data; components use repository interfaces, while templates receive only validated `InvitationTemplateProps`.
+The catalogue starts with `elegant-gold@1` and `minimal-white@1`. Catalogue entries must match explicit registry manifests. Changing a template keeps domain data. Editor/UI state is separate from invitation data; components use repository interfaces, while templates receive only validated `InvitationTemplateProps`.
 
 ## Active: Preview and Publication
 
-Owner preview renders the latest edited data through the selected registry entry. Publishing exposes `/{slug}`; unpublishing/inactivation removes public visibility. Draft preview does not make a draft public.
+Owner preview renders the latest edited data through the selected registry entry. Publishing requires a schema-valid invitation and active template, then exposes `/{slug}`; unpublishing/inactivation removes public visibility. Draft preview does not make a draft public. Additional editorial completeness rules and visibility after owner deactivation remain TBD.
 
 ## Active: Public Guest View
 

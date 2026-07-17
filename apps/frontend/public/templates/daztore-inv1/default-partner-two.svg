@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-labelledby="title">
+  <title id="title">Placeholder foto partner two</title>
+  <rect width="600" height="600" fill="#c9c5bd"/>
+  <circle cx="300" cy="235" r="112" fill="#77736d"/>
+  <path d="M108 600c16-178 92-264 192-264s176 86 192 264" fill="#77736d"/>
+  <path d="M80 106Q300-8 520 106" fill="none" stroke="#f5f2ec" stroke-width="14" opacity=".72"/>
+  <path d="M116 128Q300 38 484 128" fill="none" stroke="#f5f2ec" stroke-width="5" opacity=".72"/>
+</svg>

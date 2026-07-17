@@ -11,16 +11,17 @@
 ## Frontend-First Sequence
 
 1. **TASK-FE-001:** standalone mock vertical slice.
-2. Review frontend flow, schemas, fixtures, ownership, and template extension model.
-3. Define normalized backend persistence and mapping from approved frontend shape.
-4. Replace mock repositories with API repositories; integrate preserved authentication.
-5. Add deferred production features only through new approved tasks.
+2. **TASK-FE-002:** finalize frontend flow, schemas, fixtures, ownership, and template extension model.
+3. **TASK-FE-003:** port the approved `daztore_inv1` visual experience as a local typed theme.
+4. Define normalized backend persistence and mapping from approved frontend shape.
+5. Replace mock repositories with API repositories; integrate preserved authentication.
+6. Add deferred production features only through new approved tasks.
 
 ## TASK-FE-001 — Frontend Foundation and Mock Vertical Slice
 
 **Status:** Completed
 
-**Result:** Standalone Next.js 16 mock vertical slice implemented and verified with schema-valid fixtures, owner-scoped services, two registered themes, 20 automated tests, production build, and viewport checks from 360 px through 1440 px.
+**Result:** Reopened login blocker fixed and re-verified. Strict Mode initialization now completes predictably; explicit storage/schema metadata, legacy migration, invalid-data recovery, runtime-null reset, persisted sessions, and user/admin redirects pass 32 automated tests plus Chromium desktop, 360 px, 390 px, and LAN verification.
 
 **Dependency:** TASK-001 and accepted frontend-first decisions
 
@@ -109,3 +110,64 @@ Backend auth integration, APIs, PostgreSQL invitation schema, production SSR, me
 ### Required Completion Report
 
 Report frontend structure, schemas, fixtures, repository adapters, routes/access, themes, tested flow, lint/typecheck/test/build results, localStorage limitations, and remaining TBD rules.
+
+## TASK-FE-002 — Frontend Domain dan Flow Finalization
+
+**Status:** Completed
+
+**Result:** Unified frontend contract, schema version 2 recovery, multi-event editor, catalogue/registry parity, story/gift rendering, ownership/publication safeguards, 42 automated tests, production build, and Chromium 360/390 px flow checks verified.
+
+**Dependency:** TASK-FE-001
+
+**Backend dependency:** None
+
+### Goal
+
+Approve an executable frontend contract and owner/public flow before backend invitation persistence is designed.
+
+### Scope
+
+- Validate users, templates, and invitations as one cross-referenced contract.
+- Require unique user IDs/emails, template key/version pairs, invitation IDs/slugs, valid owners, and available template references.
+- Require at least one event, unique event IDs/order, contiguous order from zero, and end time after start time.
+- Let owners add, edit, reorder, and remove multiple events while preserving at least one event.
+- Keep story and optional gift information in the shared invitation shape and render them through both templates.
+- Keep the dummy template catalogue identical to explicit registry manifests.
+- Preserve owner isolation, published-only guest access, and browser-local persistence.
+- Bump browser `schemaVersion` for controlled recovery from the earlier contract.
+
+### Acceptance Criteria
+
+- Runtime schemas reject broken cross-fixture references, duplicates, invalid event order, and invalid event time ranges.
+- Dummy fixtures pass the unified frontend contract and cover draft/published, multiple events, story, and optional gift display.
+- The editor manages multiple ordered events at 360 px without placing UI-only state in domain data.
+- Both registered templates render the same invitation contract, including enabled gift information.
+- Owner, publication, duplicate-slug, inactive-template, and foreign-owner rules pass automated tests.
+- `npm run lint`, `npm run typecheck`, `npm run test`, and `npm run build` succeed.
+- Editor, preview, and public invitation pass Chromium checks at 360 px and 390 px without horizontal overflow.
+
+### Out of Scope / TBD
+
+Backend/API/database design, Go auth integration, media upload, RSVP, guestbook, admin cross-user editing, and the public visibility policy when an owner account is later deactivated. Publication requires the finalized runtime schema and an active template; additional editorial completeness rules remain TBD.
+
+## TASK-FE-003 — Daztore Invitation 1 Theme
+
+**Status:** Completed
+
+**Result:** `daztore-inv1@1` is registered and catalogue-identical, renders the shared invitation contract through editor/preview/public flows, and passes 56 automated tests, production gates, and Chromium checks at 360×800, 390×844, 430×932, 768×1024, and 1440×900. No backend or archived OpenAPI source changed.
+
+**Dependency:** TASK-FE-002
+
+**Backend dependency:** None; backend integration must not start.
+
+### Goal
+
+Port the visual identity and guest experience of `daztore/daztore_inv1` into `daztore-inv1@1` as typed React components, scoped CSS, local assets, and the existing `InvitationTemplateProps` contract.
+
+### Acceptance Summary
+
+- Register a catalogue-identical `daztore-inv1@1` manifest with local thumbnail and assets.
+- Render safe recipient presentation, interactive cover, user-triggered audio, timezone-aware countdown/calendar, all ordered events, conditional story/gallery/gift, closing, reveal animation, and adaptive bottom navigation.
+- Preserve mobile-first layout, 44 px touch targets, safe areas, reduced motion, cleanup, owner/public flow, and generic editor selection.
+- Copy no personal source data, original account/map/calendar values, Google Apps Script, CDN runtime, source deployment/management tooling, or backend code.
+- Pass lint, typecheck, tests, build, diff hygiene, Chromium viewport checks, and healthy archive-free Chroma reindex before completion.

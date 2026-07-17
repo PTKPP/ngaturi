@@ -37,9 +37,9 @@
       { "id": "evt_admin_akad", "type": "ceremony", "title": "Akad Nikah", "date": "2026-11-21", "startTime": "09:00", "endTime": "10:00", "timezone": "Asia/Jakarta", "venueName": "Pendopo Ilustrasi", "address": "Jalan Ilustrasi No. 21, Yogyakarta", "mapUrl": "", "sortOrder": 0 },
       { "id": "evt_admin_resepsi", "type": "reception", "title": "Resepsi", "date": "2026-11-21", "startTime": "12:00", "endTime": "15:00", "timezone": "Asia/Jakarta", "venueName": "Pendopo Ilustrasi", "address": "Jalan Ilustrasi No. 21, Yogyakarta", "mapUrl": "", "sortOrder": 1 }
     ],
-    "content": { "openingText": "Kami mengundang Anda untuk merayakan hari bahagia kami.", "quote": "Bersama, pulang terasa dekat.", "story": "Sebuah cerita rekaan untuk data demonstrasi Ngaturi.", "closingText": "Sampai berjumpa di hari bahagia kami.", "giftInformation": "" },
+    "content": { "openingText": "Kami mengundang Anda untuk merayakan hari bahagia kami.", "quote": "Bersama, pulang terasa dekat.", "story": "Sebuah cerita rekaan untuk data demonstrasi Ngaturi.", "closingText": "Sampai berjumpa di hari bahagia kami.", "giftInformation": "Informasi hadiah demo akan disampaikan langsung oleh pemilik undangan." },
     "gallery": [],
-    "settings": { "showGiftInformation": false },
+    "settings": { "showGiftInformation": true },
     "createdAt": "2026-02-02T00:00:00.000Z",
     "updatedAt": "2026-02-02T00:00:00.000Z"
   }

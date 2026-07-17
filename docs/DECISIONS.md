@@ -38,7 +38,7 @@ Status: Accepted. Stored account roles are `admin` and `user`; guest has no user
 Status: Accepted. Each theme is self-contained and registered explicitly by key/version. No runtime auto-loader, `eval`, remote script, or arbitrary uploaded code.
 
 ### DEC-012: Client-Side Prototype Persistence
-Status: Accepted. Dummy JSON seeds `localStorage` once; reload preserves edits. Cross-device sharing and production SSR are deferred.
+Status: Accepted. Dummy JSON seeds `localStorage` once; reload preserves edits. Explicit storage/schema metadata governs recovery: valid pre-metadata v1 data migrates in place, legacy namespaces are controlled-reset, and incompatible or invalid data requires visible retry/reset UI. Cross-device sharing and production SSR are deferred.
 
 ### DEC-013: Preserve Backend Authentication, Defer Integration
 Status: Accepted. Completed Go authentication and migrations remain unchanged until a later frontend integration task.
@@ -55,3 +55,11 @@ merupakan progressive enhancement, bukan layout utama yang kemudian diperkecil.
 
 UI tidak boleh bergantung pada hover, tidak boleh memiliki horizontal overflow,
 dan kontrol utama harus mudah digunakan dengan sentuhan.
+
+### DEC-015: Unified Frontend Contract
+
+Status: Accepted. Users, templates, and invitations validate as one runtime contract before backend design. IDs, emails, slugs, template versions, owner/template references, and event order are checked across fixtures. Browser schema version 2 marks this finalized contract; older explicit schema metadata requires controlled reset.
+
+### DEC-016: Template Source Ports Are Local Typed Rewrites
+
+Status: Accepted. A referenced static theme is audited at a recorded commit, then rewritten as typed React modules and scoped CSS against `InvitationTemplateProps`. Runtime CDN scripts, imperative DOM injection, source personal data, and GitHub hotlinks are prohibited; approved assets are local and source provenance is recorded inside the theme.
