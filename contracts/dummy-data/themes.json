@@ -1,0 +1,32 @@
+[
+  {
+    "key": "minimal-white-default", "version": 1, "templateKey": "minimal-white", "templateVersion": 1,
+    "name": "Putih Minimal", "description": "Tampilan asli Minimal White.", "status": "active", "isDefault": true,
+    "tokens": { "background": "#f8faf7", "surface": "#ffffff", "text": "#16201d", "mutedText": "#64706b", "primary": "#16201d", "accent": "#7e9d8e", "border": "#cbd7d0" }
+  },
+  {
+    "key": "minimal-white-sage", "version": 1, "templateKey": "minimal-white", "templateVersion": 1,
+    "name": "Sage Lembut", "description": "Palet sage lembut dengan struktur yang sama.", "status": "active", "isDefault": false,
+    "tokens": { "background": "#eef3ec", "surface": "#fbfdf9", "text": "#23352c", "mutedText": "#607068", "primary": "#355f49", "accent": "#88a994", "border": "#b9cbbf" }
+  },
+  {
+    "key": "elegant-gold-default", "version": 1, "templateKey": "elegant-gold", "templateVersion": 1,
+    "name": "Emas Klasik", "description": "Tampilan asli Elegant Gold.", "status": "active", "isDefault": true,
+    "tokens": { "background": "#1c1712", "surface": "#241e18", "text": "#f7ecd5", "mutedText": "#d9c9aa", "primary": "#d3ad61", "accent": "#a98847", "border": "#7c653c" }
+  },
+  {
+    "key": "elegant-gold-rose", "version": 1, "templateKey": "elegant-gold", "templateVersion": 1,
+    "name": "Rose Malam", "description": "Palet rose gelap tanpa perubahan struktur.", "status": "active", "isDefault": false,
+    "tokens": { "background": "#24171c", "surface": "#301f25", "text": "#fae9ee", "mutedText": "#d7bfc7", "primary": "#dfa4b5", "accent": "#b87589", "border": "#805363" }
+  },
+  {
+    "key": "daztore-inv1-default", "version": 1, "templateKey": "daztore-inv1", "templateVersion": 1,
+    "name": "Monokrom Klasik", "description": "Tampilan asli Daztore Invitation 1.", "status": "active", "isDefault": true,
+    "tokens": { "background": "#f5f2ec", "surface": "#fffdf9", "text": "#242526", "mutedText": "#706d68", "primary": "#2f3133", "accent": "#a9a39a", "border": "#d8d3ca" }
+  },
+  {
+    "key": "daztore-inv1-blue", "version": 1, "templateKey": "daztore-inv1", "templateVersion": 1,
+    "name": "Biru Teduh", "description": "Palet biru teduh dengan interaksi Daztore yang sama.", "status": "active", "isDefault": false,
+    "tokens": { "background": "#edf2f5", "surface": "#fbfdff", "text": "#24313a", "mutedText": "#63727d", "primary": "#304b5c", "accent": "#8ca9ba", "border": "#c5d2d9" }
+  }
+]

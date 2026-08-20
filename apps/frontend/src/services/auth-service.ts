@@ -16,7 +16,13 @@ export class AuthService {
   }
 
   logout(): void { this.sessions.clear(); }
-  current(): Session | null { return this.sessions.get(); }
+  current(): Session | null {
+    const session = this.sessions.get();
+    if (!session) return null;
+    const user = this.users.findById(session.userId);
+    if (!user || user.status !== "active" || user.role !== session.role) { this.sessions.clear(); return null; }
+    return session;
+  }
 }
 
 export function canAccessPath(session: Session | null, path: string): boolean {

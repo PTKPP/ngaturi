@@ -62,4 +62,8 @@ Status: Accepted. Users, templates, and invitations validate as one runtime cont
 
 ### DEC-016: Template Source Ports Are Local Typed Rewrites
 
-Status: Accepted. A referenced static theme is audited at a recorded commit, then rewritten as typed React modules and scoped CSS against `InvitationTemplateProps`. Runtime CDN scripts, imperative DOM injection, source personal data, and GitHub hotlinks are prohibited; approved assets are local and source provenance is recorded inside the theme.
+Status: Accepted. A referenced static invitation design is audited at a recorded commit, then rewritten as a structural template with typed React modules and scoped CSS against `InvitationTemplateProps`. Runtime CDN scripts, imperative DOM injection, source personal data, and GitHub hotlinks are prohibited; approved assets are local and source provenance is recorded inside the template.
+
+### DEC-017: Route Allocation Is Separate From Invitation, Template, and Theme
+
+Status: Accepted. A globally unique immutable public slug belongs to an owner-scoped `InvitationRoute` and consumes that user's non-negative route quota even while unused. An invitation references one route plus one structural template and one compatible visual theme. Users may claim within capacity but cannot reassign slugs; admin reassignment requires explicit confirmation and changes no invitation data. Browser schema version 3 introduces routes and themes through controlled schema-v2 migration. Public lookup resolves route to published invitation. Production sharing, backend persistence, redirects, and the inactive-owner visibility policy remain deferred or TBD.

@@ -16,12 +16,13 @@ import { QuoteSection } from "./components/QuoteSection";
 import { StorySection } from "./components/StorySection";
 import { WelcomeCover } from "./components/WelcomeCover";
 import styles from "./styles.module.css";
+import { themeCssVariables } from "@/templates/theme-registry";
 
 const bodyFont = Josefin_Sans({ subsets: ["latin"], variable: "--daztore-font-body", display: "swap" });
 const scriptFont = Sacramento({ weight: "400", subsets: ["latin"], variable: "--daztore-font-script", display: "swap" });
 const arabicFont = Noto_Naskh_Arabic({ subsets: ["arabic"], variable: "--daztore-font-arabic", display: "swap" });
 
-export function DaztoreInv1Template({ invitation, preview = false }: InvitationTemplateProps) {
+export function DaztoreInv1Template({ invitation, theme, preview = false }: InvitationTemplateProps) {
   const [opened, setOpened] = useState(false);
   const audioControlRef = useRef<AudioControlHandle>(null);
   const events = [...invitation.events].sort((left, right) => left.sortOrder - right.sortOrder);
@@ -36,7 +37,7 @@ export function DaztoreInv1Template({ invitation, preview = false }: InvitationT
     if (!preview) void audioControlRef.current?.play();
   };
 
-  return <div className={`${styles.root} ${bodyFont.variable} ${scriptFont.variable} ${arabicFont.variable}`} data-template="daztore-inv1@1" data-opened={opened ? "true" : "false"}>
+  return <div className={`${styles.root} ${bodyFont.variable} ${scriptFont.variable} ${arabicFont.variable}`} data-template="daztore-inv1@1" data-theme={`${theme.key}@${theme.version}`} data-opened={opened ? "true" : "false"} style={themeCssVariables(theme)}>
     <Suspense fallback={<div className={styles.coverFallback}>Menyiapkan undangan…</div>}><WelcomeCover invitation={invitation} open={!opened} onOpen={openInvitation} /></Suspense>
     <main>
       <HeroSection invitation={invitation} event={mainEvent} />

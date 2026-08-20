@@ -1,0 +1,26 @@
+[
+  {
+    "id": "route_owner_draft",
+    "ownerId": "usr_owner_demo",
+    "slug": "raka-dan-sinta-draft",
+    "assignedBy": "admin",
+    "createdAt": "2026-02-01T00:00:00.000Z",
+    "updatedAt": "2026-02-01T00:00:00.000Z"
+  },
+  {
+    "id": "route_owner_available",
+    "ownerId": "usr_owner_demo",
+    "slug": "route-raka-tersedia",
+    "assignedBy": "admin",
+    "createdAt": "2026-02-03T00:00:00.000Z",
+    "updatedAt": "2026-02-03T00:00:00.000Z"
+  },
+  {
+    "id": "route_admin_published",
+    "ownerId": "usr_admin_demo",
+    "slug": "dara-dan-bima",
+    "assignedBy": "admin",
+    "createdAt": "2026-02-02T00:00:00.000Z",
+    "updatedAt": "2026-02-02T00:00:00.000Z"
+  }
+]

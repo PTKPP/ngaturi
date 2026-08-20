@@ -12,7 +12,7 @@
 
 1. **TASK-FE-001:** standalone mock vertical slice.
 2. **TASK-FE-002:** finalize frontend flow, schemas, fixtures, ownership, and template extension model.
-3. **TASK-FE-003:** port the approved `daztore_inv1` visual experience as a local typed theme.
+3. **TASK-FE-003:** port the approved `daztore_inv1` visual experience as a local typed template renderer.
 4. Define normalized backend persistence and mapping from approved frontend shape.
 5. Replace mock repositories with API repositories; integrate preserved authentication.
 6. Add deferred production features only through new approved tasks.
@@ -150,7 +150,7 @@ Approve an executable frontend contract and owner/public flow before backend inv
 
 Backend/API/database design, Go auth integration, media upload, RSVP, guestbook, admin cross-user editing, and the public visibility policy when an owner account is later deactivated. Publication requires the finalized runtime schema and an active template; additional editorial completeness rules remain TBD.
 
-## TASK-FE-003 — Daztore Invitation 1 Theme
+## TASK-FE-003 — Daztore Invitation 1 Template
 
 **Status:** Completed
 
@@ -171,3 +171,25 @@ Port the visual identity and guest experience of `daztore/daztore_inv1` into `da
 - Preserve mobile-first layout, 44 px touch targets, safe areas, reduced motion, cleanup, owner/public flow, and generic editor selection.
 - Copy no personal source data, original account/map/calendar values, Google Apps Script, CDN runtime, source deployment/management tooling, or backend code.
 - Pass lint, typecheck, tests, build, diff hygiene, Chromium viewport checks, and healthy archive-free Chroma reindex before completion.
+
+## TASK-FE-004 — Route Allocation, Quota, and Template-Theme Separation
+
+**Status:** Implemented; validation evidence recorded in completion report.
+
+**Dependency:** TASK-FE-003
+
+**Backend dependency:** None; frontend-only mock repositories remain active.
+
+### Scope
+
+- Separate globally unique owner routes from invitation content and migrate browser schema 2 to 3 without discarding valid edits.
+- Add admin-managed route quota, preassignment, confirmed reassignment, and service-layer authorization.
+- Support user selection of unused preassigned routes or atomic claiming within quota; keep routes immutable in owner UI.
+- Treat the three current implementations as structural templates and add compatible typed visual themes with default selection rules.
+- Resolve public slugs through route to published invitation and retain one-browser prototype warnings.
+
+### Acceptance
+
+- Unified schemas validate route ownership/quota, route/invitation uniqueness, and active compatible template-theme selection in services.
+- Admin, owner, guest, preview, migration, session invalidation, and mobile-first flows pass automated and viewport validation.
+- No Go backend, migration, API integration, or archived OpenAPI source changes.

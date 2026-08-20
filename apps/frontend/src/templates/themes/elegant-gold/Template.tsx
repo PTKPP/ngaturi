@@ -1,11 +1,12 @@
 import { EventDetails } from "@/templates/shared/components/EventDetails";
 import type { InvitationTemplateProps } from "@/templates/types";
 import styles from "./styles.module.css";
+import { themeCssVariables } from "@/templates/theme-registry";
 
-export function ElegantGoldTemplate({ invitation, preview = false }: InvitationTemplateProps) {
+export function ElegantGoldTemplate({ invitation, theme, preview = false }: InvitationTemplateProps) {
   const { couple, content } = invitation;
   return (
-    <main className={styles.page} data-template="elegant-gold@1">
+    <main className={styles.page} data-template="elegant-gold@1" data-theme={`${theme.key}@${theme.version}`} style={themeCssVariables(theme)}>
       {preview ? <p className={styles.preview}>Mode preview</p> : null}
       <header className={styles.hero}>
         <p className={styles.eyebrow}>The wedding of</p>

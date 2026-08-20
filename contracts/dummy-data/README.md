@@ -1,22 +1,34 @@
 # Frontend Dummy Data Contract
 
-`users.json`, `templates.json`, and `invitations.json` are the source seed finalized by TASK-FE-002. They seed the frontend, document the agreed shape, serve as test fixtures, and guide—but do not dictate—the future backend mapping.
+`users.json`, `routes.json`, `templates.json`, `themes.json`, and `invitations.json` are the source seed for TASK-FE-004. Values are synthetic prototype data, including route quotas; they do not define commercial packages.
 
-Fixtures must use stable synthetic IDs, contain admin and user accounts, the registered templates (`elegant-gold@1`, `minimal-white@1`, and `daztore-inv1@1`), and at least two invitations including draft/published states and multiple events. They must contain no passwords, secrets, or real personal data and must validate against Zod schemas in `apps/frontend/src/domain/`.
+The unified schema-v3 contract requires:
 
-The unified contract requires unique user IDs/emails, template key/version pairs, invitation IDs/slugs, existing owners, existing template references, and valid contiguous event order. Template catalogue entries must match their registered manifests.
+- unique user IDs and emails with non-negative integer `routeQuota`;
+- unique route IDs and globally unique normalized slugs, valid owners, and allocated counts within owner quota;
+- unique invitation IDs and `routeId` values, existing routes, and matching invitation/route owners;
+- the three registered structural templates: `minimal-white@1`, `elegant-gold@1`, and `daztore-inv1@1`;
+- exactly one active default theme and at least one alternate theme for each template;
+- existing active template/theme references with compatible versions when invitations are created, updated, or published;
+- valid contiguous event order and time ranges.
 
-Theme thumbnails and runtime media use local `/templates/{key}/...` paths. The catalogue never stores GitHub hotlinks or source-repository personal assets.
+Invitation data owns content and references `routeId`, `templateKey`, `templateVersion`, `themeKey`, and `themeVersion`. It does not duplicate the public slug. UI state is not domain data.
 
-Development-only passwords live separately in `apps/frontend/src/repositories/mock/fixtures/credentials.json`. They are local prototype credentials, not part of the cross-feature `User` domain contract and never model production password security.
+Template catalogue entries and build-time manifests must match. Theme catalogue entries are parsed into the build-time typed theme registry. Theme tokens are safe six-digit hex colors; arbitrary CSS, remote scripts, `eval`, and uploaded code are forbidden.
+
+Development-only passwords remain in `apps/frontend/src/repositories/mock/fixtures/credentials.json`. They are not part of the `User` contract and are not a production security model.
 
 Mock repositories own browser persistence:
 
 - `ngaturi:mock:v1:users`
 - `ngaturi:mock:v1:credentials`
 - `ngaturi:mock:v1:session`
+- `ngaturi:mock:v1:routes`
 - `ngaturi:mock:v1:invitations`
 - `ngaturi:mock:v1:templates`
-- `ngaturi:mock:v1:metadata` (`storageVersion: 1`, `schemaVersion: 2`)
+- `ngaturi:mock:v1:themes`
+- `ngaturi:mock:v1:metadata` (`storageVersion: 1`, `schemaVersion: 3`)
 
-Seed only missing storage and preserve edits across reloads. Valid current-shape data created before metadata existed is migrated in place; legacy namespaces and older explicit schema metadata require controlled reset, while invalid JSON or incompatible metadata shows retry/reset recovery UI. Reset removes only `ngaturi:mock:*`. Components and themes never access `localStorage` directly. Prototype data remains on one browser/device.
+Valid schema-v2 storage migrates deterministically: each legacy invitation slug becomes a migration-assigned route, the invitation receives `routeId` and the template's default active theme, route quota is raised to at least migrated usage, the full contract is validated, and metadata is written last. Migration is idempotent. Invalid or incompatible data keeps visible retry/reset recovery. Reset removes only `ngaturi:mock:*` and preserves other application data on the origin.
+
+Components and templates never access `localStorage` directly. Data and public routes remain limited to one browser/device; production persistence and SSR are deferred.

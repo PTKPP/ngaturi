@@ -5,6 +5,7 @@
     "email": "admin@demo.local",
     "role": "admin",
     "status": "active",
+    "routeQuota": 2,
     "createdAt": "2026-01-01T00:00:00.000Z",
     "updatedAt": "2026-01-01T00:00:00.000Z"
   },
@@ -14,6 +15,7 @@
     "email": "user@demo.local",
     "role": "user",
     "status": "active",
+    "routeQuota": 3,
     "createdAt": "2026-01-02T00:00:00.000Z",
     "updatedAt": "2026-01-02T00:00:00.000Z"
   },
@@ -23,6 +25,7 @@
     "email": "inactive@demo.local",
     "role": "user",
     "status": "inactive",
+    "routeQuota": 0,
     "createdAt": "2026-01-03T00:00:00.000Z",
     "updatedAt": "2026-01-03T00:00:00.000Z"
   }

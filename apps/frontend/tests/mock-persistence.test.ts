@@ -15,7 +15,7 @@ describe("mock persistence", () => {
     expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.metadata) ?? "{}")).toMatchObject({ storageVersion: STORAGE_VERSION, schemaVersion: SCHEMA_VERSION });
   });
 
-  it("migrates valid version-one storage without metadata in place", () => {
+  it("keeps valid current storage without metadata in place", () => {
     seedDemoData(localStorage);
     const users = JSON.parse(localStorage.getItem(STORAGE_KEYS.users) ?? "[]");
     users[0].name = "Perubahan Lama";
@@ -26,10 +26,35 @@ describe("mock persistence", () => {
     expect(localStorage.getItem(STORAGE_KEYS.metadata)).not.toBeNull();
   });
 
-  it("requires controlled reset for the previous schema metadata", () => {
+  it("migrates valid schema-v2 browser data and preserves slugs, content, ownership, and status", () => {
+    seedDemoData(localStorage);
+    const routes = JSON.parse(localStorage.getItem(STORAGE_KEYS.routes) ?? "[]");
+    const routeById = new Map(routes.map((route: { id: string; slug: string }) => [route.id, route.slug]));
+    const users = JSON.parse(localStorage.getItem(STORAGE_KEYS.users) ?? "[]").map((storedUser: Record<string, unknown>) => { const user = { ...storedUser }; delete user.routeQuota; return user; });
+    const invitations = JSON.parse(localStorage.getItem(STORAGE_KEYS.invitations) ?? "[]").map((storedInvitation: Record<string, unknown>) => {
+      const invitation = { ...storedInvitation }; const routeId = String(invitation.routeId);
+      delete invitation.routeId; delete invitation.themeKey; delete invitation.themeVersion;
+      return { ...invitation, slug: routeById.get(routeId) };
+    });
+    invitations[0].content.story = "Edit lama tetap ada";
+    localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
+    localStorage.setItem(STORAGE_KEYS.invitations, JSON.stringify(invitations));
+    localStorage.removeItem(STORAGE_KEYS.routes); localStorage.removeItem(STORAGE_KEYS.themes);
+    const metadata = JSON.parse(localStorage.getItem(STORAGE_KEYS.metadata) ?? "{}");
+    localStorage.setItem(STORAGE_KEYS.metadata, JSON.stringify({ ...metadata, schemaVersion: 2 }));
+    const runtime = createDemoRuntime(localStorage);
+    const migrated = runtime.invitations.findById("inv_owner_draft")!;
+    expect(runtime.routes.findById(migrated.routeId)).toMatchObject({ slug: "raka-dan-sinta-draft", ownerId: migrated.ownerId, assignedBy: "migration" });
+    expect(migrated).toMatchObject({ content: { story: "Edit lama tetap ada" }, status: "draft", themeKey: "minimal-white-default" });
+    expect(runtime.users.findById(migrated.ownerId)!.routeQuota).toBeGreaterThanOrEqual(1);
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.metadata) ?? "{}").schemaVersion).toBe(SCHEMA_VERSION);
+    expect(() => createDemoRuntime(localStorage)).not.toThrow();
+  });
+
+  it("requires controlled reset for incompatible explicit schema metadata", () => {
     seedDemoData(localStorage);
     const metadata = JSON.parse(localStorage.getItem(STORAGE_KEYS.metadata) ?? "{}");
-    localStorage.setItem(STORAGE_KEYS.metadata, JSON.stringify({ ...metadata, schemaVersion: SCHEMA_VERSION - 1 }));
+    localStorage.setItem(STORAGE_KEYS.metadata, JSON.stringify({ ...metadata, schemaVersion: 1 }));
     expect(() => createDemoRuntime(localStorage)).toThrow("Versi data demo tidak kompatibel");
   });
 

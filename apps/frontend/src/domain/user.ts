@@ -9,6 +9,7 @@ export const UserSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   role: UserRoleSchema,
   status: UserStatusSchema,
+  routeQuota: z.number().int().nonnegative(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

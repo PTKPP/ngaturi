@@ -56,10 +56,12 @@ export const InvitationStatusSchema = z.enum(["draft", "published", "inactive"])
 export const InvitationSchema = z.object({
   id: z.string().min(1),
   ownerId: z.string().min(1),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  routeId: z.string().min(1),
   title: z.string().trim().min(1),
   templateKey: z.string().trim().min(1),
   templateVersion: z.number().int().positive(),
+  themeKey: z.string().trim().min(1),
+  themeVersion: z.number().int().positive(),
   status: InvitationStatusSchema,
   couple: z.object({ partnerOne: PartnerSchema, partnerTwo: PartnerSchema }),
   events: InvitationEventsSchema,

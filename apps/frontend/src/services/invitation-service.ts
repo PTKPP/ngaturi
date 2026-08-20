@@ -1,67 +1,127 @@
-import { InvitationSchema, type Invitation, type Session } from "@/domain";
-import type { InvitationRepository, TemplateRepository } from "@/repositories/contracts";
-import { assertAllowedSlug, normalizeSlug, RESERVED_SLUGS } from "./slug";
+import {
+  FrontendContractSchema, InvitationRouteSchema, InvitationSchema,
+  type Invitation, type InvitationRoute, type InvitationTheme, type Session,
+} from "@/domain";
+import type {
+  InvitationRepository, RouteRepository, TemplateRepository, ThemeRepository, UserRepository,
+} from "@/repositories/contracts";
+import { assertValidSession } from "./authorization";
+import { createPrototypeId } from "./id";
+import { validateRouteSlug } from "./route-service";
 
-export type InvitationDraftInput = Pick<Invitation, "title" | "slug" | "templateKey" | "templateVersion">;
+export type InvitationRouteInput = { mode: "existing"; routeId: string } | { mode: "new"; slug: string };
+export interface InvitationDraftInput {
+  title: string;
+  route: InvitationRouteInput;
+  templateKey: string;
+  templateVersion: number;
+  themeKey: string;
+  themeVersion: number;
+}
 
 export class InvitationService {
-  constructor(private readonly invitations: InvitationRepository, private readonly templates: TemplateRepository) {}
+  constructor(
+    private readonly invitations: InvitationRepository,
+    private readonly routes: RouteRepository,
+    private readonly templates: TemplateRepository,
+    private readonly themes: ThemeRepository,
+    private readonly users: UserRepository,
+  ) {}
 
-  listOwned(session: Session): Invitation[] { return this.invitations.list().filter((item) => item.ownerId === session.userId); }
+  listOwned(session: Session): Invitation[] {
+    assertValidSession(session, this.users);
+    return this.invitations.list().filter((item) => item.ownerId === session.userId);
+  }
   getOwned(session: Session, id: string): Invitation {
+    assertValidSession(session, this.users);
     const invitation = this.invitations.findById(id);
     if (!invitation || invitation.ownerId !== session.userId) throw new Error("Undangan tidak ditemukan atau bukan milik Anda.");
     return invitation;
   }
   findPublished(slug: string): Invitation | null {
-    const invitation = this.invitations.findBySlug(slug);
+    const route = this.routes.findBySlug(slug);
+    if (!route) return null;
+    const invitation = this.invitations.findByRouteId(route.id);
     return invitation?.status === "published" ? invitation : null;
   }
   create(session: Session, input: InvitationDraftInput): Invitation {
-    const slug = this.validateSlug(input.slug);
-    this.assertUniqueSlug(slug);
-    this.assertActiveTemplate(input.templateKey, input.templateVersion);
+    const actor = assertValidSession(session, this.users);
+    const theme = this.assertActiveSelection(input.templateKey, input.templateVersion, input.themeKey, input.themeVersion);
+    const route = input.route.mode === "existing"
+      ? this.validateExistingRoute(actor.id, input.route.routeId)
+      : this.buildClaimedRoute(actor.id, actor.routeQuota, input.route.slug);
     const now = new Date().toISOString();
-    const id = `inv_${session.userId}_${Date.now()}`;
-    return this.invitations.create(InvitationSchema.parse({
-      id, ownerId: session.userId, slug, title: input.title.trim(), templateKey: input.templateKey,
-      templateVersion: input.templateVersion, status: "draft",
+    const id = createPrototypeId("inv");
+    const invitation = InvitationSchema.parse({
+      id, ownerId: actor.id, routeId: route.id, title: input.title.trim(),
+      templateKey: input.templateKey, templateVersion: input.templateVersion,
+      themeKey: theme.key, themeVersion: theme.version, status: "draft",
       couple: {
         partnerOne: { fullName: "Partner Satu", nickname: "Satu", parentNames: [], photo: "" },
         partnerTwo: { fullName: "Partner Dua", nickname: "Dua", parentNames: [], photo: "" },
       },
-      events: [{ id: `${id}_event_1`, type: "reception", title: "Acara", date: "2026-12-01", startTime: "10:00", endTime: "12:00", timezone: "Asia/Jakarta", venueName: "Lokasi Acara", address: "Alamat acara", mapUrl: "", sortOrder: 0 }],
+      events: [{ id: createPrototypeId("evt"), type: "reception", title: "Acara", date: "2026-12-01", startTime: "10:00", endTime: "12:00", timezone: "Asia/Jakarta", venueName: "Lokasi Acara", address: "Alamat acara", mapUrl: "", sortOrder: 0 }],
       content: { openingText: "Dengan bahagia kami mengundang Anda.", quote: "", story: "", closingText: "Terima kasih atas doa dan kehadiran Anda.", giftInformation: "" },
       gallery: [], settings: { showGiftInformation: false }, createdAt: now, updatedAt: now,
-    }));
+    });
+    const isNewRoute = input.route.mode === "new";
+    this.assertProspective(route, invitation, isNewRoute);
+    if (!isNewRoute) return this.invitations.create(invitation);
+    this.routes.create(route);
+    try { return this.invitations.create(invitation); }
+    catch (cause) { this.routes.delete(route.id); throw cause; }
   }
   update(session: Session, next: Invitation): Invitation {
     const current = this.getOwned(session, next.id);
     if (next.ownerId !== current.ownerId) throw new Error("Pemilik undangan tidak boleh diubah.");
-    const slug = this.validateSlug(next.slug);
-    this.assertUniqueSlug(slug, next.id);
-    this.assertActiveTemplate(next.templateKey, next.templateVersion);
-    return this.invitations.update(InvitationSchema.parse({ ...next, slug, updatedAt: new Date().toISOString() }));
+    if (next.routeId !== current.routeId) throw new Error("Route publik tidak dapat diubah oleh user.");
+    const templateChanged = next.templateKey !== current.templateKey || next.templateVersion !== current.templateVersion;
+    const theme = templateChanged
+      ? this.getDefaultActiveTheme(next.templateKey, next.templateVersion)
+      : this.assertActiveSelection(next.templateKey, next.templateVersion, next.themeKey, next.themeVersion);
+    const parsed = InvitationSchema.parse({ ...next, themeKey: theme.key, themeVersion: theme.version, updatedAt: new Date().toISOString() });
+    const route = this.routes.findById(parsed.routeId);
+    if (!route) throw new Error("Route undangan tidak tersedia.");
+    this.assertProspective(route, parsed, false, parsed.id);
+    return this.invitations.update(parsed);
   }
   publish(session: Session, id: string): Invitation { return this.setStatus(session, id, "published"); }
   unpublish(session: Session, id: string): Invitation { return this.setStatus(session, id, "inactive"); }
-  private setStatus(session: Session, id: string, status: Invitation["status"]): Invitation {
-    return this.update(session, { ...this.getOwned(session, id), status });
+  private setStatus(session: Session, id: string, status: Invitation["status"]): Invitation { return this.update(session, { ...this.getOwned(session, id), status }); }
+  private validateExistingRoute(ownerId: string, routeId: string): InvitationRoute {
+    const route = this.routes.findById(routeId);
+    if (!route || route.ownerId !== ownerId) throw new Error("Route terpilih tidak tersedia untuk akun ini.");
+    if (this.invitations.findByRouteId(routeId)) throw new Error("Route terpilih sudah digunakan undangan lain.");
+    return route;
   }
-  private validateSlug(value: string): string {
-    const raw = value.trim().toLowerCase();
-    if (raw.includes("&")) throw new Error("Slug tidak boleh menggunakan karakter &.");
-    if (RESERVED_SLUGS.has(raw)) throw new Error("Slug tersebut dicadangkan oleh aplikasi.");
-    const slug = normalizeSlug(raw);
-    assertAllowedSlug(slug);
-    return slug;
+  private buildClaimedRoute(ownerId: string, routeQuota: number, rawSlug: string): InvitationRoute {
+    const used = this.routes.list().filter((route) => route.ownerId === ownerId).length;
+    if (used >= routeQuota) throw new Error("Kuota route sudah penuh. Hubungi admin untuk tambahan akses route.");
+    const slug = validateRouteSlug(rawSlug);
+    if (this.routes.findBySlug(slug)) throw new Error("Slug route sudah digunakan.");
+    const now = new Date().toISOString();
+    return InvitationRouteSchema.parse({ id: createPrototypeId("route"), ownerId, slug, assignedBy: "user", createdAt: now, updatedAt: now });
   }
-  private assertUniqueSlug(slug: string, exceptId?: string): void {
-    const duplicate = this.invitations.findBySlug(slug);
-    if (duplicate && duplicate.id !== exceptId) throw new Error("Slug sudah digunakan undangan lain.");
-  }
-  private assertActiveTemplate(key: string, version: number): void {
-    const template = this.templates.find(key, version);
+  private assertActiveSelection(templateKey: string, templateVersion: number, themeKey: string, themeVersion: number): InvitationTheme {
+    const template = this.templates.find(templateKey, templateVersion);
     if (!template || template.status !== "active") throw new Error("Template tidak tersedia.");
+    const theme = this.themes.find(themeKey, themeVersion);
+    if (!theme || theme.status !== "active") throw new Error("Tema tidak tersedia.");
+    if (theme.templateKey !== templateKey || theme.templateVersion !== templateVersion) throw new Error("Tema tidak kompatibel dengan template terpilih.");
+    return theme;
+  }
+  private getDefaultActiveTheme(templateKey: string, templateVersion: number): InvitationTheme {
+    const template = this.templates.find(templateKey, templateVersion);
+    if (!template || template.status !== "active") throw new Error("Template tidak tersedia.");
+    const theme = this.themes.findDefault(templateKey, templateVersion);
+    if (!theme) throw new Error("Tema default aktif untuk template tidak tersedia.");
+    return theme;
+  }
+  private assertProspective(route: InvitationRoute, invitation: Invitation, addRoute: boolean, replaceInvitationId?: string): void {
+    const routes = addRoute ? [...this.routes.list(), route] : this.routes.list();
+    const invitations = replaceInvitationId
+      ? this.invitations.list().map((item) => item.id === replaceInvitationId ? invitation : item)
+      : [...this.invitations.list(), invitation];
+    FrontendContractSchema.parse({ users: this.users.list(), routes, templates: this.templates.list(), themes: this.themes.list(), invitations });
   }
 }

@@ -2,10 +2,12 @@
   {
     "id": "inv_owner_draft",
     "ownerId": "usr_owner_demo",
-    "slug": "raka-dan-sinta-draft",
+    "routeId": "route_owner_draft",
     "title": "Undangan Raka & Sinta",
     "templateKey": "minimal-white",
     "templateVersion": 1,
+    "themeKey": "minimal-white-default",
+    "themeVersion": 1,
     "status": "draft",
     "couple": {
       "partnerOne": { "fullName": "Raka Pradana", "nickname": "Raka", "parentNames": ["Bapak Demo", "Ibu Demo"], "photo": "" },
@@ -24,10 +26,12 @@
   {
     "id": "inv_admin_published",
     "ownerId": "usr_admin_demo",
-    "slug": "dara-dan-bima",
+    "routeId": "route_admin_published",
     "title": "Pernikahan Dara & Bima",
     "templateKey": "elegant-gold",
     "templateVersion": 1,
+    "themeKey": "elegant-gold-default",
+    "themeVersion": 1,
     "status": "published",
     "couple": {
       "partnerOne": { "fullName": "Dara Kirana", "nickname": "Dara", "parentNames": ["Keluarga Dara"], "photo": "" },

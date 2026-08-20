@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import invitations from "../../../contracts/dummy-data/invitations.json";
 import { InvitationSchema } from "@/domain";
 import { DaztoreInv1Template } from "@/templates/themes/daztore-inv1/Template";
+import { getRegisteredTheme } from "@/templates/theme-registry";
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
@@ -21,7 +22,7 @@ function fixture(overrides: Record<string, unknown> = {}) {
 }
 
 function renderTheme(overrides: Record<string, unknown> = {}, preview = false) {
-  return render(<DaztoreInv1Template invitation={fixture(overrides)} preview={preview} />);
+  return render(<DaztoreInv1Template invitation={fixture(overrides)} theme={getRegisteredTheme("daztore-inv1-default", 1)!} preview={preview} />);
 }
 
 describe("daztore-inv1 theme", () => {

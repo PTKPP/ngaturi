@@ -2,32 +2,36 @@
 
 ## Active: Mock Authentication
 
-Admin and user select a valid active demo account at `/login`; the mock session persists in versioned browser storage. Admin routes require role `admin`; dashboard routes accept `admin` or `user`. Guest has no account/session. Integration with completed Go authentication is deferred.
+Admin and user select a valid active demo account at `/login`; the mock session persists in versioned browser storage. Persisted sessions are cleared when the user is missing, inactive, or its stored role no longer matches the current user record. Admin routes require role `admin`; dashboard routes accept `admin` or `user`. Guest has no account/session. Integration with completed Go authentication is deferred.
 
-## Active: Admin User Management
+## Active: Admin User and Route Management
 
-Admin lists, creates, activates, and deactivates dummy stored accounts with role `admin` or `user`. Admin can also use owner invitation features and create its own invitations. Admin creating/editing invitations for another user is TBD and must not be implemented.
+Admin lists, creates, activates, and deactivates dummy accounts. User creation includes a non-negative prototype `routeQuota`. Admin sees allocated route usage as `used / quota`, may change quota without going below current allocation, preassign a globally unique route within capacity, and explicitly confirm route slug reassignment at `/admin/users/[id]/routes`.
+
+Route reassignment changes only the route slug. It does not edit invitation content, template, theme, ownership, or status; the prior slug becomes unavailable with no automatic redirect. Admin cross-user invitation content editing remains TBD. Admin may use normal owner features only for admin-owned invitations.
+
+## Active: Route Allocation and Quota
+
+An `InvitationRoute` owns one immutable public slug for exactly one user. A route consumes quota even while unused and may be connected to at most one invitation. Users cannot change assigned route slugs. They may create an invitation from an unused preassigned route or claim a new route while capacity remains; a route claim and invitation creation validates the complete intended contract and rolls back safely on persistence failure.
 
 ## Active: Owner Invitation Management
 
-Admin or user lists and manages only invitations where `ownerId` matches the session account. The editor supports title, neutral partner data, multiple ordered events, location, flexible text content, optional gift information, template reference, slug, and draft/published/inactive status. Owners may add, reorder, and remove events while keeping at least one. Event IDs/order and slugs are unique; each event ends after it starts.
+An invitation is editable content connected through `routeId`; it no longer owns a slug. Admin or user lists and manages only invitations whose owner matches the session account. The editor supports title, neutral partner data, ordered events, flexible text, gift information, gallery references, template, compatible theme, and draft/published/inactive status. Route and owner are immutable to the user.
 
-## Active: Template Selection and Editor
+## Active: Templates and Themes
 
-The catalogue starts with `elegant-gold@1` and `minimal-white@1`. Catalogue entries must match explicit registry manifests. Changing a template keeps domain data. Editor/UI state is separate from invitation data; components use repository interfaces, while templates receive only validated `InvitationTemplateProps`.
+`minimal-white@1`, `elegant-gold@1`, and `daztore-inv1@1` are three structural templates with different section composition, layout, and behavior. A theme is a compatible visual-token preset inside one template. Each template has one default theme preserving its original appearance and at least one alternate theme. Theme changes preserve template, route, content, and behavior. Template changes preserve compatible content and select the target template's default active theme.
 
-## Active: Preview and Publication
+Templates and themes are explicit build-time registries. No runtime auto-loading, arbitrary CSS, `eval`, remote scripts, or unvalidated style injection is permitted.
 
-Owner preview renders the latest edited data through the selected registry entry. Publishing requires a schema-valid invitation and active template, then exposes `/{slug}`; unpublishing/inactivation removes public visibility. Draft preview does not make a draft public. Additional editorial completeness rules and visibility after owner deactivation remain TBD.
+## Active: Preview, Publication, and Guest View
 
-## Active: Public Guest View
+Owner preview and public rendering use the stored template-theme combination. Public guest lookup resolves slug to route, route to invitation, and requires `published` status. Missing, unused, draft, and inactive routes are unavailable. Guest requires no session, cannot mutate data, and may keep the existing `?to=` recipient behavior.
 
-Guest opens a published slug without login and can only view. Missing, draft, or inactive invitations are unavailable. Guest cannot edit, open dashboards, or see admin/user controls.
+The public visibility policy when a published invitation's owner account later becomes inactive remains TBD.
 
-## Persistence Rules
+## Persistence Rules and Limitations
 
-Dummy JSON seeds versioned `localStorage` only when keys are absent. Reload preserves edits; seed never overwrites them. Only mock repository adapters access storage. A development reset may restore fixtures. Data remains limited to one browser/device.
+Dummy JSON seeds versioned `localStorage`; browser schema version 3 stores users, routes, invitations, templates, and themes. Valid schema-v2 data migrates in place by creating deterministic route allocations, preserving slug/content/owner/status, selecting compatible default themes, and raising each migrated user's quota to at least its route count. Metadata is written only after successful migration. Invalid data keeps visible retry/reset recovery, and reset removes only `ngaturi:mock:*`.
 
-## Future Scope
-
-Backend invitation CRUD and API repository, Go-auth frontend integration, normalized invitation database, production SSR, media upload/object storage, guest management, RSVP, guestbook, payment, monetization, and final UI/deployment.
+Only mock repository adapters access storage. Data and public URLs work only in the same browser/device and are not production sharing. Backend invitation CRUD, Go-auth integration, production SSR, object storage, upload, RSVP, guestbook, payment, and deployment remain future scope.
