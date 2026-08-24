@@ -2,8 +2,8 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import invitations from "../../../contracts/dummy-data/invitations.json";
 import { InvitationSchema } from "@/domain";
-import { DaztoreInv1Template } from "@/templates/themes/daztore-inv1/Template";
-import { getRegisteredTheme } from "@/templates/theme-registry";
+import { DaztoreInv1Template } from "@/templates/renderers/daztore-inv1/Template";
+import { getRegisteredTheme } from "@/themes/registry";
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
@@ -25,7 +25,7 @@ function renderTheme(overrides: Record<string, unknown> = {}, preview = false) {
   return render(<DaztoreInv1Template invitation={fixture(overrides)} theme={getRegisteredTheme("daztore-inv1-default", 1)!} preview={preview} />);
 }
 
-describe("daztore-inv1 theme", () => {
+describe("daztore-inv1 template", () => {
   beforeEach(() => {
     window.history.replaceState({}, "", "/dara-dan-bima");
     vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);

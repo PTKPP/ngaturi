@@ -20,7 +20,7 @@ Read this after `AGENTS.md`; retrieve only what the active task needs.
 |---|---|
 | Role or feature behavior | `FEATURES.md` plus task acceptance |
 | Frontend data | domain schema plus matching users/routes/invitations fixture |
-| Template or theme | registry rules in `SYSTEM_DESIGN.md` plus matching dummy catalogues |
+| Template or theme | renderer/registry rules in `SYSTEM_DESIGN.md` plus matching dummy catalogues |
 | Task planning | `IMPLEMENTATION_PLAN.md` |
 | Authentication maintenance | `DATABASE_DESIGN.md` and completed backend tests |
 

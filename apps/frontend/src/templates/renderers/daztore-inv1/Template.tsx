@@ -16,7 +16,7 @@ import { QuoteSection } from "./components/QuoteSection";
 import { StorySection } from "./components/StorySection";
 import { WelcomeCover } from "./components/WelcomeCover";
 import styles from "./styles.module.css";
-import { themeCssVariables } from "@/templates/theme-registry";
+import { themeCssVariables } from "@/themes/registry";
 
 const bodyFont = Josefin_Sans({ subsets: ["latin"], variable: "--daztore-font-body", display: "swap" });
 const scriptFont = Sacramento({ weight: "400", subsets: ["latin"], variable: "--daztore-font-script", display: "swap" });

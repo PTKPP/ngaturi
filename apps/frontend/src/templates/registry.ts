@@ -1,6 +1,6 @@
-import * as daztoreInv1 from "./themes/daztore-inv1";
-import * as elegantGold from "./themes/elegant-gold";
-import * as minimalWhite from "./themes/minimal-white";
+import * as daztoreInv1 from "./renderers/daztore-inv1";
+import * as elegantGold from "./renderers/elegant-gold";
+import * as minimalWhite from "./renderers/minimal-white";
 import type { TemplateModule } from "./types";
 
 export const templateRegistry = {

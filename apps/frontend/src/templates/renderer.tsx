@@ -1,6 +1,6 @@
 import type { InvitationTemplateProps } from "./types";
 import { getTemplateModule } from "./registry";
-import { getRegisteredTheme } from "./theme-registry";
+import { getRegisteredTheme } from "@/themes/registry";
 
 export function TemplateRenderer(props: Omit<InvitationTemplateProps, "theme">) {
   const templateModule = getTemplateModule(props.invitation.templateKey, props.invitation.templateVersion);

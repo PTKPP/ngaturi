@@ -70,8 +70,8 @@ apps/frontend/src/templates/
   registry.ts
   types.ts
   shared/{components,utilities}/
-  themes/elegant-gold/{index.ts,Template.tsx,manifest.ts,styles.module.css,components,assets,scripts}/
-  themes/minimal-white/{index.ts,Template.tsx,manifest.ts,styles.module.css,components,assets,scripts}/
+  renderers/elegant-gold/{index.ts,Template.tsx,manifest.ts,styles.module.css,components,assets,scripts}/
+  renderers/minimal-white/{index.ts,Template.tsx,manifest.ts,styles.module.css,components,assets,scripts}/
 ```
 
 Themes are build-time modules, registered explicitly by key/version, and accept `InvitationTemplateProps`. They cannot read repositories/storage, call backends, use `eval`/remote scripts, or define separate invitation data.
@@ -83,7 +83,7 @@ Themes are build-time modules, registered explicitly by key/version, and accept 
 - Use `ngaturi:mock:v1:{users,session,invitations,templates}` and provide development-only reset.
 - Slug is unique; user edits only owned invitations; admin uses owner features but cross-user editing is not implemented.
 - Guest sees published invitations only and cannot mutate data.
-- Adding a template requires a theme folder, manifest/component/assets, explicit registry entry, dummy catalogue entry, and preview test—not editor changes.
+- Adding a template requires a renderer folder, manifest/component/assets, explicit registry entry, dummy catalogue entry, and preview test—not editor changes.
 
 ### Acceptance Criteria
 
@@ -185,7 +185,7 @@ Port the visual identity and guest experience of `daztore/daztore_inv1` into `da
 - Separate globally unique owner routes from invitation content and migrate browser schema 2 to 3 without discarding valid edits.
 - Add admin-managed route quota, preassignment, confirmed reassignment, and service-layer authorization.
 - Support user selection of unused preassigned routes or atomic claiming within quota; keep routes immutable in owner UI.
-- Treat the three current implementations as structural templates and add compatible typed visual themes with default selection rules.
+- Keep the three structural implementations under `templates/renderers/` and compatible typed visual presets under `themes/`, with default selection rules.
 - Resolve public slugs through route to published invitation and retain one-browser prototype warnings.
 
 ### Acceptance

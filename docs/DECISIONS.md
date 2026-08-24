@@ -35,7 +35,7 @@ Status: Accepted. Components depend on repository interfaces; mock adapters use 
 Status: Accepted. Stored account roles are `admin` and `user`; guest has no user record or session.
 
 ### DEC-011: Folder-Based Explicit Template Registry
-Status: Accepted. Each theme is self-contained and registered explicitly by key/version. No runtime auto-loader, `eval`, remote script, or arbitrary uploaded code.
+Status: Accepted. Each structural template renderer is self-contained under `templates/renderers/<template-key>/` and registered explicitly by key/version. Compatible visual themes are separate typed presets under `themes/`; no runtime auto-loader, `eval`, remote script, or arbitrary uploaded code.
 
 ### DEC-012: Client-Side Prototype Persistence
 Status: Accepted. Dummy JSON seeds `localStorage` once; reload preserves edits. Explicit storage/schema metadata governs recovery: valid pre-metadata v1 data migrates in place, legacy namespaces are controlled-reset, and incompatible or invalid data requires visible retry/reset UI. Cross-device sharing and production SSR are deferred.

@@ -45,9 +45,9 @@ Only admin service methods may reassign a route slug. Reassignment updates no in
 
 ## Template and Theme Registries
 
-`minimal-white@1`, `elegant-gold@1`, and `daztore-inv1@1` are structural templates. The implementations remain in the legacy physical directory `apps/frontend/src/templates/themes/`, but their product/domain role is Template. Each renderer retains its component composition, behavior, manifest, scoped CSS, and local assets.
+`minimal-white@1`, `elegant-gold@1`, and `daztore-inv1@1` are structural templates. Their implementations live under `apps/frontend/src/templates/renderers/<template-key>/`; each renderer retains its component composition, behavior, manifest, scoped CSS, and local assets.
 
-`theme-registry.ts` is the build-time typed catalogue for compatible visual presets. Every template has exactly one default active theme and at least one alternate. Safe validated color tokens are passed through `InvitationTemplateProps`; themes do not duplicate template components or alter content, section order, route, status, ownership, or interaction rules.
+`apps/frontend/src/themes/registry.ts` is the build-time typed catalogue for compatible visual presets. Every template has exactly one default active theme and at least one alternate. Safe validated color tokens are passed through `InvitationTemplateProps`; themes do not duplicate template components or alter content, section order, route, status, ownership, or interaction rules.
 
 Dummy catalogues and registered manifests are parity-tested. Templates never read repositories/storage, call a backend, or define a competing invitation shape. Runtime folder auto-loading, arbitrary CSS, `eval`, remote scripts, and uploaded code are forbidden.
 

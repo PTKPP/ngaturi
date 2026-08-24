@@ -1,7 +1,7 @@
 import { EventDetails } from "@/templates/shared/components/EventDetails";
 import type { InvitationTemplateProps } from "@/templates/types";
 import styles from "./styles.module.css";
-import { themeCssVariables } from "@/templates/theme-registry";
+import { themeCssVariables } from "@/themes/registry";
 
 export function MinimalWhiteTemplate({ invitation, theme, preview = false }: InvitationTemplateProps) {
   const { couple, content } = invitation;

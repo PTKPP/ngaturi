@@ -5,7 +5,7 @@ import templates from "../../../contracts/dummy-data/templates.json";
 import themes from "../../../contracts/dummy-data/themes.json";
 import { getTemplateModule, templateRegistry } from "@/templates/registry";
 import { TemplateRenderer } from "@/templates/renderer";
-import { getRegisteredTheme, themeRegistry } from "@/templates/theme-registry";
+import { getRegisteredTheme, themeRegistry } from "@/themes/registry";
 
 describe("template registry", () => {
   beforeEach(() => localStorage.clear());
