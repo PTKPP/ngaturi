@@ -1,3 +1,5 @@
 import type { ReactNode } from "react";
-import { AuthGuard } from "@/components/AuthGuard";
-export default function DashboardLayout({ children }: { children: ReactNode }) { return <AuthGuard>{children}</AuthGuard>; }
+import { redirect } from "next/navigation";
+import { currentProfile } from "@/application/auth";
+export const dynamic = "force-dynamic";
+export default async function DashboardLayout({ children }: { children: ReactNode }) { if (!await currentProfile()) redirect("/login"); return children; }

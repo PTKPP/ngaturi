@@ -42,13 +42,13 @@ describe("template registry", () => {
     const first = render(<TemplateRenderer invitation={invitation} preview />);
     const firstRoot = first.container.querySelector('[data-template="minimal-white@1"]')!;
     expect(firstRoot).toHaveAttribute("data-theme", "minimal-white-default@1");
-    expect(firstRoot).toHaveTextContent(invitation.content.openingText);
+    expect(firstRoot).toHaveTextContent(String((invitation.content.copy as Record<string, unknown>).openingText));
     first.unmount();
     const second = render(<TemplateRenderer invitation={{ ...invitation, themeKey: "minimal-white-sage" }} preview />);
     const secondRoot = second.container.querySelector('[data-template="minimal-white@1"]')!;
     expect(secondRoot).toHaveAttribute("data-theme", "minimal-white-sage@1");
     expect(secondRoot.querySelectorAll("header, section, footer")).toHaveLength(firstRoot.querySelectorAll("header, section, footer").length);
-    expect(secondRoot).toHaveTextContent(invitation.content.openingText);
+    expect(secondRoot).toHaveTextContent(String((invitation.content.copy as Record<string, unknown>).openingText));
     expect(getRegisteredTheme("minimal-white-sage", 1)?.tokens.background).not.toBe(getRegisteredTheme("minimal-white-default", 1)?.tokens.background);
   });
   it("renders enabled gift information through both themes", () => {

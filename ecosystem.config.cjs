@@ -30,26 +30,6 @@ const definedValues = (values) => Object.fromEntries(Object.entries(values).filt
 module.exports = {
   apps: [
     {
-      name: "ngaturi-backend",
-      cwd: path.join(root, "apps/backend"),
-      script: path.join(root, ".runtime/ngaturi-api"),
-      exec_mode: "fork",
-      instances: 1,
-      autorestart: true,
-      restart_delay: 2_000,
-      min_uptime: "5s",
-      max_restarts: 10,
-      kill_timeout: 5_000,
-      time: true,
-      env: definedValues({
-        DATABASE_URL: envValue("DATABASE_URL"),
-        JWT_SECRET: envValue("JWT_SECRET"),
-        HTTP_ADDR: envValue("HTTP_ADDR", ":8080"),
-        ACCESS_TOKEN_TTL: envValue("ACCESS_TOKEN_TTL", "15m"),
-        REFRESH_TOKEN_TTL: envValue("REFRESH_TOKEN_TTL", "720h"),
-      }),
-    },
-    {
       name: "ngaturi-frontend",
       cwd: path.join(root, "apps/frontend"),
       script: path.join(root, "apps/frontend/node_modules/next/dist/bin/next"),
@@ -68,9 +48,13 @@ module.exports = {
       max_restarts: 10,
       kill_timeout: 5_000,
       time: true,
-      env: {
+      env: definedValues({
         NODE_ENV: "production",
-      },
+        NEXT_PUBLIC_SUPABASE_URL: envValue("NEXT_PUBLIC_SUPABASE_URL"),
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: envValue("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+        SUPABASE_SERVICE_ROLE_KEY: envValue("SUPABASE_SERVICE_ROLE_KEY"),
+        NEXT_PUBLIC_SITE_URL: envValue("NEXT_PUBLIC_SITE_URL"),
+      }),
     },
   ],
 };

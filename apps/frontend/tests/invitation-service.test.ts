@@ -86,6 +86,19 @@ describe("route allocation and invitation ownership", () => {
     const changed = runtime.invitationService.update(user, { ...before, templateKey: "elegant-gold", themeKey: "minimal-white-sage" });
     expect(changed).toMatchObject({ templateKey: "elegant-gold", themeKey: "elegant-gold-default", routeId: before.routeId, content: before.content });
   });
+  it("rejects template changes outside draft and requires confirmation for discarded fields", () => {
+    const runtime = createDemoRuntime(localStorage); const admin = runtime.auth.login("admin@demo.local", "admin-demo");
+    const published = runtime.invitationService.getOwned(admin, "inv_admin_published");
+    expect(() => runtime.invitationService.update(admin, { ...published, templateKey: "minimal-white", themeKey: "minimal-white-default" })).toThrow("berstatus draft");
+    runtime.auth.logout(); const user = runtime.auth.login("user@demo.local", "user-demo");
+    const draft = runtime.invitationService.getOwned(user, "inv_owner_draft");
+    runtime.invitations.update({ ...draft, content: { ...draft.content, templateOnlySecret: "discard me" } });
+    const withUnsupported = { ...runtime.invitationService.getOwned(user, draft.id), templateKey: "elegant-gold" };
+    expect(() => runtime.invitationService.update(user, withUnsupported)).toThrow("Konfirmasi diperlukan");
+    const changed = runtime.invitationService.update(user, withUnsupported, { confirmDiscard: true });
+    expect(changed.templateKey).toBe("elegant-gold");
+    expect(changed.content).not.toHaveProperty("templateOnlySecret");
+  });
   it("rejects invalid template-theme combinations", () => {
     const runtime = createDemoRuntime(localStorage); const user = runtime.auth.login("user@demo.local", "user-demo");
     expect(() => runtime.invitationService.create(user, { ...minimal, themeKey: "elegant-gold-default", route: { mode: "existing", routeId: "route_owner_available" } })).toThrow("tidak kompatibel");

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import invitations from "../../../contracts/dummy-data/invitations.json";
 import { InvitationSchema } from "@/domain";
 import { DaztoreInv1Template } from "@/templates/renderers/daztore-inv1/Template";
+import type { DaztoreInv1Content } from "@/templates/renderers/daztore-inv1/schema";
 import { getRegisteredTheme } from "@/themes/registry";
 
 vi.mock("next/navigation", () => ({
@@ -18,11 +19,13 @@ const pauseMock = vi.fn(function (this: HTMLMediaElement) {
 });
 
 function fixture(overrides: Record<string, unknown> = {}) {
-  return InvitationSchema.parse({ ...structuredClone(invitations[1]), templateKey: "daztore-inv1", templateVersion: 1, ...overrides });
+  const source = structuredClone(invitations[1]);
+  return InvitationSchema.parse({ ...source, templateKey: "daztore-inv1", templateVersion: 1, content: { ...source.content, ...overrides } });
 }
 
 function renderTheme(overrides: Record<string, unknown> = {}, preview = false) {
-  return render(<DaztoreInv1Template invitation={fixture(overrides)} theme={getRegisteredTheme("daztore-inv1-default", 1)!} preview={preview} />);
+  const parsed = fixture(overrides); const { content, ...invitation } = parsed;
+  return render(<DaztoreInv1Template invitation={invitation} content={content as DaztoreInv1Content} theme={getRegisteredTheme("daztore-inv1-default", 1)!} preview={preview} />);
 }
 
 describe("daztore-inv1 template", () => {
@@ -49,9 +52,9 @@ describe("daztore-inv1 template", () => {
     expect(screen.getByRole("heading", { name: "Cerita Kami" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Tanda Kasih" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Galeri" })).not.toBeInTheDocument();
-    const sources = [...view.container.querySelectorAll("img")].map((image) => image.getAttribute("src"));
-    expect(sources.some((source) => source?.endsWith("/templates/daztore-inv1/default-partner-one.svg"))).toBe(true);
-    expect(sources.some((source) => source?.endsWith("/templates/daztore-inv1/default-partner-two.svg"))).toBe(true);
+    const sources = [...view.container.querySelectorAll("img")].map((image) => decodeURIComponent(image.getAttribute("src") ?? ""));
+    expect(sources.some((source) => source.includes("/templates/daztore-inv1/default-partner-one.svg"))).toBe(true);
+    expect(sources.some((source) => source.includes("/templates/daztore-inv1/default-partner-two.svg"))).toBe(true);
   });
 
   it("hides conditional gallery and gift sections when disabled", () => {
@@ -92,7 +95,7 @@ describe("daztore-inv1 template", () => {
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
     renderTheme();
     fireEvent.click(screen.getByRole("button", { name: "Salin Informasi Hadiah" }));
-    await waitFor(() => expect(writeText).toHaveBeenCalledWith(fixture().content.giftInformation));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith((fixture().content.copy as Record<string, string>).giftInformation));
     expect(screen.getByText("Informasi hadiah berhasil disalin.")).toHaveAttribute("aria-live", "polite");
   });
 

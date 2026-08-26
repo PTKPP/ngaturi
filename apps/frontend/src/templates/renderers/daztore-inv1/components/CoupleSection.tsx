@@ -1,11 +1,11 @@
-import type { Invitation } from "@/domain";
+import type { DaztoreInv1ViewModel } from "../schema";
 import { daztoreInv1Assets } from "../assets";
 import styles from "../styles.module.css";
 import { ThemeIcon } from "./Icons";
 import { Reveal } from "./Reveal";
 import { ThemeImage } from "./ThemeImage";
 
-export function CoupleSection({ invitation }: { invitation: Invitation }) {
+export function CoupleSection({ invitation }: { invitation: DaztoreInv1ViewModel }) {
   const partners = [
     [invitation.couple.partnerOne, daztoreInv1Assets.partnerOnePlaceholder],
     [invitation.couple.partnerTwo, daztoreInv1Assets.partnerTwoPlaceholder],

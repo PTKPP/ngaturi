@@ -8,6 +8,7 @@ import type {
 import { assertValidSession } from "./authorization";
 import { createPrototypeId } from "./id";
 import { validateRouteSlug } from "./route-service";
+import { getTemplateModule, parseTemplateContent } from "@/templates/registry";
 
 export type InvitationRouteInput = { mode: "existing"; routeId: string } | { mode: "new"; slug: string };
 export interface InvitationDraftInput {
@@ -18,6 +19,7 @@ export interface InvitationDraftInput {
   themeKey: string;
   themeVersion: number;
 }
+export interface InvitationUpdateOptions { confirmDiscard?: boolean; }
 
 export class InvitationService {
   constructor(
@@ -52,17 +54,14 @@ export class InvitationService {
       : this.buildClaimedRoute(actor.id, actor.routeQuota, input.route.slug);
     const now = new Date().toISOString();
     const id = createPrototypeId("inv");
+    const templateModule = getTemplateModule(input.templateKey, input.templateVersion);
+    if (!templateModule) throw new Error("Template tidak tersedia.");
     const invitation = InvitationSchema.parse({
       id, ownerId: actor.id, routeId: route.id, title: input.title.trim(),
       templateKey: input.templateKey, templateVersion: input.templateVersion,
+      contentSchemaVersion: templateModule.activeContentSchemaVersion,
       themeKey: theme.key, themeVersion: theme.version, status: "draft",
-      couple: {
-        partnerOne: { fullName: "Partner Satu", nickname: "Satu", parentNames: [], photo: "" },
-        partnerTwo: { fullName: "Partner Dua", nickname: "Dua", parentNames: [], photo: "" },
-      },
-      events: [{ id: createPrototypeId("evt"), type: "reception", title: "Acara", date: "2026-12-01", startTime: "10:00", endTime: "12:00", timezone: "Asia/Jakarta", venueName: "Lokasi Acara", address: "Alamat acara", mapUrl: "", sortOrder: 0 }],
-      content: { openingText: "Dengan bahagia kami mengundang Anda.", quote: "", story: "", closingText: "Terima kasih atas doa dan kehadiran Anda.", giftInformation: "" },
-      gallery: [], settings: { showGiftInformation: false }, createdAt: now, updatedAt: now,
+      content: templateModule.createDefaultContent(), publishedAt: null, createdAt: now, updatedAt: now,
     });
     const isNewRoute = input.route.mode === "new";
     this.assertProspective(route, invitation, isNewRoute);
@@ -71,15 +70,21 @@ export class InvitationService {
     try { return this.invitations.create(invitation); }
     catch (cause) { this.routes.delete(route.id); throw cause; }
   }
-  update(session: Session, next: Invitation): Invitation {
+  update(session: Session, next: Invitation, options: InvitationUpdateOptions = {}): Invitation {
     const current = this.getOwned(session, next.id);
     if (next.ownerId !== current.ownerId) throw new Error("Pemilik undangan tidak boleh diubah.");
     if (next.routeId !== current.routeId) throw new Error("Route publik tidak dapat diubah oleh user.");
     const templateChanged = next.templateKey !== current.templateKey || next.templateVersion !== current.templateVersion;
-    const theme = templateChanged
-      ? this.getDefaultActiveTheme(next.templateKey, next.templateVersion)
-      : this.assertActiveSelection(next.templateKey, next.templateVersion, next.themeKey, next.themeVersion);
-    const parsed = InvitationSchema.parse({ ...next, themeKey: theme.key, themeVersion: theme.version, updatedAt: new Date().toISOString() });
+    if (templateChanged && current.status !== "draft") throw new Error("Template hanya dapat diubah saat undangan berstatus draft.");
+    const targetModule = getTemplateModule(next.templateKey, next.templateVersion);
+    if (!targetModule) throw new Error("Template tidak tersedia.");
+    const conversion = templateChanged ? targetModule.convertContent(current.content) : null;
+    if (conversion?.discardedFields.length && !options.confirmDiscard) throw new Error(`Konfirmasi diperlukan untuk membuang field: ${conversion.discardedFields.join(", ")}.`);
+    const theme = templateChanged ? this.getDefaultActiveTheme(next.templateKey, next.templateVersion) : this.assertActiveSelection(next.templateKey, next.templateVersion, next.themeKey, next.themeVersion);
+    const contentSchemaVersion = templateChanged ? targetModule.activeContentSchemaVersion : next.contentSchemaVersion;
+    const content = parseTemplateContent(next.templateKey, next.templateVersion, contentSchemaVersion, conversion?.content ?? next.content);
+    const publishedAt = next.status === "published" ? (current.publishedAt ?? new Date().toISOString()) : null;
+    const parsed = InvitationSchema.parse({ ...next, content, contentSchemaVersion, themeKey: theme.key, themeVersion: theme.version, publishedAt, updatedAt: new Date().toISOString() });
     const route = this.routes.findById(parsed.routeId);
     if (!route) throw new Error("Route undangan tidak tersedia.");
     this.assertProspective(route, parsed, false, parsed.id);
@@ -87,6 +92,7 @@ export class InvitationService {
   }
   publish(session: Session, id: string): Invitation { return this.setStatus(session, id, "published"); }
   unpublish(session: Session, id: string): Invitation { return this.setStatus(session, id, "inactive"); }
+  returnToDraft(session: Session, id: string): Invitation { return this.setStatus(session, id, "draft"); }
   private setStatus(session: Session, id: string, status: Invitation["status"]): Invitation { return this.update(session, { ...this.getOwned(session, id), status }); }
   private validateExistingRoute(ownerId: string, routeId: string): InvitationRoute {
     const route = this.routes.findById(routeId);

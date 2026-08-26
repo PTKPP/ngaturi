@@ -2,14 +2,14 @@
 
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import type { Invitation } from "@/domain";
+import type { DaztoreInv1ViewModel } from "../schema";
 import { daztoreInv1Assets } from "../assets";
 import { sanitizeRecipient } from "../utilities/recipient";
 import styles from "../styles.module.css";
 import { ThemeIcon } from "./Icons";
 import { ThemeImage } from "./ThemeImage";
 
-export function WelcomeCover({ invitation, open, onOpen }: { invitation: Invitation; open: boolean; onOpen(): void }) {
+export function WelcomeCover({ invitation, open, onOpen }: { invitation: DaztoreInv1ViewModel; open: boolean; onOpen(): void }) {
   const searchParams = useSearchParams();
   const recipient = sanitizeRecipient(searchParams.get("to"));
 

@@ -26,7 +26,7 @@ describe("mock persistence", () => {
     expect(localStorage.getItem(STORAGE_KEYS.metadata)).not.toBeNull();
   });
 
-  it("migrates valid schema-v2 browser data and preserves slugs, content, ownership, and status", () => {
+  it("keeps legacy browser migration outside the production path and requires reset for old data", () => {
     seedDemoData(localStorage);
     const routes = JSON.parse(localStorage.getItem(STORAGE_KEYS.routes) ?? "[]");
     const routeById = new Map(routes.map((route: { id: string; slug: string }) => [route.id, route.slug]));
@@ -42,13 +42,7 @@ describe("mock persistence", () => {
     localStorage.removeItem(STORAGE_KEYS.routes); localStorage.removeItem(STORAGE_KEYS.themes);
     const metadata = JSON.parse(localStorage.getItem(STORAGE_KEYS.metadata) ?? "{}");
     localStorage.setItem(STORAGE_KEYS.metadata, JSON.stringify({ ...metadata, schemaVersion: 2 }));
-    const runtime = createDemoRuntime(localStorage);
-    const migrated = runtime.invitations.findById("inv_owner_draft")!;
-    expect(runtime.routes.findById(migrated.routeId)).toMatchObject({ slug: "raka-dan-sinta-draft", ownerId: migrated.ownerId, assignedBy: "migration" });
-    expect(migrated).toMatchObject({ content: { story: "Edit lama tetap ada" }, status: "draft", themeKey: "minimal-white-default" });
-    expect(runtime.users.findById(migrated.ownerId)!.routeQuota).toBeGreaterThanOrEqual(1);
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.metadata) ?? "{}").schemaVersion).toBe(SCHEMA_VERSION);
-    expect(() => createDemoRuntime(localStorage)).not.toThrow();
+    expect(() => createDemoRuntime(localStorage)).toThrow("Data demo");
   });
 
   it("requires controlled reset for incompatible explicit schema metadata", () => {

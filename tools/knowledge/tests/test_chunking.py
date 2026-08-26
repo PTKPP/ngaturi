@@ -27,7 +27,7 @@ def test_frontend_task_id_is_added_to_metadata():
 
 def test_whitelist_and_sensitive_exclusion():
     assert is_allowed_source(ROOT / "AGENTS.md")
-    assert is_allowed_source(ROOT / "docs/PRD.md")
+    assert is_allowed_source(ROOT / "docs/PRODUCT.md")
     assert is_allowed_source(ROOT / "contracts/dummy-data/README.md")
     assert not is_allowed_source(ROOT / "contracts/archive/openapi-task-002.yaml")
     assert not is_allowed_source(ROOT / ".env")
@@ -36,7 +36,7 @@ def test_whitelist_and_sensitive_exclusion():
 
 
 def test_metadata_has_required_fields():
-    path = ROOT / "docs/PRD.md"
+    path = ROOT / "docs/PRODUCT.md"
     chunk = chunks_for_file(path, ROOT, 700, 100)[0]
     metadata = chunk.metadata("file-hash")
     assert {"project", "source_path", "document_type", "section", "feature", "status", "version", "chunk_index", "content_hash", "file_hash"} <= set(metadata)

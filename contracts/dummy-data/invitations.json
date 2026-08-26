@@ -6,9 +6,11 @@
     "title": "Undangan Raka & Sinta",
     "templateKey": "minimal-white",
     "templateVersion": 1,
+    "contentSchemaVersion": 1,
     "themeKey": "minimal-white-default",
     "themeVersion": 1,
     "status": "draft",
+    "content": {
     "couple": {
       "partnerOne": { "fullName": "Raka Pradana", "nickname": "Raka", "parentNames": ["Bapak Demo", "Ibu Demo"], "photo": "" },
       "partnerTwo": { "fullName": "Sinta Larasati", "nickname": "Sinta", "parentNames": ["Bapak Contoh", "Ibu Contoh"], "photo": "" }
@@ -17,9 +19,11 @@
       { "id": "evt_owner_akad", "type": "ceremony", "title": "Akad", "date": "2026-10-10", "startTime": "08:00", "endTime": "09:30", "timezone": "Asia/Jakarta", "venueName": "Balai Warga Contoh", "address": "Jalan Contoh No. 10, Bandung", "mapUrl": "https://maps.example.com/akad", "sortOrder": 0 },
       { "id": "evt_owner_resepsi", "type": "reception", "title": "Resepsi", "date": "2026-10-10", "startTime": "11:00", "endTime": "14:00", "timezone": "Asia/Jakarta", "venueName": "Balai Warga Contoh", "address": "Jalan Contoh No. 10, Bandung", "mapUrl": "https://maps.example.com/resepsi", "sortOrder": 1 }
     ],
-    "content": { "openingText": "Dengan bahagia kami mengundang Anda.", "quote": "Dua cerita bertemu dalam satu perjalanan.", "story": "Kami bertemu melalui sahabat dan tumbuh bersama.", "closingText": "Kehadiran Anda adalah kebahagiaan bagi kami.", "giftInformation": "" },
+    "copy": { "openingText": "Dengan bahagia kami mengundang Anda.", "quote": "Dua cerita bertemu dalam satu perjalanan.", "story": "Kami bertemu melalui sahabat dan tumbuh bersama.", "closingText": "Kehadiran Anda adalah kebahagiaan bagi kami.", "giftInformation": "" },
     "gallery": [],
-    "settings": { "showGiftInformation": false },
+    "settings": { "showGiftInformation": false }
+    },
+    "publishedAt": null,
     "createdAt": "2026-02-01T00:00:00.000Z",
     "updatedAt": "2026-02-01T00:00:00.000Z"
   },
@@ -30,9 +34,11 @@
     "title": "Pernikahan Dara & Bima",
     "templateKey": "elegant-gold",
     "templateVersion": 1,
+    "contentSchemaVersion": 1,
     "themeKey": "elegant-gold-default",
     "themeVersion": 1,
     "status": "published",
+    "content": {
     "couple": {
       "partnerOne": { "fullName": "Dara Kirana", "nickname": "Dara", "parentNames": ["Keluarga Dara"], "photo": "" },
       "partnerTwo": { "fullName": "Bima Aruna", "nickname": "Bima", "parentNames": ["Keluarga Bima"], "photo": "" }
@@ -41,9 +47,11 @@
       { "id": "evt_admin_akad", "type": "ceremony", "title": "Akad Nikah", "date": "2026-11-21", "startTime": "09:00", "endTime": "10:00", "timezone": "Asia/Jakarta", "venueName": "Pendopo Ilustrasi", "address": "Jalan Ilustrasi No. 21, Yogyakarta", "mapUrl": "", "sortOrder": 0 },
       { "id": "evt_admin_resepsi", "type": "reception", "title": "Resepsi", "date": "2026-11-21", "startTime": "12:00", "endTime": "15:00", "timezone": "Asia/Jakarta", "venueName": "Pendopo Ilustrasi", "address": "Jalan Ilustrasi No. 21, Yogyakarta", "mapUrl": "", "sortOrder": 1 }
     ],
-    "content": { "openingText": "Kami mengundang Anda untuk merayakan hari bahagia kami.", "quote": "Bersama, pulang terasa dekat.", "story": "Sebuah cerita rekaan untuk data demonstrasi Ngaturi.", "closingText": "Sampai berjumpa di hari bahagia kami.", "giftInformation": "Informasi hadiah demo akan disampaikan langsung oleh pemilik undangan." },
+    "copy": { "openingText": "Kami mengundang Anda untuk merayakan hari bahagia kami.", "quote": "Bersama, pulang terasa dekat.", "story": "Sebuah cerita rekaan untuk data demonstrasi Ngaturi.", "closingText": "Sampai berjumpa di hari bahagia kami.", "giftInformation": "Informasi hadiah demo akan disampaikan langsung oleh pemilik undangan." },
     "gallery": [],
-    "settings": { "showGiftInformation": true },
+    "settings": { "showGiftInformation": true }
+    },
+    "publishedAt": "2026-02-02T00:00:00.000Z",
     "createdAt": "2026-02-02T00:00:00.000Z",
     "updatedAt": "2026-02-02T00:00:00.000Z"
   }

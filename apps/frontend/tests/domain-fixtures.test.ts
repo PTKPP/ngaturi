@@ -5,6 +5,7 @@ import routes from "../../../contracts/dummy-data/routes.json";
 import templates from "../../../contracts/dummy-data/templates.json";
 import themes from "../../../contracts/dummy-data/themes.json";
 import invitations from "../../../contracts/dummy-data/invitations.json";
+import { parseTemplateContent } from "@/templates/registry";
 
 const contract = () => structuredClone({ users, routes, templates, themes, invitations });
 
@@ -29,7 +30,7 @@ describe("dummy data contract", () => {
     expect(InvitationRoutesSchema.parse(routes)).toHaveLength(3);
     const parsed = InvitationsSchema.parse(invitations);
     expect(parsed.map((item) => item.status)).toEqual(expect.arrayContaining(["draft", "published"]));
-    expect(parsed.every((item) => item.events.length >= 2)).toBe(true);
+    expect(parsed.every((item) => parseTemplateContent(item.templateKey, item.templateVersion, item.contentSchemaVersion, item.content).events.length >= 2)).toBe(true);
   });
   it("validates the unified frontend contract", () => {
     expect(FrontendContractSchema.parse(contract())).toMatchObject({ users: expect.any(Array), routes: expect.any(Array), themes: expect.any(Array), invitations: expect.any(Array) });
@@ -51,9 +52,9 @@ describe("dummy data contract", () => {
     expect(() => FrontendContractSchema.parse(invalidTheme)).toThrow("Tema undangan harus kompatibel");
   });
   it("keeps event IDs/order and end-time validation intact", () => {
-    const duplicateOrder = contract(); duplicateOrder.invitations[0].events[1].sortOrder = 0;
-    expect(() => FrontendContractSchema.parse(duplicateOrder)).toThrow("Urutan acara harus unik");
-    const invalidTime = contract(); invalidTime.invitations[0].events[0].endTime = "07:00";
-    expect(() => FrontendContractSchema.parse(invalidTime)).toThrow("Waktu selesai harus setelah waktu mulai");
+    const duplicateOrder = contract(); duplicateOrder.invitations[0].content.events[1].sortOrder = 0;
+    expect(() => parseTemplateContent("minimal-white", 1, 1, duplicateOrder.invitations[0].content)).toThrow("Urutan acara harus unik");
+    const invalidTime = contract(); invalidTime.invitations[0].content.events[0].endTime = "07:00";
+    expect(() => parseTemplateContent("minimal-white", 1, 1, invalidTime.invitations[0].content)).toThrow("Waktu selesai harus setelah waktu mulai");
   });
 });

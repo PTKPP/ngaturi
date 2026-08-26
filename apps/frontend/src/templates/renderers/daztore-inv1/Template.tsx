@@ -17,19 +17,21 @@ import { StorySection } from "./components/StorySection";
 import { WelcomeCover } from "./components/WelcomeCover";
 import styles from "./styles.module.css";
 import { themeCssVariables } from "@/themes/registry";
+import type { DaztoreInv1Content, DaztoreInv1ViewModel } from "./schema";
 
 const bodyFont = Josefin_Sans({ subsets: ["latin"], variable: "--daztore-font-body", display: "swap" });
 const scriptFont = Sacramento({ weight: "400", subsets: ["latin"], variable: "--daztore-font-script", display: "swap" });
 const arabicFont = Noto_Naskh_Arabic({ subsets: ["arabic"], variable: "--daztore-font-arabic", display: "swap" });
 
-export function DaztoreInv1Template({ invitation, theme, preview = false }: InvitationTemplateProps) {
+export function DaztoreInv1Template({ invitation, content, theme, preview = false }: InvitationTemplateProps<DaztoreInv1Content>) {
   const [opened, setOpened] = useState(false);
   const audioControlRef = useRef<AudioControlHandle>(null);
-  const events = [...invitation.events].sort((left, right) => left.sortOrder - right.sortOrder);
+  const viewModel: DaztoreInv1ViewModel = { ...invitation, ...content, content: content.copy };
+  const events = [...content.events].sort((left, right) => left.sortOrder - right.sortOrder);
   const mainEvent = events[0];
-  const hasGallery = invitation.gallery.length > 0;
-  const hasGift = invitation.settings.showGiftInformation && Boolean(invitation.content.giftInformation.trim());
-  const coupleNames = `${invitation.couple.partnerOne.nickname} & ${invitation.couple.partnerTwo.nickname}`;
+  const hasGallery = content.gallery.length > 0;
+  const hasGift = content.settings.showGiftInformation && Boolean(content.copy.giftInformation.trim());
+  const coupleNames = `${content.couple.partnerOne.nickname} & ${content.couple.partnerTwo.nickname}`;
 
   const openInvitation = () => {
     setOpened(true);
@@ -38,17 +40,17 @@ export function DaztoreInv1Template({ invitation, theme, preview = false }: Invi
   };
 
   return <div className={`${styles.root} ${bodyFont.variable} ${scriptFont.variable} ${arabicFont.variable}`} data-template="daztore-inv1@1" data-theme={`${theme.key}@${theme.version}`} data-opened={opened ? "true" : "false"} style={themeCssVariables(theme)}>
-    <Suspense fallback={<div className={styles.coverFallback}>Menyiapkan undangan…</div>}><WelcomeCover invitation={invitation} open={!opened} onOpen={openInvitation} /></Suspense>
+    <Suspense fallback={<div className={styles.coverFallback}>Menyiapkan undangan…</div>}><WelcomeCover invitation={viewModel} open={!opened} onOpen={openInvitation} /></Suspense>
     <main>
-      <HeroSection invitation={invitation} event={mainEvent} />
-      <CoupleSection invitation={invitation} />
-      <QuoteSection invitation={invitation} />
+      <HeroSection invitation={viewModel} event={mainEvent} />
+      <CoupleSection invitation={viewModel} />
+      <QuoteSection invitation={viewModel} />
       <EventSection events={events} />
-      <StorySection story={invitation.content.story} />
-      <GallerySection gallery={invitation.gallery} coupleNames={coupleNames} />
-      {hasGift ? <GiftSection information={invitation.content.giftInformation} /> : null}
+      <StorySection story={content.copy.story} />
+      <GallerySection gallery={content.gallery} coupleNames={coupleNames} />
+      {hasGift ? <GiftSection information={content.copy.giftInformation} /> : null}
     </main>
-    <ClosingSection invitation={invitation} />
+    <ClosingSection invitation={viewModel} />
     <BottomNavigation visible={opened} hasGallery={hasGallery} hasGift={hasGift} />
     <AudioControl ref={audioControlRef} src={daztoreInv1Assets.audio} visible={opened} />
   </div>;

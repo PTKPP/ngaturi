@@ -1,54 +1,40 @@
-import { StrictMode } from "react";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import EditInvitationPage from "@/app/dashboard/invitations/[id]/edit/page";
-import { DemoProvider } from "@/components/DemoProvider";
-import { createDemoRuntime } from "@/lib/demo-runtime";
-import { STORAGE_KEYS } from "@/repositories/mock";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import invitations from "../../../contracts/dummy-data/invitations.json";
+import templates from "../../../contracts/dummy-data/templates.json";
+import themes from "../../../contracts/dummy-data/themes.json";
+import { InvitationSchema, TemplatesSchema, InvitationThemesSchema } from "@/domain";
 
-const { replaceMock } = vi.hoisted(() => ({ replaceMock: vi.fn() }));
+vi.mock("@/app/actions/invitations", () => ({ saveInvitationAction: vi.fn(), switchTemplateAction: vi.fn() }));
 
-vi.mock("next/navigation", () => ({
-  useParams: () => ({ id: "inv_owner_draft" }),
-  usePathname: () => "/dashboard/invitations/inv_owner_draft/edit",
-  useRouter: () => ({ replace: replaceMock }),
-}));
+import { InvitationEditorClient } from "@/components/InvitationEditorClient";
 
-function renderEditor() {
-  return render(<StrictMode><DemoProvider><EditInvitationPage /></DemoProvider></StrictMode>);
-}
-
-describe("multi-event invitation editor", () => {
-  beforeEach(() => {
-    localStorage.clear();
-    createDemoRuntime(localStorage).auth.login("user@demo.local", "user-demo");
-    replaceMock.mockReset();
-  });
-
-  it("adds, edits, reorders, and persists multiple events", async () => {
-    renderEditor();
-    await screen.findByRole("heading", { name: "Rangkaian acara" });
-    expect(screen.getAllByRole("group")).toHaveLength(2);
-
+describe("generic template editor routing", () => {
+  it("renders the registered editor and serializes edited template content", () => {
+    const invitation = InvitationSchema.parse(invitations[0]);
+    const view = render(<InvitationEditorClient initialInvitation={invitation} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="raka-dan-sinta-draft" />);
+    expect(view.container.querySelector("[data-template-editor]")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Teks pembuka"), { target: { value: "Teks baru" } });
     fireEvent.click(screen.getByRole("button", { name: "Tambah acara" }));
-    const groups = screen.getAllByRole("group");
-    expect(groups).toHaveLength(3);
-    fireEvent.change(within(groups[2]).getByLabelText("Judul acara"), { target: { value: "Syukuran" } });
-    fireEvent.click(within(groups[2]).getByRole("button", { name: "Naikkan Syukuran" }));
-    fireEvent.click(screen.getByRole("button", { name: "Simpan perubahan" }));
-    expect(await screen.findByText("Perubahan tersimpan di browser.")).toBeInTheDocument();
-
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.invitations) ?? "[]");
-    const invitation = stored.find((item: { id: string }) => item.id === "inv_owner_draft");
-    expect(invitation.events.map((event: { title: string }) => event.title)).toEqual(["Akad", "Syukuran", "Resepsi"]);
-    expect(invitation.events.map((event: { sortOrder: number }) => event.sortOrder)).toEqual([0, 1, 2]);
+    const serialized = view.container.querySelector<HTMLInputElement>('input[name="invitation"]')?.value ?? "{}";
+    const stored = InvitationSchema.parse(JSON.parse(serialized));
+    expect((stored.content.copy as Record<string, unknown>).openingText).toBe("Teks baru");
+    expect(stored.content.events).toHaveLength(3);
   });
 
-  it("shows domain validation when an event ends before it starts", async () => {
-    renderEditor();
-    const first = (await screen.findAllByRole("group"))[0];
-    fireEvent.change(within(first).getByLabelText("Selesai"), { target: { value: "07:00" } });
-    fireEvent.click(screen.getByRole("button", { name: "Simpan perubahan" }));
-    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Waktu selesai harus setelah waktu mulai"));
+  it("disables template switching outside draft", () => {
+    const published = InvitationSchema.parse(invitations[1]);
+    render(<InvitationEditorClient initialInvitation={published} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="dara-dan-bima" />);
+    const section = screen.getByRole("heading", { name: "Ganti template" }).closest("section")!;
+    expect(within(section).getByRole("button", { name: "Ganti template" })).toBeDisabled();
+  });
+
+  it("shows explicit confirmation only when target conversion discards fields", () => {
+    const source = InvitationSchema.parse(invitations[0]);
+    const invitation = InvitationSchema.parse({ ...source, content: { ...source.content, sourceOnly: "akan dibuang" } });
+    render(<InvitationEditorClient initialInvitation={invitation} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="raka-dan-sinta-draft" />);
+    fireEvent.change(screen.getByLabelText("Template tujuan"), { target: { value: "elegant-gold@1" } });
+    expect(screen.getByRole("checkbox", { name: /Konfirmasi pembuangan/ })).toBeRequired();
+    expect(screen.getByText(/sourceOnly/)).toBeInTheDocument();
   });
 });

@@ -1,4 +1,5 @@
-import type { Invitation, InvitationEvent } from "@/domain";
+import type { InvitationEvent } from "@/domain";
+import type { DaztoreInv1ViewModel } from "../schema";
 import { daztoreInv1Assets } from "../assets";
 import { buildGoogleCalendarUrl } from "../utilities/calendar";
 import { formatEventDate } from "../utilities/countdown";
@@ -7,7 +8,7 @@ import { Countdown } from "./Countdown";
 import { ThemeIcon, Wave } from "./Icons";
 import { ThemeImage } from "./ThemeImage";
 
-export function HeroSection({ invitation, event }: { invitation: Invitation; event: InvitationEvent }) {
+export function HeroSection({ invitation, event }: { invitation: DaztoreInv1ViewModel; event: InvitationEvent }) {
   const { partnerOne, partnerTwo } = invitation.couple;
   return <section className={styles.hero} id="daztore-home" aria-labelledby="daztore-hero-title">
     <div className={styles.heroPortraits}>

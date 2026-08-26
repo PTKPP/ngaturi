@@ -5,3 +5,4 @@ export * from "./storage";
 export * from "./template-repository";
 export * from "./theme-repository";
 export * from "./user-repository";
+export * from "./application-repository";

@@ -20,7 +20,7 @@ backend-build:
 	mkdir -p "$(RUNTIME_DIR)"
 	cd apps/backend && go build -trimpath -o "../../$(BACKEND_BINARY)" ./cmd/api
 
-app-build: frontend-build backend-build
+app-build: frontend-build
 
 pm2-start: app-build
 	$(PM2) startOrReload ecosystem.config.cjs --update-env
@@ -29,10 +29,10 @@ pm2-reload: app-build
 	$(PM2) reload ecosystem.config.cjs --update-env
 
 pm2-stop:
-	$(PM2) stop ngaturi-backend ngaturi-frontend
+	$(PM2) stop ngaturi-frontend
 
 pm2-delete:
-	$(PM2) delete ngaturi-backend ngaturi-frontend
+	$(PM2) delete ngaturi-frontend
 
 pm2-status:
 	$(PM2) status

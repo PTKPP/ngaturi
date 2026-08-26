@@ -62,9 +62,9 @@ def test_unchanged_sources_do_not_duplicate_and_deleted_sources_are_removed(tmp_
 
 def test_retrieval_filter_and_character_budget():
     collection = FakeCollection()
-    collection.upsert(["a", "b"], ["A" * 500, "B" * 500], [{"source_path": "docs/FEATURES.md", "section": "a", "document_type": "markdown"}, {"source_path": "docs/PRD.md", "section": "b", "document_type": "markdown"}])
-    args = Namespace(document_type=None, feature=None, task_id=None, phase=None, operation_id=None, schema_name=None, source_path="docs/FEATURES.md")
-    assert build_filter(args) == {"source_path": "docs/FEATURES.md"}
+    collection.upsert(["a", "b"], ["A" * 500, "B" * 500], [{"source_path": "docs/PRODUCT.md", "section": "a", "document_type": "markdown"}, {"source_path": "docs/ARCHITECTURE.md", "section": "b", "document_type": "markdown"}])
+    args = Namespace(document_type=None, feature=None, task_id=None, phase=None, operation_id=None, schema_name=None, source_path="docs/PRODUCT.md")
+    assert build_filter(args) == {"source_path": "docs/PRODUCT.md"}
     results = retrieve(collection, "roles", 6, 300, build_filter(args))
     assert len(results) == 1
     assert sum(len(row["document"]) for row in results) <= 300
