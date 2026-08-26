@@ -2,6 +2,7 @@ import "server-only";
 
 import type { User } from "@/domain";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { mapProfile } from "@/repositories/supabase/mappers";
 
 export async function currentProfile(): Promise<User | null> {
   const supabase = await createServerSupabaseClient();
@@ -10,7 +11,7 @@ export async function currentProfile(): Promise<User | null> {
   if (claimsError || typeof subject !== "string") return null;
   const { data, error } = await supabase.from("profiles").select("id,name,email,role,status,route_quota,created_at,updated_at").eq("id", subject).single();
   if (error || !data || data.status !== "active") return null;
-  return { id: data.id, name: data.name, email: data.email, role: data.role, status: data.status, routeQuota: data.route_quota, createdAt: data.created_at, updatedAt: data.updated_at };
+  return mapProfile(data);
 }
 
 export async function requireProfile(): Promise<User> {
