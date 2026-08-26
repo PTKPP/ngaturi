@@ -4,6 +4,7 @@ import invitations from "../../../contracts/dummy-data/invitations.json";
 import templates from "../../../contracts/dummy-data/templates.json";
 import themes from "../../../contracts/dummy-data/themes.json";
 import { InvitationSchema, TemplatesSchema, InvitationThemesSchema } from "@/domain";
+import { toWeddingRenderModel } from "@/invitation-modules/content";
 
 vi.mock("@/app/actions/invitations", () => ({ saveInvitationAction: vi.fn(), switchTemplateAction: vi.fn() }));
 
@@ -18,8 +19,9 @@ describe("generic template editor routing", () => {
     fireEvent.click(screen.getByRole("button", { name: "Tambah acara" }));
     const serialized = view.container.querySelector<HTMLInputElement>('input[name="invitation"]')?.value ?? "{}";
     const stored = InvitationSchema.parse(JSON.parse(serialized));
-    expect((stored.content.copy as Record<string, unknown>).openingText).toBe("Teks baru");
-    expect(stored.content.events).toHaveLength(3);
+    const projected = toWeddingRenderModel(stored.content as never);
+    expect(projected.copy.openingText).toBe("Teks baru");
+    expect(projected.events).toHaveLength(3);
   });
 
   it("disables template switching outside draft", () => {
@@ -29,12 +31,12 @@ describe("generic template editor routing", () => {
     expect(within(section).getByRole("button", { name: "Ganti template" })).toBeDisabled();
   });
 
-  it("shows explicit confirmation only when target conversion discards fields", () => {
+  it("preserves unsupported data without asking for destructive confirmation", () => {
     const source = InvitationSchema.parse(invitations[0]);
     const invitation = InvitationSchema.parse({ ...source, content: { ...source.content, sourceOnly: "akan dibuang" } });
     render(<InvitationEditorClient initialInvitation={invitation} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="raka-dan-sinta-draft" />);
     fireEvent.change(screen.getByLabelText("Template tujuan"), { target: { value: "elegant-gold@1" } });
-    expect(screen.getByRole("checkbox", { name: /Konfirmasi pembuangan/ })).toBeRequired();
-    expect(screen.getByText(/sourceOnly/)).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: /Konfirmasi pembuangan/ })).not.toBeInTheDocument();
+    expect(screen.getByText(/tetap disimpan sebagai modul tidak aktif/)).toBeInTheDocument();
   });
 });

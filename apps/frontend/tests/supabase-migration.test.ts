@@ -3,12 +3,15 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { templateRegistry } from "@/templates/registry";
 import { themeRegistry } from "@/themes/registry";
+import { categoryRegistry } from "@/invitation-categories/registry";
 
-const sql = readFileSync(join(process.cwd(), "../../supabase/migrations/202608240001_initial_architecture.sql"), "utf8");
+const initialSql = readFileSync(join(process.cwd(), "../../supabase/migrations/202608240001_initial_architecture.sql"), "utf8");
+const architectureSql = readFileSync(join(process.cwd(), "../../supabase/migrations/202608260001_category_module_architecture.sql"), "utf8");
+const sql = `${initialSql}\n${architectureSql}`;
 
 describe("Supabase migration security and integrity", () => {
   it("defines all required tables, JSON object constraint, and focused indexes", () => {
-    for (const table of ["profiles", "invitation_routes", "template_catalog", "theme_catalog", "invitations", "invitation_media"]) expect(sql).toContain(`create table public.${table}`);
+    for (const table of ["profiles", "invitation_routes", "category_catalog", "template_catalog", "theme_catalog", "invitations", "invitation_media"]) expect(sql).toContain(`create table public.${table}`);
     expect(sql).toMatch(/content jsonb not null check \(jsonb_typeof\(content\) = 'object'\)/);
     expect(sql).not.toMatch(/using gin/i);
   });
@@ -23,7 +26,7 @@ describe("Supabase migration security and integrity", () => {
   });
 
   it("uses RLS and a narrow published-only guest function without anonymous invitation SELECT", () => {
-    for (const table of ["profiles", "invitation_routes", "template_catalog", "theme_catalog", "invitations", "invitation_media"]) expect(sql).toContain(`alter table public.${table} enable row level security`);
+    for (const table of ["profiles", "invitation_routes", "category_catalog", "template_catalog", "theme_catalog", "invitations", "invitation_media"]) expect(sql).toContain(`alter table public.${table} enable row level security`);
     expect(sql).toMatch(/get_published_invitation_by_slug[\s\S]*i\.status = 'published'/);
     expect(sql).not.toMatch(/policy .* on public\.invitations for select to anon/i);
     expect(sql).toMatch(/policy invitations_read_owner[\s\S]*using \(owner_id = auth\.uid\(\)\)/);
@@ -32,15 +35,36 @@ describe("Supabase migration security and integrity", () => {
   });
 
   it("seeds catalog keys in parity with the frontend registries", () => {
+    for (const category of categoryRegistry) {
+      expect(architectureSql).toContain(`('${category.key}',${category.version},'${category.name}','${JSON.stringify(category.requiredModules)}','${JSON.stringify(category.capabilities)}')`);
+    }
     for (const templateModule of Object.values(templateRegistry)) {
       const manifest = templateModule.manifest;
       expect(sql).toContain(`('${manifest.key}',${manifest.version},'${manifest.name}'`);
-      expect(sql).toContain(`'${manifest.thumbnail}',${templateModule.activeContentSchemaVersion},'${JSON.stringify(manifest.supportedSections)}')`);
+      expect(initialSql).toContain(`('${manifest.key}',${manifest.version},'${manifest.name}'`);
+      expect(architectureSql).toContain(`active_content_schema_version = 2`);
+      expect(architectureSql).toContain(JSON.stringify(manifest.sections));
+      expect(architectureSql).toContain(JSON.stringify(manifest.supportedModules));
+      expect(architectureSql).toContain(JSON.stringify(manifest.requiredModules));
+      expect(architectureSql).toContain(JSON.stringify(manifest.optionalModules));
+      expect(architectureSql).toContain(JSON.stringify(manifest.defaultEnabledModules));
     }
     for (const theme of themeRegistry) {
-      expect(sql).toContain(`('${theme.key}',${theme.version},'${theme.templateKey}',${theme.templateVersion},'${theme.name}'`);
-      expect(sql).toContain(`'${JSON.stringify(theme.tokens)}')`);
+      expect(initialSql).toContain(`('${theme.key}',${theme.version},'${theme.templateKey}',${theme.templateVersion},'${theme.name}'`);
+      expect(architectureSql).toContain(`when '${theme.key}'`);
     }
+    expect(architectureSql).toContain('"headingFont"');
+    expect(architectureSql).toContain("invitation_theme_override_keys_safe");
+    expect(architectureSql).toContain("invitation_category_immutable");
+  });
+
+  it("backfills before constraints and keeps legacy rows readable without weakening category integrity", () => {
+    expect(architectureSql.indexOf("update public.invitations i set category_key")).toBeLessThan(architectureSql.indexOf("alter table public.invitations\n  alter column category_key set not null"));
+    expect(architectureSql).toMatch(/template_catalog_category_unique unique \(key, version, category_key, category_version\)/);
+    expect(architectureSql).toMatch(/invitations_template_category_fk foreign key \(template_key, template_version, category_key, category_version\)/);
+    expect(architectureSql).toMatch(/if tg_op = 'INSERT' or new\.content is distinct from old\.content/);
+    expect(architectureSql).toContain("invitation_category_immutable");
+    expect(architectureSql).toContain("new.status = 'published' and old.status <> 'published'");
   });
 
   it("keeps Storage private and scoped by owner/invitation folders", () => {

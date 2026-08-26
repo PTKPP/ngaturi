@@ -12,13 +12,15 @@ Mutation mengalir dari form/client component ke Server Action/Route Handler, aut
 
 ## Data model dan JSONB
 
-`profiles` mereferensikan `auth.users`; `invitation_routes` mempunyai slug unik dan owner; katalog menyimpan template/tema aman; `invitations` menyimpan owner/route/template/theme, content schema version, status/timestamps, dan `content JSONB NOT NULL`; `invitation_media` hanya metadata/path.
+`profiles` mereferensikan `auth.users`; `invitation_routes` mempunyai slug unik dan owner; katalog kategori menyimpan kapabilitas; katalog template terikat kategori dan menyimpan komposisi modul/section; katalog tema menyimpan preset aman. `invitations` menyimpan owner/route/category/template/theme, override tema tervalidasi, content schema version, status/timestamps, dan `content JSONB NOT NULL`; `invitation_media` hanya metadata/path.
 
 Composite FK `(route_id, owner_id)` mencegah mismatch owner. Composite theme/template FK mencegah tema lintas template. Trigger route mengunci profile `FOR UPDATE` sebelum menghitung route sehingga klaim serentak tidak melampaui kuota; unique slug menyelesaikan race slug. RPC membuat route+invitation atomik. Tidak ada GIN content karena belum ada query JSONB.
 
-## Template contract
+## Kontrak Category -> Module -> Template -> Theme
 
-Base invitation mengetahui field aplikasi stabil dan content object opaque. Registry memilih modul berdasarkan key/version; modul memvalidasi content schema version dan Zod content pada create/load/edit/preview/publish/render. Editor router dipilih dari registry. Schema tidak berasal dari user.
+Base invitation mengetahui metadata aplikasi stabil dan content object opaque. `invitation-categories/` menyatakan kapabilitas semua modul secara eksplisit. `invitation-modules/` memiliki schema/default/editor/migrasi semantik serta envelope content v2. `templates/renderers/` memiliki manifest komposisi, section-renderer declaration, dan komponen visual; template mengonsumsi modul tanpa memiliki schema bisnis. `themes/` dan `invitation-design/` memvalidasi preset, override, allowlist asset/font, dan fallback.
+
+Load/render menerima content v1 melalui adapter in-memory. Mutation yang mengubah konten atau publish menulis v2. Switch template draft satu kategori memakai envelope yang sama, menambah default modul tujuan, dan tidak menghapus modul sumber. Composite foreign key memastikan invitation, category, dan template tetap cocok; trigger menolak perubahan kategori implisit.
 
 ## Public SSR dan Storage
 

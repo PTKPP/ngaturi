@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
-import type { z } from "zod";
 import type { Invitation, InvitationTemplate, InvitationTheme } from "@/domain";
+import type { WeddingRenderModel } from "@/invitation-modules/schemas";
 
 export interface InvitationTemplateProps<TContent> {
   invitation: Omit<Invitation, "content">;
@@ -10,15 +10,10 @@ export interface InvitationTemplateProps<TContent> {
 }
 
 export interface TemplateEditorProps<TContent> { value: TContent; onChange(value: TContent): void; }
-export interface ContentConversion<TContent> { content: TContent; discardedFields: string[]; }
-export interface TemplateModule<TContent> {
+export interface TemplateModule {
   manifest: InvitationTemplate;
   activeContentSchemaVersion: number;
-  contentSchema: z.ZodType<TContent>;
-  createDefaultContent(): TContent;
-  editor: ComponentType<TemplateEditorProps<TContent>>;
-  component: ComponentType<InvitationTemplateProps<TContent>>;
+  component: ComponentType<InvitationTemplateProps<WeddingRenderModel>>;
   compatibleThemes: readonly string[];
-  migrateContent(version: number, content: unknown): TContent;
-  convertContent(content: unknown): ContentConversion<TContent>;
+  sectionRenderers: Readonly<Record<string, true>>;
 }

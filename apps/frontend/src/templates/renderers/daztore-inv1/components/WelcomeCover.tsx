@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import type { DaztoreInv1ViewModel } from "../schema";
+import type { DaztoreInv1ViewModel } from "../view-model";
 import { daztoreInv1Assets } from "../assets";
 import { sanitizeRecipient } from "../utilities/recipient";
 import styles from "../styles.module.css";

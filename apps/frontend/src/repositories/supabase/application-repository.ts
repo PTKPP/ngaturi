@@ -5,7 +5,7 @@ import type { ApplicationRepository } from "@/repositories/contracts";
 import type { Invitation } from "@/domain";
 import { mapInvitation, mapProfile, mapRoute, mapTemplate, mapTheme } from "./mappers";
 
-const invitationColumns = "id,owner_id,route_id,title,template_key,template_version,content_schema_version,theme_key,theme_version,status,content,published_at,created_at,updated_at";
+const invitationColumns = "id,owner_id,route_id,title,category_key,category_version,template_key,template_version,content_schema_version,theme_key,theme_version,theme_overrides,status,content,published_at,created_at,updated_at";
 
 function fail(error: { message: string } | null, fallback: string): never {
   throw new Error(error?.message ?? fallback);
@@ -46,10 +46,10 @@ export class SupabaseApplicationRepository implements ApplicationRepository {
     const result = data as { invitation?: Record<string, unknown> } | null;
     if (!result?.invitation) return null;
     const row = result.invitation;
-    return mapInvitation({ id: row.id, owner_id: row.ownerId, route_id: row.routeId, title: row.title, template_key: row.templateKey, template_version: row.templateVersion, content_schema_version: row.contentSchemaVersion, theme_key: row.themeKey, theme_version: row.themeVersion, status: row.status, content: row.content, published_at: row.publishedAt, created_at: row.createdAt, updated_at: row.updatedAt });
+    return mapInvitation({ id: row.id, owner_id: row.ownerId, route_id: row.routeId, title: row.title, category_key: row.categoryKey, category_version: row.categoryVersion, template_key: row.templateKey, template_version: row.templateVersion, content_schema_version: row.contentSchemaVersion, theme_key: row.themeKey, theme_version: row.themeVersion, theme_overrides: row.themeOverrides, status: row.status, content: row.content, published_at: row.publishedAt, created_at: row.createdAt, updated_at: row.updatedAt });
   }
   async listTemplates() {
-    const { data, error } = await this.client.from("template_catalog").select("key,version,name,description,thumbnail,status,supported_sections").eq("status", "active").order("key");
+    const { data, error } = await this.client.from("template_catalog").select("key,version,name,description,thumbnail,status,category_key,category_version,active_content_schema_version,theme_schema_version,supported_modules,required_modules,optional_modules,default_enabled_modules,sections,supported_sections").eq("status", "active").order("key");
     if (error) fail(error, "Template gagal dimuat.");
     return (data ?? []).map(mapTemplate);
   }
@@ -58,7 +58,7 @@ export class SupabaseApplicationRepository implements ApplicationRepository {
     if (error) fail(error, "Tema gagal dimuat.");
     return (data ?? []).map(mapTheme);
   }
-  async createInvitation(_ownerId: string, input: { routeId?: string; slug?: string; title: string; templateKey: string; templateVersion: number; contentSchemaVersion: number; themeKey: string; themeVersion: number; content: Record<string, unknown> }) {
+  async createInvitation(_ownerId: string, input: { routeId?: string; slug?: string; title: string; categoryKey: string; categoryVersion: number; templateKey: string; templateVersion: number; contentSchemaVersion: number; themeKey: string; themeVersion: number; themeOverrides: Record<string, unknown>; content: Record<string, unknown> }) {
     const parameters = { p_title: input.title, p_template_key: input.templateKey, p_template_version: input.templateVersion, p_content_schema_version: input.contentSchemaVersion, p_theme_key: input.themeKey, p_theme_version: input.themeVersion, p_content: input.content };
     const response = input.routeId
       ? await this.client.rpc("create_invitation_on_route", { ...parameters, p_route_id: input.routeId })
@@ -67,7 +67,7 @@ export class SupabaseApplicationRepository implements ApplicationRepository {
     return mapInvitation(response.data as Record<string, unknown>);
   }
   async updateInvitation(ownerId: string, invitation: Invitation) {
-    const { data, error } = await this.client.from("invitations").update({ title: invitation.title, template_key: invitation.templateKey, template_version: invitation.templateVersion, content_schema_version: invitation.contentSchemaVersion, theme_key: invitation.themeKey, theme_version: invitation.themeVersion, status: invitation.status, content: invitation.content, published_at: invitation.publishedAt }).eq("id", invitation.id).eq("owner_id", ownerId).select(invitationColumns).single();
+    const { data, error } = await this.client.from("invitations").update({ title: invitation.title, category_key: invitation.categoryKey, category_version: invitation.categoryVersion, template_key: invitation.templateKey, template_version: invitation.templateVersion, content_schema_version: invitation.contentSchemaVersion, theme_key: invitation.themeKey, theme_version: invitation.themeVersion, theme_overrides: invitation.themeOverrides, status: invitation.status, content: invitation.content, published_at: invitation.publishedAt }).eq("id", invitation.id).eq("owner_id", ownerId).select(invitationColumns).single();
     if (error) fail(error, "Undangan gagal disimpan.");
     return mapInvitation(data);
   }

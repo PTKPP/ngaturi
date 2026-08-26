@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import invitations from "../../../contracts/dummy-data/invitations.json";
 import { InvitationSchema } from "@/domain";
 import { DaztoreInv1Template } from "@/templates/renderers/daztore-inv1/Template";
-import type { DaztoreInv1Content } from "@/templates/renderers/daztore-inv1/schema";
+import type { WeddingRenderModel as DaztoreInv1Content } from "@/invitation-modules/schemas";
 import { getRegisteredTheme } from "@/themes/registry";
 
 vi.mock("next/navigation", () => ({

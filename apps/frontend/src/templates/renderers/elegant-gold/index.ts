@@ -1,8 +1,5 @@
 export { ElegantGoldTemplate as component } from "./Template";
 export { manifest } from "./manifest";
-export { ElegantGoldContentSchema as contentSchema } from "./schema";
-export { createDefaultContent } from "./defaults";
-export { ElegantGoldEditor as editor } from "./editor";
-export { migrateContent, convertContent } from "./migrations";
-export const activeContentSchemaVersion = 1;
+export const activeContentSchemaVersion = 2;
 export const compatibleThemes = ["elegant-gold-default@1", "elegant-gold-rose@1"] as const;
+export const sectionRenderers = { "gold-hero": true, "gold-greeting": true, "gold-couple": true, "gold-quote": true, "gold-events": true, "gold-story": true, "gold-gift": true, "gold-closing": true } as const;

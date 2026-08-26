@@ -15,9 +15,10 @@ export async function createInvitationAction(formData: FormData) {
   const service = new InvitationApplicationService(repository);
   const [templateKey, templateVersion] = versioned(String(formData.get("template") ?? ""));
   const [themeKey, themeVersion] = versioned(String(formData.get("theme") ?? ""));
+  const [categoryKey, categoryVersion] = versioned(String(formData.get("category") ?? ""));
   const mode = String(formData.get("routeMode"));
   const invitation = await service.create(actor, {
-    title: String(formData.get("title") ?? ""), templateKey, templateVersion, themeKey, themeVersion,
+    title: String(formData.get("title") ?? ""), categoryKey, categoryVersion, templateKey, templateVersion, themeKey, themeVersion,
     routeId: mode === "existing" ? String(formData.get("routeId") ?? "") : undefined,
     slug: mode === "new" ? String(formData.get("slug") ?? "") : undefined,
   });

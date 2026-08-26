@@ -17,13 +17,14 @@ import { StorySection } from "./components/StorySection";
 import { WelcomeCover } from "./components/WelcomeCover";
 import styles from "./styles.module.css";
 import { themeCssVariables } from "@/themes/registry";
-import type { DaztoreInv1Content, DaztoreInv1ViewModel } from "./schema";
+import type { WeddingRenderModel } from "@/invitation-modules/schemas";
+import type { DaztoreInv1ViewModel } from "./view-model";
 
 const bodyFont = Josefin_Sans({ subsets: ["latin"], variable: "--daztore-font-body", display: "swap" });
 const scriptFont = Sacramento({ weight: "400", subsets: ["latin"], variable: "--daztore-font-script", display: "swap" });
 const arabicFont = Noto_Naskh_Arabic({ subsets: ["arabic"], variable: "--daztore-font-arabic", display: "swap" });
 
-export function DaztoreInv1Template({ invitation, content, theme, preview = false }: InvitationTemplateProps<DaztoreInv1Content>) {
+export function DaztoreInv1Template({ invitation, content, theme, preview = false }: InvitationTemplateProps<WeddingRenderModel>) {
   const [opened, setOpened] = useState(false);
   const audioControlRef = useRef<AudioControlHandle>(null);
   const viewModel: DaztoreInv1ViewModel = { ...invitation, ...content, content: content.copy };

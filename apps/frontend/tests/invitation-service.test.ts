@@ -80,13 +80,14 @@ describe("route allocation and invitation ownership", () => {
     const changed = runtime.invitationService.update(user, { ...before, themeKey: "minimal-white-sage" });
     expect(changed).toMatchObject({ routeId: before.routeId, templateKey: before.templateKey, content: before.content, themeKey: "minimal-white-sage" });
   });
-  it("selects the target template default theme and preserves content when template changes", () => {
+  it("selects the target template default theme and preserves semantic module content when template changes", () => {
     const runtime = createDemoRuntime(localStorage); const user = runtime.auth.login("user@demo.local", "user-demo");
     const before = runtime.invitationService.getOwned(user, "inv_owner_draft");
     const changed = runtime.invitationService.update(user, { ...before, templateKey: "elegant-gold", themeKey: "minimal-white-sage" });
-    expect(changed).toMatchObject({ templateKey: "elegant-gold", themeKey: "elegant-gold-default", routeId: before.routeId, content: before.content });
+    expect(changed).toMatchObject({ templateKey: "elegant-gold", themeKey: "elegant-gold-default", routeId: before.routeId, contentSchemaVersion: 2 });
+    expect(changed.content).toHaveProperty("modules.couple-profile");
   });
-  it("rejects template changes outside draft and requires confirmation for discarded fields", () => {
+  it("rejects template changes outside draft and preserves unsupported legacy fields", () => {
     const runtime = createDemoRuntime(localStorage); const admin = runtime.auth.login("admin@demo.local", "admin-demo");
     const published = runtime.invitationService.getOwned(admin, "inv_admin_published");
     expect(() => runtime.invitationService.update(admin, { ...published, templateKey: "minimal-white", themeKey: "minimal-white-default" })).toThrow("berstatus draft");
@@ -94,10 +95,9 @@ describe("route allocation and invitation ownership", () => {
     const draft = runtime.invitationService.getOwned(user, "inv_owner_draft");
     runtime.invitations.update({ ...draft, content: { ...draft.content, templateOnlySecret: "discard me" } });
     const withUnsupported = { ...runtime.invitationService.getOwned(user, draft.id), templateKey: "elegant-gold" };
-    expect(() => runtime.invitationService.update(user, withUnsupported)).toThrow("Konfirmasi diperlukan");
-    const changed = runtime.invitationService.update(user, withUnsupported, { confirmDiscard: true });
+    const changed = runtime.invitationService.update(user, withUnsupported);
     expect(changed.templateKey).toBe("elegant-gold");
-    expect(changed.content).not.toHaveProperty("templateOnlySecret");
+    expect(changed.content).toHaveProperty("extensions.legacyV1.templateOnlySecret", "discard me");
   });
   it("rejects invalid template-theme combinations", () => {
     const runtime = createDemoRuntime(localStorage); const user = runtime.auth.login("user@demo.local", "user-demo");

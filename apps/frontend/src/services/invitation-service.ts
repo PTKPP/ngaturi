@@ -9,11 +9,14 @@ import { assertValidSession } from "./authorization";
 import { createPrototypeId } from "./id";
 import { validateRouteSlug } from "./route-service";
 import { getTemplateModule, parseTemplateContent } from "@/templates/registry";
+import { adaptContentToTemplate, createTemplateContent } from "@/invitation-modules/content";
 
 export type InvitationRouteInput = { mode: "existing"; routeId: string } | { mode: "new"; slug: string };
 export interface InvitationDraftInput {
   title: string;
   route: InvitationRouteInput;
+  categoryKey?: string;
+  categoryVersion?: number;
   templateKey: string;
   templateVersion: number;
   themeKey: string;
@@ -56,12 +59,16 @@ export class InvitationService {
     const id = createPrototypeId("inv");
     const templateModule = getTemplateModule(input.templateKey, input.templateVersion);
     if (!templateModule) throw new Error("Template tidak tersedia.");
+    const categoryKey = input.categoryKey ?? templateModule.manifest.categoryKey;
+    const categoryVersion = input.categoryVersion ?? templateModule.manifest.categoryVersion;
+    if (categoryKey !== templateModule.manifest.categoryKey || categoryVersion !== templateModule.manifest.categoryVersion) throw new Error("Template tidak kompatibel dengan kategori undangan.");
     const invitation = InvitationSchema.parse({
       id, ownerId: actor.id, routeId: route.id, title: input.title.trim(),
+      categoryKey, categoryVersion,
       templateKey: input.templateKey, templateVersion: input.templateVersion,
       contentSchemaVersion: templateModule.activeContentSchemaVersion,
-      themeKey: theme.key, themeVersion: theme.version, status: "draft",
-      content: templateModule.createDefaultContent(), publishedAt: null, createdAt: now, updatedAt: now,
+      themeKey: theme.key, themeVersion: theme.version, themeOverrides: {}, status: "draft",
+      content: createTemplateContent(templateModule.manifest), publishedAt: null, createdAt: now, updatedAt: now,
     });
     const isNewRoute = input.route.mode === "new";
     this.assertProspective(route, invitation, isNewRoute);
@@ -78,13 +85,16 @@ export class InvitationService {
     if (templateChanged && current.status !== "draft") throw new Error("Template hanya dapat diubah saat undangan berstatus draft.");
     const targetModule = getTemplateModule(next.templateKey, next.templateVersion);
     if (!targetModule) throw new Error("Template tidak tersedia.");
-    const conversion = templateChanged ? targetModule.convertContent(current.content) : null;
-    if (conversion?.discardedFields.length && !options.confirmDiscard) throw new Error(`Konfirmasi diperlukan untuk membuang field: ${conversion.discardedFields.join(", ")}.`);
+    if (targetModule.manifest.categoryKey !== current.categoryKey || targetModule.manifest.categoryVersion !== current.categoryVersion) throw new Error("Template lintas kategori tidak dapat dipilih.");
+    void options;
     const theme = templateChanged ? this.getDefaultActiveTheme(next.templateKey, next.templateVersion) : this.assertActiveSelection(next.templateKey, next.templateVersion, next.themeKey, next.themeVersion);
-    const contentSchemaVersion = templateChanged ? targetModule.activeContentSchemaVersion : next.contentSchemaVersion;
-    const content = parseTemplateContent(next.templateKey, next.templateVersion, contentSchemaVersion, conversion?.content ?? next.content);
+    const rawContentChanged = next.contentSchemaVersion !== current.contentSchemaVersion || JSON.stringify(next.content) !== JSON.stringify(current.content);
+    const statusRequiresV2 = next.status === "published" && current.status !== "published";
+    const sourceContent = parseTemplateContent(current.templateKey, current.templateVersion, templateChanged ? current.contentSchemaVersion : next.contentSchemaVersion, templateChanged ? current.content : next.content);
+    const contentSchemaVersion = templateChanged || rawContentChanged || statusRequiresV2 ? targetModule.activeContentSchemaVersion : next.contentSchemaVersion;
+    const content = templateChanged ? adaptContentToTemplate(sourceContent, targetModule.manifest) : rawContentChanged || statusRequiresV2 ? sourceContent : next.content;
     const publishedAt = next.status === "published" ? (current.publishedAt ?? new Date().toISOString()) : null;
-    const parsed = InvitationSchema.parse({ ...next, content, contentSchemaVersion, themeKey: theme.key, themeVersion: theme.version, publishedAt, updatedAt: new Date().toISOString() });
+    const parsed = InvitationSchema.parse({ ...next, categoryKey: current.categoryKey, categoryVersion: current.categoryVersion, content, contentSchemaVersion, themeKey: theme.key, themeVersion: theme.version, themeOverrides: templateChanged ? {} : next.themeOverrides, publishedAt, updatedAt: new Date().toISOString() });
     const route = this.routes.findById(parsed.routeId);
     if (!route) throw new Error("Route undangan tidak tersedia.");
     this.assertProspective(route, parsed, false, parsed.id);

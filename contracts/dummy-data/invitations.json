@@ -4,11 +4,14 @@
     "ownerId": "usr_owner_demo",
     "routeId": "route_owner_draft",
     "title": "Undangan Raka & Sinta",
+    "categoryKey": "wedding",
+    "categoryVersion": 1,
     "templateKey": "minimal-white",
     "templateVersion": 1,
     "contentSchemaVersion": 1,
     "themeKey": "minimal-white-default",
     "themeVersion": 1,
+    "themeOverrides": {},
     "status": "draft",
     "content": {
     "couple": {
@@ -32,11 +35,14 @@
     "ownerId": "usr_admin_demo",
     "routeId": "route_admin_published",
     "title": "Pernikahan Dara & Bima",
+    "categoryKey": "wedding",
+    "categoryVersion": 1,
     "templateKey": "elegant-gold",
     "templateVersion": 1,
     "contentSchemaVersion": 1,
     "themeKey": "elegant-gold-default",
     "themeVersion": 1,
+    "themeOverrides": {},
     "status": "published",
     "content": {
     "couple": {

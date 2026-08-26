@@ -14,13 +14,17 @@ Slug dinormalisasi menjadi huruf kecil, angka, dan dash; unik global; dan tidak 
 
 Invitation dibuat `draft`, dapat dipreview owner, dan hanya tampil ke guest setelah `published`. Unpublish menghasilkan `inactive`; invitation dapat kembali ke draft untuk perubahan struktural. Published timestamp hanya ada ketika published. Create, load, edit, preview, publish, dan public render memvalidasi template key/version, content schema version, dan content.
 
-## Template, tema, dan konten
+## Kategori, modul, template, tema, dan konten
 
-Template adalah renderer struktural build-time: `minimal-white@1`, `elegant-gold@1`, dan `daztore-inv1@1`. Setiap modul memiliki schema, default, editor, migrasi, konversi, dan renderer. Editor utama merutekan editor melalui registry.
+Kategori adalah tipe bisnis undangan dan sumber kapabilitas modul. Registry awal mencakup `wedding`, `khitan`, `aqiqah`, `birthday`, dan `corporate`, masing-masing dengan modul `required`, `default`, `optional`, atau `unsupported`. Template selalu terikat ke tepat satu versi kategori.
 
-Tema adalah preset token visual tervalidasi untuk tepat satu versi template. Tema tidak mengubah struktur, perilaku, konten, owner, route, atau publication. Perubahan template hanya saat draft: field kompatibel dikonversi, field target kosong memakai default, dan pembuangan field lain memerlukan konfirmasi.
+Modul memiliki data semantik reusable, schema, default, editor, dan migrasi sendiri. Template tidak mendefinisikan ulang data pasangan/acara/konten; template hanya menentukan urutan section dan renderer build-time. Template aktif saat ini ialah `minimal-white@1`, `elegant-gold@1`, dan `daztore-inv1@1` untuk `wedding@1`.
 
-Konten memuat teks, pasangan, acara terurut, setting, dan referensi media. Binary/base64, UI state, schema user, arbitrary CSS, remote script, serta kode upload bukan bagian JSONB invitation.
+Tema adalah preset token visual tervalidasi untuk tepat satu versi template. Warna, font, ornament, background, dan border hanya dapat memakai token/ID allowlist; raw CSS/HTML/JS dan URL tema arbitrer ditolak. Tema tidak mengubah struktur, perilaku, konten, owner, route, atau publication.
+
+Perubahan template hanya saat draft dan hanya dalam kategori yang sama. Modul kompatibel dipakai langsung, modul baru memperoleh default, dan data modul yang tidak dirender tetap tersimpan sebagai inactive data. Perubahan lintas kategori ditolak; migrasi kategori di masa depan harus berupa operasi versi eksplisit.
+
+Konten schema v2 disimpan sebagai JSON modul dan status enablement. Adapter v1 membaca bentuk wedding lama tanpa rewrite destruktif; field lama tak dikenal dipertahankan di extension compatibility. Binary/base64, UI state, schema user, arbitrary CSS, remote script, serta kode upload bukan bagian JSONB invitation.
 
 ## Publication dan media
 

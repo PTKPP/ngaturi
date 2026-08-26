@@ -1,5 +1,5 @@
 import type { InvitationEvent } from "@/domain";
-import type { DaztoreInv1ViewModel } from "../schema";
+import type { DaztoreInv1ViewModel } from "../view-model";
 import { daztoreInv1Assets } from "../assets";
 import { buildGoogleCalendarUrl } from "../utilities/calendar";
 import { formatEventDate } from "../utilities/countdown";

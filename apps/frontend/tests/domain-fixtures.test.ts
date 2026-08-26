@@ -6,6 +6,7 @@ import templates from "../../../contracts/dummy-data/templates.json";
 import themes from "../../../contracts/dummy-data/themes.json";
 import invitations from "../../../contracts/dummy-data/invitations.json";
 import { parseTemplateContent } from "@/templates/registry";
+import { toWeddingRenderModel } from "@/invitation-modules/content";
 
 const contract = () => structuredClone({ users, routes, templates, themes, invitations });
 
@@ -30,7 +31,7 @@ describe("dummy data contract", () => {
     expect(InvitationRoutesSchema.parse(routes)).toHaveLength(3);
     const parsed = InvitationsSchema.parse(invitations);
     expect(parsed.map((item) => item.status)).toEqual(expect.arrayContaining(["draft", "published"]));
-    expect(parsed.every((item) => parseTemplateContent(item.templateKey, item.templateVersion, item.contentSchemaVersion, item.content).events.length >= 2)).toBe(true);
+    expect(parsed.every((item) => toWeddingRenderModel(parseTemplateContent(item.templateKey, item.templateVersion, item.contentSchemaVersion, item.content)).events.length >= 2)).toBe(true);
   });
   it("validates the unified frontend contract", () => {
     expect(FrontendContractSchema.parse(contract())).toMatchObject({ users: expect.any(Array), routes: expect.any(Array), themes: expect.any(Array), invitations: expect.any(Array) });

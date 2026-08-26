@@ -1,4 +1,4 @@
-import type { DaztoreInv1ViewModel } from "../schema";
+import type { DaztoreInv1ViewModel } from "../view-model";
 import { daztoreInv1Assets } from "../assets";
 import styles from "../styles.module.css";
 import { ThemeIcon } from "./Icons";

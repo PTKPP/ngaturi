@@ -12,7 +12,7 @@ export interface ApplicationRepository {
   findPublishedInvitation(slug: string): Promise<Invitation | null>;
   listTemplates(): Promise<InvitationTemplate[]>;
   listThemes(): Promise<InvitationTheme[]>;
-  createInvitation(ownerId: string, input: { routeId?: string; slug?: string; title: string; templateKey: string; templateVersion: number; contentSchemaVersion: number; themeKey: string; themeVersion: number; content: Record<string, unknown> }): Promise<Invitation>;
+  createInvitation(ownerId: string, input: { routeId?: string; slug?: string; title: string; categoryKey: string; categoryVersion: number; templateKey: string; templateVersion: number; contentSchemaVersion: number; themeKey: string; themeVersion: number; themeOverrides: Record<string, unknown>; content: Record<string, unknown> }): Promise<Invitation>;
   updateInvitation(ownerId: string, invitation: Invitation): Promise<Invitation>;
   preassignRoute(ownerId: string, slug: string): Promise<InvitationRoute>;
   reassignRoute(routeId: string, slug: string, confirmed: boolean): Promise<InvitationRoute>;

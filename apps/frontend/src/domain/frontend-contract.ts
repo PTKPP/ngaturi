@@ -4,6 +4,7 @@ import { InvitationRoutesSchema } from "./route";
 import { TemplatesSchema, templateId } from "./template";
 import { InvitationThemesSchema, themeId, themeTemplateId } from "./theme";
 import { UsersSchema } from "./user";
+import { getInvitationCategory } from "@/invitation-categories/registry";
 
 export const FrontendContractSchema = z.object({
   users: UsersSchema,
@@ -20,8 +21,11 @@ export const FrontendContractSchema = z.object({
   }
 
   const templateIds = new Set<string>();
+  const templatesById = new Map<string, (typeof contract.templates)[number]>();
   for (const [index, template] of contract.templates.entries()) {
     addDuplicateIssue(templateIds, templateId(template), context, ["templates", index], "Key dan versi template harus unik.");
+    templatesById.set(templateId(template), template);
+    if (!getInvitationCategory(template.categoryKey, template.categoryVersion)) context.addIssue({ code: "custom", path: ["templates", index, "categoryKey"], message: "Template harus merujuk kategori yang tersedia." });
   }
 
   const themeIds = new Set<string>();
@@ -75,6 +79,10 @@ export const FrontendContractSchema = z.object({
     const selectedTemplateId = templateId({ key: invitation.templateKey, version: invitation.templateVersion });
     if (!templateIds.has(selectedTemplateId)) {
       context.addIssue({ code: "custom", path: ["invitations", index, "templateKey"], message: "Template undangan harus tersedia di katalog." });
+    }
+    const selectedTemplate = templatesById.get(selectedTemplateId);
+    if (selectedTemplate && (selectedTemplate.categoryKey !== invitation.categoryKey || selectedTemplate.categoryVersion !== invitation.categoryVersion)) {
+      context.addIssue({ code: "custom", path: ["invitations", index, "categoryKey"], message: "Kategori undangan harus sama dengan kategori template." });
     }
     const selectedTheme = contract.themes.find((theme) => theme.key === invitation.themeKey && theme.version === invitation.themeVersion);
     if (!selectedTheme) {

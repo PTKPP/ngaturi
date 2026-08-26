@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import invitations from "../../../contracts/dummy-data/invitations.json";
 import users from "../../../contracts/dummy-data/users.json";
-import { InvitationSchema, UsersSchema } from "@/domain";
+import themes from "../../../contracts/dummy-data/themes.json";
+import { InvitationSchema, InvitationThemesSchema, UsersSchema } from "@/domain";
 import type { ApplicationRepository } from "@/repositories/contracts";
 import { InvitationApplicationService } from "@/application/invitation-service";
 import { AdminApplicationService } from "@/application/admin-service";
@@ -11,13 +12,14 @@ const owner = profiles.find((user) => user.role === "user" && user.status === "a
 const admin = profiles.find((user) => user.role === "admin")!;
 const draft = InvitationSchema.parse(invitations[0]);
 const published = InvitationSchema.parse(invitations[1]);
+const themeCatalogue = InvitationThemesSchema.parse(themes);
 
 function repositoryFor(records = [draft, published]) {
   const updateInvitation = vi.fn(async (_ownerId: string, invitation: typeof draft) => invitation);
   const repository = {
     findOwnedInvitation: vi.fn(async (ownerId: string, id: string) => records.find((item) => item.id === id && item.ownerId === ownerId) ?? null),
     updateInvitation,
-    listThemes: vi.fn(async () => []),
+    listThemes: vi.fn(async () => themeCatalogue),
     setRouteQuota: vi.fn(), preassignRoute: vi.fn(), reassignRoute: vi.fn(),
   } as unknown as ApplicationRepository;
   return { repository, updateInvitation };
@@ -40,6 +42,30 @@ describe("production application service authorization", () => {
     const { repository, updateInvitation } = repositoryFor();
     await new InvitationApplicationService(repository).setStatus(owner, draft.id, "published");
     expect(updateInvitation).toHaveBeenCalledWith(owner.id, expect.objectContaining({ id: draft.id, ownerId: owner.id, status: "published", publishedAt: expect.any(String) }));
+  });
+
+  it("writes schema v2 when a legacy draft is explicitly saved", async () => {
+    const { repository, updateInvitation } = repositoryFor();
+    await new InvitationApplicationService(repository).save(owner, draft);
+    expect(updateInvitation).toHaveBeenCalledWith(owner.id, expect.objectContaining({ contentSchemaVersion: 2, content: expect.objectContaining({ modules: expect.any(Object), moduleVersions: expect.any(Object) }) }));
+  });
+
+  it("keeps legacy content byte-for-byte stable for a theme-only change", async () => {
+    const { repository, updateInvitation } = repositoryFor();
+    await new InvitationApplicationService(repository).save(owner, { ...draft, themeKey: "minimal-white-sage" });
+    expect(updateInvitation).toHaveBeenCalledWith(owner.id, expect.objectContaining({ contentSchemaVersion: 1, content: draft.content, themeKey: "minimal-white-sage" }));
+  });
+
+  it("does not silently convert an already-published legacy invitation when unpublishing", async () => {
+    const { repository, updateInvitation } = repositoryFor();
+    await new InvitationApplicationService(repository).setStatus(admin, published.id, "inactive");
+    expect(updateInvitation).toHaveBeenCalledWith(admin.id, expect.objectContaining({ contentSchemaVersion: 1, content: published.content, status: "inactive" }));
+  });
+
+  it("does not silently convert unchanged content when saving a published legacy invitation", async () => {
+    const { repository, updateInvitation } = repositoryFor();
+    await new InvitationApplicationService(repository).save(admin, published);
+    expect(updateInvitation).toHaveBeenCalledWith(admin.id, expect.objectContaining({ contentSchemaVersion: 1, content: published.content, status: "published" }));
   });
 
   it("rejects admin operations for regular users before calling the repository", async () => {

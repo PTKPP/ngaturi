@@ -27,10 +27,11 @@ Jika Supabase CLI dan Docker tersedia, jalankan `supabase db reset` dari root un
 
 ## Status
 
-- Renderer aktif: `minimal-white@1`, `elegant-gold@1`, dan `daztore-inv1@1`.
-- Setiap renderer memiliki schema, default, editor, migrasi/konversi, manifest, dan komponen sendiri.
+- Arsitektur undangan memisahkan Category (tipe bisnis), Module (schema/default/editor/migrasi semantik), Template (komposisi/renderer), dan Theme (token visual aman).
+- Template aktif: `minimal-white@1`, `elegant-gold@1`, dan `daztore-inv1@1`; semuanya berada pada kategori `wedding@1` dan memakai content schema v2 berbasis modul.
+- Adapter v1 tetap membaca undangan lama. Save konten/publish menormalisasi ke v2; ganti template satu kategori mempertahankan modul yang tidak aktif dan ganti kategori ditolak.
 - Production memakai Supabase SSR cookie auth, repository server, Server Actions, RLS, RPC atomik, dan private Storage.
 - Mock browser lama hanya adapter test/development eksplisit dan tidak dipasang pada root layout production.
-- SQL di `supabase/migrations/` adalah sumber kebenaran database; registry TypeScript adalah sumber kebenaran renderer build-time.
+- SQL di `supabase/migrations/` adalah sumber kebenaran database; registry TypeScript adalah sumber kebenaran kategori, modul, template, dan tema build-time.
 
 Lihat `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, dan `docs/ROADMAP.md`.

@@ -2,9 +2,9 @@ import { EventDetails } from "@/templates/shared/components/EventDetails";
 import type { InvitationTemplateProps } from "@/templates/types";
 import styles from "./styles.module.css";
 import { themeCssVariables } from "@/themes/registry";
-import type { MinimalWhiteContent } from "./schema";
+import type { WeddingRenderModel } from "@/invitation-modules/schemas";
 
-export function MinimalWhiteTemplate({ invitation, content, theme, preview = false }: InvitationTemplateProps<MinimalWhiteContent>) {
+export function MinimalWhiteTemplate({ invitation, content, theme, preview = false }: InvitationTemplateProps<WeddingRenderModel>) {
   const { couple, copy } = content;
   return (
     <main className={styles.page} data-template="minimal-white@1" data-theme={`${theme.key}@${theme.version}`} style={themeCssVariables(theme)}>
