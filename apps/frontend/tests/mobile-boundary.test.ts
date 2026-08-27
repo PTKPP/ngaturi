@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const globals = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
-const renderers = join(process.cwd(), "src/templates/renderers");
+const templates = join(process.cwd(), "src/templates");
 
 describe.each([360, 390])("mobile boundary at %ipx", (width) => {
   it("uses a clipped page boundary, zero-minimum grid items, touch targets, and safe areas", () => {
@@ -16,7 +16,10 @@ describe.each([360, 390])("mobile boundary at %ipx", (width) => {
   });
 
   it("does not use viewport-fixed minimum widths in renderer styles", () => {
-    const css = readdirSync(renderers, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => readFileSync(join(renderers, entry.name, "styles.module.css"), "utf8")).join("\n");
+    const css = readdirSync(templates, { withFileTypes: true }).filter((entry) => entry.isDirectory() && /^\w[\w-]+$/.test(entry.name)).flatMap((entry) => {
+      const path = join(templates, entry.name, "styles.module.css");
+      try { return [readFileSync(path, "utf8")]; } catch { return []; }
+    }).join("\n");
     expect(css).not.toMatch(/min-width:\s*(?:[4-9]\d{2}|\d{4,})px/);
   });
 });

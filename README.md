@@ -1,6 +1,6 @@
 # Ngaturi
 
-Ngaturi adalah platform undangan digital mobile-first. Arsitektur aktif memakai Next.js 16 untuk UI dan application backend, serta Supabase untuk PostgreSQL, Auth, dan Storage. Kode Go di `apps/backend` dipertahankan sebagai implementasi auth lama, tetapi tidak termasuk jalur aktif undangan dan tidak dipanggil frontend.
+Ngaturi adalah platform undangan digital mobile-first. Arsitektur aktif memakai Next.js 16 untuk UI dan application backend, serta Supabase untuk PostgreSQL, Auth, dan Storage. Kode Go dan browser demo lama diisolasi di `legacy/` dan tidak termasuk jalur aktif atau build frontend.
 
 ## Menjalankan lokal
 
@@ -23,15 +23,16 @@ npm run build
 
 Jika Supabase CLI dan Docker tersedia, jalankan `supabase db reset` dari root untuk memverifikasi migrasi pada database bersih. Tidak ada perintah deploy atau perubahan proyek remote yang dijalankan otomatis.
 
-`make app-build` dan konfigurasi PM2 aktif hanya membangun/menjalankan frontend Next.js. `make backend-build` tetap tersedia untuk inspeksi legacy, tetapi service Go tidak dijalankan oleh konfigurasi PM2 aktif.
+`make app-build` dan konfigurasi PM2 aktif hanya membangun/menjalankan frontend Next.js. `make legacy-backend-build` tersedia untuk verifikasi eksplisit arsip Go, tetapi service tersebut tidak dijalankan oleh konfigurasi PM2 aktif.
 
 ## Status
 
 - Arsitektur undangan memisahkan Category (tipe bisnis), Module (schema/default/editor/migrasi semantik), Template (komposisi/renderer), dan Theme (token visual aman).
-- Template aktif: `minimal-white@1`, `elegant-gold@1`, dan `daztore-inv1@1`; semuanya berada pada kategori `wedding@1` dan memakai content schema v2 berbasis modul.
+- `daztore-inv1@1` adalah template create production. `minimal-white@1` dan `elegant-gold@1` tetap compatibility-only untuk undangan tersimpan.
+- Template adalah paket self-contained di `apps/frontend/src/templates/<key>/`; registry import statis dihasilkan saat build.
 - Adapter v1 tetap membaca undangan lama. Save konten/publish menormalisasi ke v2; ganti template satu kategori mempertahankan modul yang tidak aktif dan ganti kategori ditolak.
 - Production memakai Supabase SSR cookie auth, repository server, Server Actions, RLS, RPC atomik, dan private Storage.
-- Mock browser lama hanya adapter test/development eksplisit dan tidak dipasang pada root layout production.
+- Mock browser/localStorage lama berada di `legacy/frontend-browser-demo/` dan tidak termasuk source, test, atau bundle production.
 - SQL di `supabase/migrations/` adalah sumber kebenaran database; registry TypeScript adalah sumber kebenaran kategori, modul, template, dan tema build-time.
 
-Lihat `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, dan `docs/ROADMAP.md`.
+Lihat `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, dan `docs/DAZTORE_PRODUCTION_READINESS.md`.

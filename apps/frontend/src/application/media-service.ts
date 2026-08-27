@@ -1,30 +1,30 @@
 import "server-only";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { User } from "@/domain";
+import type { InvitationMediaRepository } from "@/repositories/contracts";
 
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
-const MAX_BYTES = 10 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
 export class InvitationMediaService {
-  constructor(private readonly client: SupabaseClient) {}
+  constructor(private readonly repository: InvitationMediaRepository) {}
 
-  async upload(ownerId: string, invitationId: string, file: File, altText: string) {
-    if (!ALLOWED_TYPES.has(file.type) || file.size <= 0 || file.size > MAX_BYTES) throw new Error("File harus JPEG, PNG, WebP, atau AVIF dan maksimal 10 MB.");
-    const extension = file.type.split("/")[1].replace("jpeg", "jpg");
-    const path = `${ownerId}/${invitationId}/${crypto.randomUUID()}.${extension}`;
-    const { error: uploadError } = await this.client.storage.from("invitation-media").upload(path, file, { contentType: file.type, upsert: false });
-    if (uploadError) throw new Error(uploadError.message);
-    const { data, error } = await this.client.from("invitation_media").insert({ invitation_id: invitationId, owner_id: ownerId, storage_path: path, mime_type: file.type, size_bytes: file.size, alt_text: altText.trim(), status: "ready" }).select("id,storage_path").single();
-    if (error) { await this.client.storage.from("invitation-media").remove([path]); throw new Error(error.message); }
-    return data;
+  async uploadImage(actor: User, invitationId: string, file: File, altText: string) {
+    this.assertActor(actor);
+    if (!await this.repository.invitationOwnedBy(actor.id, invitationId)) throw new Error("Undangan tidak ditemukan atau bukan milik Anda.");
+    if (!ALLOWED_IMAGE_TYPES.has(file.type) || file.size <= 0 || file.size > MAX_IMAGE_BYTES) throw new Error("File harus JPEG, PNG, WebP, atau AVIF dan maksimal 10 MB.");
+    const normalizedAlt = altText.trim();
+    if (!normalizedAlt || normalizedAlt.length > 240) throw new Error("Alt text wajib diisi dan maksimal 240 karakter.");
+    return this.repository.uploadImage({ ownerId: actor.id, invitationId, file, altText: normalizedAlt });
   }
 
-  async remove(ownerId: string, mediaId: string) {
-    const { data, error } = await this.client.from("invitation_media").select("storage_path").eq("id", mediaId).eq("owner_id", ownerId).single();
-    if (error || !data) throw new Error(error?.message ?? "Media tidak ditemukan.");
-    const storageResult = await this.client.storage.from("invitation-media").remove([data.storage_path]);
-    if (storageResult.error) throw new Error(storageResult.error.message);
-    const deleteResult = await this.client.from("invitation_media").delete().eq("id", mediaId).eq("owner_id", ownerId);
-    if (deleteResult.error) throw new Error("Objek sudah terhapus tetapi metadata belum terhapus; cleanup database perlu diulang.");
+  async removeImage(actor: User, invitationId: string, mediaId: string) {
+    this.assertActor(actor);
+    if (!await this.repository.invitationOwnedBy(actor.id, invitationId)) throw new Error("Undangan tidak ditemukan atau bukan milik Anda.");
+    await this.repository.removeImage(actor.id, invitationId, mediaId);
+  }
+
+  private assertActor(actor: User) {
+    if (actor.status !== "active") throw new Error("Akun tidak aktif.");
   }
 }

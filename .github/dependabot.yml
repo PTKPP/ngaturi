@@ -15,7 +15,7 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/apps/frontend"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -43,6 +43,14 @@ updates:
           - "patch"
       # Major version tetap terpisah (lebih aman)
       # (tidak digroup)
+
+  - package-ecosystem: "gomod"
+    directory: "/legacy/go-auth-backend"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "legacy"
 
   - package-ecosystem: "github-actions"
     directory: "/"

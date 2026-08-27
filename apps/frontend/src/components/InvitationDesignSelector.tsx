@@ -8,7 +8,7 @@ interface CategoryChoice { key: InvitationCategoryKey; version: number; name: st
 export function InvitationDesignSelector({ categories, templates, themes }: { categories: CategoryChoice[]; templates: InvitationTemplate[]; themes: InvitationTheme[] }) {
   const [categoryId, setCategoryId] = useState("wedding@1");
   const compatibleTemplates = useMemo(() => templates.filter((template) => `${template.categoryKey}@${template.categoryVersion}` === categoryId), [categoryId, templates]);
-  const [templateId, setTemplateId] = useState("minimal-white@1");
+  const [templateId, setTemplateId] = useState("");
   const selectedTemplate = compatibleTemplates.some((template) => `${template.key}@${template.version}` === templateId) ? templateId : compatibleTemplates[0] ? `${compatibleTemplates[0].key}@${compatibleTemplates[0].version}` : "";
   const compatibleThemes = themes.filter((theme) => `${theme.templateKey}@${theme.templateVersion}` === selectedTemplate);
   const defaultTheme = compatibleThemes.find((theme) => theme.isDefault) ?? compatibleThemes[0];

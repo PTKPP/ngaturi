@@ -1,21 +1,20 @@
-import * as daztoreInv1 from "./renderers/daztore-inv1";
-import * as elegantGold from "./renderers/elegant-gold";
-import * as minimalWhite from "./renderers/minimal-white";
 import type { TemplateModule } from "./types";
+import { generatedTemplateModules } from "./generated-registry";
 import { migrateTemplateContent, type InvitationModuleContent } from "@/invitation-modules/content";
 import { getInvitationCategory } from "@/invitation-categories/registry";
-import { templateThemeRegistry, themeRegistry } from "@/themes/registry";
 
-export const templateRegistry = {
-  "elegant-gold@1": elegantGold,
-  "minimal-white@1": minimalWhite,
-  "daztore-inv1@1": daztoreInv1,
-} satisfies Record<string, TemplateModule>;
+const templateEntries = generatedTemplateModules.map((templateModule) => [`${templateModule.manifest.key}@${templateModule.manifest.version}`, templateModule] as const);
+if (new Set(templateEntries.map(([id]) => id)).size !== templateEntries.length) throw new Error("ID template generated harus unik.");
+export const templateRegistry: Readonly<Record<string, TemplateModule>> = Object.fromEntries(templateEntries);
 
-export type RegisteredTemplateId = keyof typeof templateRegistry;
+export type RegisteredTemplateId = string;
 
 export function getTemplateModule(key: string, version: number): TemplateModule | null {
   return (templateRegistry as Record<string, TemplateModule>)[`${key}@${version}`] ?? null;
+}
+
+export function isTemplateAvailableForCreation(key: string, version: number): boolean {
+  return getTemplateModule(key, version)?.availability === "production";
 }
 
 export function parseTemplateContent(key: string, version: number, contentSchemaVersion: number, content: unknown): InvitationModuleContent {
@@ -33,11 +32,14 @@ for (const [id, templateModule] of Object.entries(templateRegistry)) {
   for (const moduleId of category.requiredModules) if (!templateModule.manifest.requiredModules.includes(moduleId)) throw new Error(`Template ${id} tidak mendeklarasikan modul wajib kategori ${moduleId}.`);
   for (const moduleId of templateModule.manifest.optionalModules) if (category.capabilities[moduleId] !== "optional") throw new Error(`Modul ${moduleId} bukan optional pada kategori template ${id}.`);
   for (const moduleId of templateModule.manifest.defaultEnabledModules) if (category.capabilities[moduleId] !== "default") throw new Error(`Modul ${moduleId} bukan default pada kategori template ${id}.`);
-  const themeDefinition = templateThemeRegistry[id];
-  if (!themeDefinition || themeDefinition.schemaVersion !== templateModule.manifest.themeSchemaVersion) throw new Error(`Theme schema template tidak terdaftar atau versinya tidak cocok: ${id}.`);
-  const compatibleThemes = themeRegistry.filter((theme) => `${theme.templateKey}@${theme.templateVersion}` === id).map((theme) => `${theme.key}@${theme.version}`);
+  const themeDefinition = templateModule.themeDefinition;
+  if (themeDefinition.schemaVersion !== templateModule.manifest.themeSchemaVersion) throw new Error(`Theme schema template tidak terdaftar atau versinya tidak cocok: ${id}.`);
+  const compatibleThemes = templateModule.themes.map((theme) => `${theme.key}@${theme.version}`);
   const declaredThemes = templateModule.compatibleThemes as readonly string[];
   if (declaredThemes.some((themeId) => !compatibleThemes.includes(themeId)) || compatibleThemes.some((themeId) => !declaredThemes.includes(themeId))) throw new Error(`Daftar tema template tidak sama dengan registry: ${id}.`);
+  const activeThemes = templateModule.themes.filter((theme) => theme.status === "active");
+  if (activeThemes.filter((theme) => theme.isDefault).length !== 1) throw new Error(`Template ${id} harus memiliki tepat satu tema default aktif.`);
+  if (!activeThemes.some((theme) => `${theme.key}@${theme.version}` === themeDefinition.fallbackThemeId)) throw new Error(`Fallback tema tidak terdaftar: ${themeDefinition.fallbackThemeId}.`);
   const renderers = templateModule.sectionRenderers as Readonly<Record<string, true>>;
   for (const section of templateModule.manifest.sections) if (!renderers[section.renderer]) throw new Error(`Renderer section ${section.renderer} tidak terdaftar pada ${id}.`);
 }

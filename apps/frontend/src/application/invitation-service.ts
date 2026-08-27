@@ -16,6 +16,7 @@ export class InvitationApplicationService {
   async create(actor: User, command: CreateInvitationCommand) {
     const templateModule = getTemplateModule(command.templateKey, command.templateVersion);
     if (!templateModule) throw new Error("Template tidak tersedia.");
+    if (templateModule.availability !== "production") throw new Error("Template belum tersedia untuk undangan production baru.");
     if (templateModule.manifest.categoryKey !== command.categoryKey || templateModule.manifest.categoryVersion !== command.categoryVersion) throw new Error("Template tidak kompatibel dengan kategori undangan.");
     const themes = await this.repository.listThemes();
     const theme = themes.find((item) => item.key === command.themeKey && item.version === command.themeVersion && item.templateKey === command.templateKey && item.templateVersion === command.templateVersion && item.status === "active");
@@ -49,6 +50,7 @@ export class InvitationApplicationService {
     const templateModule = getTemplateModule(templateKey, templateVersion);
     if (!templateModule) throw new Error("Template tidak tersedia.");
     if (templateModule.manifest.categoryKey !== current.categoryKey || templateModule.manifest.categoryVersion !== current.categoryVersion) throw new Error("Template lintas kategori tidak dapat dipilih.");
+    if (templateModule.availability !== "production") throw new Error("Template tujuan belum tersedia untuk production.");
     const content = adaptContentToTemplate(parseTemplateContent(current.templateKey, current.templateVersion, current.contentSchemaVersion, current.content), templateModule.manifest);
     const themes = await this.repository.listThemes();
     const theme = themes.find((item) => item.templateKey === templateKey && item.templateVersion === templateVersion && item.isDefault && item.status === "active");

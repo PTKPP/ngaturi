@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const templateRoot = join(process.cwd(), "src/templates/renderers/daztore-inv1");
+const templateRoot = join(process.cwd(), "src/templates/daztore-inv1");
 function codeFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name);

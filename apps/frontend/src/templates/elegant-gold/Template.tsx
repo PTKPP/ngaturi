@@ -1,7 +1,7 @@
 import { EventDetails } from "@/templates/shared/components/EventDetails";
 import type { InvitationTemplateProps } from "@/templates/types";
 import styles from "./styles.module.css";
-import { themeCssVariables } from "@/themes/registry";
+import { themeCssVariables } from "@/themes/css-variables";
 import type { WeddingRenderModel } from "@/invitation-modules/schemas";
 import { DefaultInvitationCover } from "@/templates/shared/DefaultInvitationCover";
 

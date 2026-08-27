@@ -22,7 +22,7 @@ import { StorySection } from "./components/StorySection";
 import { VideoSection } from "./components/VideoSection";
 import { WelcomeCover } from "./components/WelcomeCover";
 import styles from "./styles.module.css";
-import { themeCssVariables } from "@/themes/registry";
+import { themeCssVariables } from "@/themes/css-variables";
 import type { DaztoreInv1ViewModel } from "./view-model";
 import { useInvitationExperience } from "@/templates/shared/InvitationExperienceShell";
 

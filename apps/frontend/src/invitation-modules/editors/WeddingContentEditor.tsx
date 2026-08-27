@@ -1,7 +1,7 @@
 "use client";
 
 import type { TemplateEditorProps } from "@/templates/types";
-import type { WeddingRenderModel } from "./schemas";
+import type { WeddingRenderModel } from "../schemas";
 
 export function WeddingModuleEditor({ value, onChange }: TemplateEditorProps<WeddingRenderModel>) {
   const updateCopy = (key: keyof WeddingRenderModel["copy"], next: string) => onChange({ ...value, copy: { ...value.copy, [key]: next } });

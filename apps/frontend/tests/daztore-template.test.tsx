@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import invitations from "../../../contracts/dummy-data/invitations.json";
 import { InvitationSchema } from "@/domain";
-import { DaztoreInv1Template } from "@/templates/renderers/daztore-inv1/Template";
+import { DaztoreInv1Template } from "@/templates/daztore-inv1/Template";
 import type { WeddingRenderModel as DaztoreInv1Content } from "@/invitation-modules/schemas";
 import { getRegisteredTheme } from "@/themes/registry";
 import { themeCssVariables } from "@/themes/registry";

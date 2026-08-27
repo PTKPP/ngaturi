@@ -2,7 +2,7 @@
 
 ## Boundary aktif
 
-Next.js App Router menangani SSR, UI, Server Actions, Route Handlers, validasi, application services, dan repository adapters. Supabase menyediakan PostgreSQL, cookie-backed Auth SSR, dan private Storage. `apps/backend` (Go) tetap utuh sebagai auth lama dan bukan dependency flow invitation aktif.
+Next.js App Router menangani SSR, UI, Server Actions, Route Handlers, validasi, application services, dan repository adapters. Supabase menyediakan PostgreSQL, cookie-backed Auth SSR, dan private Storage. Implementasi Go lama diisolasi pada `legacy/go-auth-backend/` dan bukan dependency flow invitation aktif.
 
 Mutation mengalir dari form/client component ke Server Action/Route Handler, authorization dan service di `application/`, interface `repositories/contracts/`, adapter `repositories/supabase/`, lalu RLS/RPC/constraint PostgreSQL. Renderer hanya menerima props tervalidasi. Mock hanya adapter test/development eksplisit.
 
@@ -18,7 +18,7 @@ Composite FK `(route_id, owner_id)` mencegah mismatch owner. Composite theme/tem
 
 ## Kontrak Category -> Module -> Template -> Theme
 
-Base invitation mengetahui metadata aplikasi stabil dan content object opaque. `invitation-categories/` menyatakan kapabilitas semua modul secara eksplisit. `invitation-modules/` memiliki schema/default/editor/migrasi semantik serta envelope content v2. `templates/renderers/` memiliki manifest komposisi, section-renderer declaration, dan komponen visual; template mengonsumsi modul tanpa memiliki schema bisnis. `themes/` dan `invitation-design/` memvalidasi preset, override, allowlist asset/font, dan fallback.
+Base invitation mengetahui metadata aplikasi stabil dan content object opaque. `invitation-categories/` menyatakan kapabilitas semua modul secara eksplisit. `invitation-modules/definitions/` memiliki schema/default/editor capability/migrasi semantik; core content mengelola envelope v2. Paket `templates/<key>/` memiliki manifest, renderer, section declaration, theme policy, dan preset. Generator build-time menghasilkan import statis; template mengonsumsi modul tanpa memiliki schema bisnis. `themes/` dan `invitation-design/` memvalidasi override, allowlist asset/font, dan fallback.
 
 Load/render menerima content v1 melalui adapter in-memory. Mutation yang mengubah konten atau publish menulis v2. Switch template draft satu kategori memakai envelope yang sama, menambah default modul tujuan, dan tidak menghapus modul sumber. Composite foreign key memastikan invitation, category, dan template tetap cocok; trigger menolak perubahan kategori implisit.
 

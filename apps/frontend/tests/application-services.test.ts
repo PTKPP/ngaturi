@@ -20,6 +20,7 @@ function repositoryFor(records = [draft, published]) {
     findOwnedInvitation: vi.fn(async (ownerId: string, id: string) => records.find((item) => item.id === id && item.ownerId === ownerId) ?? null),
     updateInvitation,
     listThemes: vi.fn(async () => themeCatalogue),
+    createInvitation: vi.fn(),
     setRouteQuota: vi.fn(), preassignRoute: vi.fn(), reassignRoute: vi.fn(),
   } as unknown as ApplicationRepository;
   return { repository, updateInvitation };
@@ -36,6 +37,15 @@ describe("production application service authorization", () => {
     const { repository, updateInvitation } = repositoryFor();
     await expect(new InvitationApplicationService(repository).switchTemplate(admin, published.id, "minimal-white", 1, true)).rejects.toThrow("berstatus draft");
     expect(updateInvitation).not.toHaveBeenCalled();
+  });
+
+  it("does not create new invitations from compatibility-only templates", async () => {
+    const { repository } = repositoryFor();
+    await expect(new InvitationApplicationService(repository).create(owner, {
+      title: "Compatibility", slug: "compatibility", categoryKey: "wedding", categoryVersion: 1,
+      templateKey: "minimal-white", templateVersion: 1, themeKey: "minimal-white-default", themeVersion: 1,
+    })).rejects.toThrow("belum tersedia");
+    expect(repository.createInvitation).not.toHaveBeenCalled();
   });
 
   it("validates content before publication and scopes the update to actor ID", async () => {

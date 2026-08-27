@@ -8,17 +8,14 @@ PYTHON ?= $(shell \
 	fi)
 COMPOSE ?= docker compose -f docker-compose.tools.yml
 PM2 ?= pm2
-RUNTIME_DIR ?= .runtime
-BACKEND_BINARY ?= $(RUNTIME_DIR)/ngaturi-api
 
-.PHONY: app-build backend-build frontend-build pm2-start pm2-reload pm2-stop pm2-delete pm2-status pm2-logs knowledge-up knowledge-down knowledge-health knowledge-index knowledge-reindex knowledge-search knowledge-test
+.PHONY: app-build frontend-build legacy-backend-build pm2-start pm2-reload pm2-stop pm2-delete pm2-status pm2-logs knowledge-up knowledge-down knowledge-health knowledge-index knowledge-reindex knowledge-search knowledge-test
 
 frontend-build:
 	cd apps/frontend && npm run build
 
-backend-build:
-	mkdir -p "$(RUNTIME_DIR)"
-	cd apps/backend && go build -trimpath -o "../../$(BACKEND_BINARY)" ./cmd/api
+legacy-backend-build:
+	cd legacy/go-auth-backend && go test ./... && go build -trimpath ./cmd/api
 
 app-build: frontend-build
 

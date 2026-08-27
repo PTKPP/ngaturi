@@ -31,7 +31,7 @@ def test_whitelist_and_sensitive_exclusion():
     assert is_allowed_source(ROOT / "contracts/dummy-data/README.md")
     assert not is_allowed_source(ROOT / "contracts/archive/openapi-task-002.yaml")
     assert not is_allowed_source(ROOT / ".env")
-    assert not is_allowed_source(ROOT / "apps/backend/main.go")
+    assert not is_allowed_source(ROOT / "legacy/go-auth-backend/cmd/api/main.go")
     assert all(".env" not in source.name for source in iter_sources())
 
 

@@ -10,7 +10,7 @@ import { themeRegistry } from "@/themes/registry";
 describe("category, module, template, and theme content contracts", () => {
   it("keeps semantic fields in registered modules rather than the base invitation", () => {
     expect(Object.keys(InvitationSchema.shape)).not.toEqual(expect.arrayContaining(["couple", "events", "gallery", "settings"]));
-    expect(Object.keys(moduleRegistry)).toEqual(INVITATION_MODULE_IDS);
+    expect(Object.keys(moduleRegistry).sort()).toEqual([...INVITATION_MODULE_IDS].sort());
     for (const definition of Object.values(moduleRegistry)) expect(definition.schema.parse(definition.createDefault())).toBeTruthy();
   });
 

@@ -1,6 +1,6 @@
 import type { User } from "@/domain";
 import type { ApplicationRepository } from "@/repositories/contracts";
-import { validateRouteSlug } from "@/services/route-service";
+import { validateRouteSlug } from "./route-slug";
 
 export class AdminApplicationService {
   constructor(private readonly repository: ApplicationRepository) {}

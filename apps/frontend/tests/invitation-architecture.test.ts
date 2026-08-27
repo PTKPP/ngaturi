@@ -28,7 +28,7 @@ describe("final invitation architecture", () => {
   });
 
   it("keeps module schemas/defaults reusable and outside template renderers", () => {
-    expect(Object.keys(moduleRegistry)).toEqual(INVITATION_MODULE_IDS);
+    expect(Object.keys(moduleRegistry).sort()).toEqual([...INVITATION_MODULE_IDS].sort());
     for (const id of INVITATION_MODULE_IDS) {
       expect(moduleRegistry[id].id).toBe(id);
       expect(moduleRegistry[id].version).toBe(1);
@@ -61,7 +61,7 @@ describe("final invitation architecture", () => {
   });
 
   it("limits theme references and falls back safely for missing presets or invalid overrides", () => {
-    expect(Object.keys(templateThemeRegistry)).toEqual(["minimal-white@1", "elegant-gold@1", "daztore-inv1@1"]);
+    expect(Object.keys(templateThemeRegistry).sort()).toEqual(["daztore-inv1@1", "elegant-gold@1", "minimal-white@1"]);
     expect(() => ThemeOverridesSchema.parse({ rawCss: "body{display:none}", headingFont: "https://evil.example/font.woff" })).toThrow();
     const fallback = resolveRegisteredTheme("minimal-white", 1, "missing", 99, { headingFont: "cormorant-garamond" } as never)!;
     expect(fallback.fallbackUsed).toBe(true);

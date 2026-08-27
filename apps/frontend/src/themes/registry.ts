@@ -1,23 +1,11 @@
-import type { CSSProperties } from "react";
 import { InvitationThemesSchema, ThemeOverridesSchema, type InvitationTheme, type ThemeOverrides } from "@/domain";
-import themesJson from "../../../../contracts/dummy-data/themes.json";
-import { safeFontFamily } from "@/invitation-design/registry";
+import { generatedTemplateModules } from "@/templates/generated-registry";
+import type { TemplateThemeDefinition } from "./types";
 
-export interface TemplateThemeDefinition {
-  schemaVersion: 1;
-  fallbackThemeId: string;
-  allowedFonts: readonly InvitationTheme["tokens"]["headingFont"][];
-  allowedOrnaments: readonly InvitationTheme["tokens"]["ornament"][];
-  allowedBackgrounds: readonly InvitationTheme["tokens"]["backgroundPattern"][];
-}
+export { themeCssVariables } from "./css-variables";
 
-export const templateThemeRegistry: Readonly<Record<string, TemplateThemeDefinition>> = {
-  "minimal-white@1": { schemaVersion: 1, fallbackThemeId: "minimal-white-default@1", allowedFonts: ["inter"], allowedOrnaments: ["none", "minimal-line"], allowedBackgrounds: ["none", "paper-soft"] },
-  "elegant-gold@1": { schemaVersion: 1, fallbackThemeId: "elegant-gold-default@1", allowedFonts: ["inter", "cormorant-garamond"], allowedOrnaments: ["none", "classic-gold"], allowedBackgrounds: ["none", "dark-grain"] },
-  "daztore-inv1@1": { schemaVersion: 1, fallbackThemeId: "daztore-inv1-default@1", allowedFonts: ["josefin-sans", "cormorant-garamond", "sacramento", "noto-naskh-arabic"], allowedOrnaments: ["none", "islamic-arch"], allowedBackgrounds: ["none", "mosque-soft"] },
-};
-
-export const themeRegistry = InvitationThemesSchema.parse(themesJson);
+export const templateThemeRegistry: Readonly<Record<string, TemplateThemeDefinition>> = Object.fromEntries(generatedTemplateModules.map((templateModule) => [`${templateModule.manifest.key}@${templateModule.manifest.version}`, templateModule.themeDefinition]));
+export const themeRegistry = InvitationThemesSchema.parse(generatedTemplateModules.flatMap((templateModule) => templateModule.themes));
 
 export function getRegisteredTheme(key: string, version: number): InvitationTheme | null {
   return themeRegistry.find((theme) => theme.key === key && theme.version === version) ?? null;
@@ -41,23 +29,6 @@ export function resolveRegisteredTheme(templateKey: string, templateVersion: num
   if (safeOverrides.backgroundPattern && !definition.allowedBackgrounds.includes(safeOverrides.backgroundPattern)) delete safeOverrides.backgroundPattern;
   return { theme: { ...preset, tokens: { ...preset.tokens, ...safeOverrides } }, fallbackUsed: !requested };
 }
-export function themeCssVariables(theme: InvitationTheme): CSSProperties {
-  return {
-    "--theme-bg": theme.tokens.background,
-    "--theme-surface": theme.tokens.surface,
-    "--theme-ink": theme.tokens.text,
-    "--theme-muted": theme.tokens.mutedText,
-    "--theme-dark": theme.tokens.primary,
-    "--theme-accent": theme.tokens.accent,
-    "--theme-line": theme.tokens.border,
-    "--theme-heading-font": safeFontFamily(theme.tokens.headingFont),
-    "--theme-body-font": safeFontFamily(theme.tokens.bodyFont),
-    "--theme-ornament": theme.tokens.ornament,
-    "--theme-background-pattern": theme.tokens.backgroundPattern,
-    "--theme-border-style": theme.tokens.borderStyle,
-  } as CSSProperties;
-}
-
 for (const theme of themeRegistry) {
   const definition = templateThemeRegistry[`${theme.templateKey}@${theme.templateVersion}`];
   if (!definition || !definition.allowedFonts.includes(theme.tokens.headingFont) || !definition.allowedFonts.includes(theme.tokens.bodyFont) || !definition.allowedOrnaments.includes(theme.tokens.ornament) || !definition.allowedBackgrounds.includes(theme.tokens.backgroundPattern)) throw new Error(`Preset tema tidak sesuai definition: ${theme.key}@${theme.version}.`);

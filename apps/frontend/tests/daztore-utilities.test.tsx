@@ -1,11 +1,11 @@
 import { render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { InvitationEvent } from "@/domain";
-import { Countdown } from "@/templates/renderers/daztore-inv1/components/Countdown";
-import { Reveal } from "@/templates/renderers/daztore-inv1/components/Reveal";
-import { buildGoogleCalendarUrl } from "@/templates/renderers/daztore-inv1/utilities/calendar";
-import { eventTargetInstant, getCountdownParts } from "@/templates/renderers/daztore-inv1/utilities/countdown";
-import { RECIPIENT_MAX_LENGTH, sanitizeRecipient } from "@/templates/renderers/daztore-inv1/utilities/recipient";
+import { Countdown } from "@/templates/daztore-inv1/components/Countdown";
+import { Reveal } from "@/templates/daztore-inv1/components/Reveal";
+import { buildGoogleCalendarUrl } from "@/templates/daztore-inv1/utilities/calendar";
+import { eventTargetInstant, getCountdownParts } from "@/templates/daztore-inv1/utilities/countdown";
+import { RECIPIENT_MAX_LENGTH, sanitizeRecipient } from "@/templates/daztore-inv1/utilities/recipient";
 
 const event: InvitationEvent = {
   id: "event-test",

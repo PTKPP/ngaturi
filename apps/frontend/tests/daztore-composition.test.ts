@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import { getInvitationCategory } from "@/invitation-categories/registry";
 import { createTemplateContent } from "@/invitation-modules/content";
 import { parseTemplateContent } from "@/templates/registry";
-import { manifest } from "@/templates/renderers/daztore-inv1/manifest";
-import { sectionRenderers } from "@/templates/renderers/daztore-inv1";
+import { manifest } from "@/templates/daztore-inv1/manifest";
+import { sectionRenderers } from "@/templates/daztore-inv1";
 import { getRegisteredTheme, themeCssVariables } from "@/themes/registry";
 
 describe("daztore wedding composition", () => {
@@ -49,7 +49,7 @@ describe("daztore wedding composition", () => {
   });
 
   it("keeps audio ownership shared and introduces no raw CSS, HTML, or arbitrary visual URLs", () => {
-    const root = join(process.cwd(), "src/templates/renderers/daztore-inv1");
+    const root = join(process.cwd(), "src/templates/daztore-inv1");
     const source = readdirSync(join(root, "components"), { withFileTypes: true }).filter((entry) => entry.isFile() && entry.name.endsWith(".tsx")).map((entry) => readFileSync(join(root, "components", entry.name), "utf8")).join("\n");
     const styles = readFileSync(join(root, "styles.module.css"), "utf8");
     expect(source).not.toMatch(/<audio|dangerouslySetInnerHTML|style=\{\{[^}]*url/i);

@@ -13,7 +13,7 @@ Sebelum mengubah kode, periksa status/diff, baca file terkait, dan ambil 4–6 c
 
 ## Aturan implementasi
 
-- Next.js adalah UI dan application backend; Supabase menyediakan PostgreSQL, Auth, dan Storage. Jangan menambah Fastify atau fungsi Go. `apps/backend` adalah auth lama di luar flow undangan aktif.
+- Next.js adalah UI dan application backend; Supabase menyediakan PostgreSQL, Auth, dan Storage. Jangan menambah Fastify atau fungsi Go. `legacy/go-auth-backend` adalah arsip di luar flow undangan aktif.
 - Mutation melewati Server Action/Route Handler, application service, authorization, repository, lalu Supabase. Komponen dan renderer tidak boleh mengakses Supabase, SQL, repository, atau `localStorage`.
 - Domain hanya memuat metadata undangan stabil. Kategori memiliki kapabilitas; modul memiliki schema/default/editor/migrasi; template memiliki komposisi/renderer; tema hanya preset token visual tervalidasi. Dilarang memakai `eval`, remote script, arbitrary CSS, schema runtime user, atau upload executable.
 - Perubahan template hanya pada draft dan kategori yang sama. Pertahankan data modul yang tidak dirender; jangan membuang data diam-diam. Tema tidak mengubah struktur atau konten.
@@ -49,6 +49,6 @@ Template baru wajib memenuhi seluruh aturan berikut:
 9. Pertahankan aksesibilitas, reduced motion, private-media path terkendali, dan `next/image`.
 10. Buktikan mobile 360 px dan 390 px tanpa horizontal overflow.
 11. Saat kontrak konten berubah, tambahkan compatibility migration yang mempertahankan data undangan lama.
-12. Daftarkan template di frontend registry dan katalog database melalui migration forward-only baru.
+12. Ekspor `templateModule` dari paket agar generator membuat registry import statis; daftarkan katalog database melalui migration forward-only baru.
 13. Pertahankan parity frontend/database dan tambahkan test registry, renderer, schema, theme, migration, switching, preservation, serta mobile.
 14. Jalankan lint, typecheck, seluruh test, build, audit dependency, dan `git diff --check` sebelum selesai.

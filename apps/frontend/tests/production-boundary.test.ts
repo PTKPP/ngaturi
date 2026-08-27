@@ -1,14 +1,23 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const source = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
+const productionSource = (directory: string): string => readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+  const path = join(directory, entry.name);
+  return entry.isDirectory() ? [productionSource(path)] : /\.(?:ts|tsx)$/.test(entry.name) ? [readFileSync(path, "utf8")] : [];
+}).join("\n");
 
 describe("production persistence and auth boundary", () => {
   it("does not mount demo or localStorage persistence in the production app tree", () => {
     const layout = source("src/app/layout.tsx");
     expect(layout).not.toMatch(/DemoProvider|localStorage|createDemoRuntime/);
     expect(source("src/app/login/page.tsx")).toMatch(/loginAction|Supabase Auth/);
+  });
+
+  it("keeps legacy services, browser mocks, and localStorage outside production source", () => {
+    const code = productionSource(join(process.cwd(), "src"));
+    expect(code).not.toMatch(/@\/services|@\/repositories\/mock|@\/lib\/demo-runtime|localStorage|createDemoRuntime/);
   });
 
   it("keeps service-role usage server-only and never public-prefixed", () => {
@@ -24,7 +33,7 @@ describe("production persistence and auth boundary", () => {
   });
 
   it("keeps media on controlled same-origin optimized image paths", () => {
-    const image = source("src/templates/renderers/daztore-inv1/components/ThemeImage.tsx");
+    const image = source("src/templates/daztore-inv1/components/ThemeImage.tsx");
     expect(image).toMatch(/next\/image/);
     expect(image).not.toMatch(/unoptimized|loader=/);
     expect(image).toMatch(/\/api\/public-media\//);

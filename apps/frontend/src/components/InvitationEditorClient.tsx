@@ -7,13 +7,14 @@ import { saveInvitationAction, switchTemplateAction } from "@/app/actions/invita
 import { TemplateEditorRouter } from "@/templates/editor-router";
 import { getTemplateModule } from "@/templates/registry";
 import { TemplateRenderer } from "@/templates/renderer";
+import { isTemplateAvailableForCreation } from "@/templates/registry";
 
 export function InvitationEditorClient({ initialInvitation, templates, themes, routeSlug }: { initialInvitation: Invitation; templates: InvitationTemplate[]; themes: InvitationTheme[]; routeSlug: string }) {
   const [invitation, setInvitation] = useState(initialInvitation);
   const currentTemplateId = `${invitation.templateKey}@${invitation.templateVersion}`;
   const [targetTemplateId, setTargetTemplateId] = useState(currentTemplateId);
   const [livePreviewOpen, setLivePreviewOpen] = useState(false);
-  const compatibleTemplates = templates.filter((template) => template.categoryKey === invitation.categoryKey && template.categoryVersion === invitation.categoryVersion);
+  const compatibleTemplates = templates.filter((template) => template.categoryKey === invitation.categoryKey && template.categoryVersion === invitation.categoryVersion && (`${template.key}@${template.version}` === currentTemplateId || isTemplateAvailableForCreation(template.key, template.version)));
   const compatibleThemes = themes.filter((theme) => theme.templateKey === invitation.templateKey && theme.templateVersion === invitation.templateVersion);
   return <>
     <form className="form" action={saveInvitationAction}>

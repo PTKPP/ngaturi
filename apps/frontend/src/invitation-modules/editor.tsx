@@ -1,7 +1,7 @@
 "use client";
 
 import type { InvitationTemplate } from "@/domain";
-import { WeddingModuleEditor } from "./wedding-editor";
+import { WeddingModuleEditor } from "./editors/WeddingContentEditor";
 import { moduleRegistry } from "./registry";
 import { toWeddingRenderModel, updateFromWeddingRenderModel, type InvitationModuleContent } from "./content";
 import { InvitationMusicSchema } from "@/invitation-music/registry";
