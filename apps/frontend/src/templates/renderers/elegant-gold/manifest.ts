@@ -5,10 +5,10 @@ export const manifest = TemplateSchema.parse({
   description: "Nuansa hangat dengan aksen emas dan tipografi klasik.",
   thumbnail: "/templates/elegant-gold.svg", status: "active",
   categoryKey: "wedding", categoryVersion: 1, activeContentSchemaVersion: 2, themeSchemaVersion: 1,
-  supportedModules: ["cover", "greeting", "couple-profile", "quote", "event", "love-story", "gift", "closing"],
+  supportedModules: ["cover", "greeting", "couple-profile", "quote", "event", "love-story", "gift", "music", "closing"],
   requiredModules: ["cover", "couple-profile", "event", "closing"],
   optionalModules: ["gift"],
-  defaultEnabledModules: ["greeting", "quote", "love-story"],
+  defaultEnabledModules: ["greeting", "quote", "love-story", "music"],
   sections: [
     { id: "hero", moduleId: "cover", renderer: "gold-hero" },
     { id: "greeting", moduleId: "greeting", renderer: "gold-greeting" },

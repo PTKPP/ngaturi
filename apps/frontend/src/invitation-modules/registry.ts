@@ -1,9 +1,10 @@
 import { z } from "zod";
 import type { InvitationModuleDefinition, InvitationModuleId } from "./types";
 import { InvitationEventsSchema, MediaReferenceSchema, OptionalUrlSchema, PartnerSchema } from "./schemas";
+import { InvitationMusicSchema } from "@/invitation-music/registry";
 
 const textSchema = z.object({ text: z.string() });
-const configSchema = z.object({ enabled: z.boolean().default(true) });
+const configSchema = z.object({ enabled: z.boolean().default(true) }).passthrough();
 const profileSchema = z.object({ fullName: z.string().trim().min(1), nickname: z.string().trim().min(1), photo: MediaReferenceSchema });
 
 function definition<T>(value: Omit<InvitationModuleDefinition<T>, "version">): InvitationModuleDefinition<T> { return { ...value, version: 1 }; }
@@ -33,6 +34,7 @@ export const moduleRegistry = {
   maps: definition({ id: "maps", name: "Peta", schema: z.object({ label: z.string() }), createDefault: () => ({ label: "Buka peta" }), migrate: stable(z.object({ label: z.string() })), editor: "configuration" }),
   "qr-check-in": definition({ id: "qr-check-in", name: "QR check-in", schema: configSchema, createDefault: () => ({ enabled: true }), migrate: stable(configSchema), editor: "configuration" }),
   livestream: definition({ id: "livestream", name: "Livestream", schema: z.object({ url: OptionalUrlSchema }), createDefault: () => ({ url: "" }), migrate: stable(z.object({ url: OptionalUrlSchema })), editor: "configuration" }),
+  music: definition({ id: "music", name: "Musik latar", schema: InvitationMusicSchema, createDefault: () => ({ trackId: "ambient-soft", title: "Ambient lembut", startAtSeconds: 0, volume: 0.35, loop: true }), migrate: stable(InvitationMusicSchema), editor: "configuration" }),
   closing: textModule("closing", "Penutup", "Terima kasih atas doa dan kehadiran Anda."),
 } satisfies Record<InvitationModuleId, InvitationModuleDefinition>;
 

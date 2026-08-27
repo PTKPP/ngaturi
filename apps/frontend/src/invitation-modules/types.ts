@@ -4,7 +4,7 @@ export const INVITATION_MODULE_IDS = [
   "cover", "greeting", "couple-profile", "child-profile", "parents", "quote",
   "event", "countdown", "love-story", "birth-info", "speaker", "agenda",
   "gallery", "video", "rsvp", "gift", "wishes", "maps", "qr-check-in",
-  "livestream", "closing",
+  "livestream", "music", "closing",
 ] as const;
 
 export const InvitationModuleIdSchema = z.enum(INVITATION_MODULE_IDS);

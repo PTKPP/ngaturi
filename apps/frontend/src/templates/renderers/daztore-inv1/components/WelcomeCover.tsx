@@ -1,38 +1,42 @@
 "use client";
 
-import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import type { InvitationEvent } from "@/domain";
 import type { DaztoreInv1ViewModel } from "../view-model";
 import { daztoreInv1Assets } from "../assets";
+import { formatEventDate } from "../utilities/countdown";
 import { sanitizeRecipient } from "../utilities/recipient";
 import styles from "../styles.module.css";
 import { ThemeIcon } from "./Icons";
 import { ThemeImage } from "./ThemeImage";
+import { InvitationOpenButton } from "@/templates/shared/InvitationOpenButton";
+import { useInvitationExperience } from "@/templates/shared/InvitationExperienceShell";
 
-export function WelcomeCover({ invitation, open, onOpen }: { invitation: DaztoreInv1ViewModel; open: boolean; onOpen(): void }) {
-  const searchParams = useSearchParams();
-  const recipient = sanitizeRecipient(searchParams.get("to"));
-
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
-  }, [open]);
-
+export function WelcomeCover({ invitation, event, eyebrow, title }: {
+  invitation: DaztoreInv1ViewModel;
+  event: InvitationEvent;
+  eyebrow: string;
+  title: string;
+}) {
+  const { opened } = useInvitationExperience();
+  const recipient = sanitizeRecipient(useSearchParams().get("to"));
   const { partnerOne, partnerTwo } = invitation.couple;
-  return <section className={styles.cover} data-open={open ? "true" : "false"} aria-label="Pembuka undangan" aria-hidden={!open}>
+  return <section className={styles.cover} data-open={opened ? "false" : "true"} aria-label="Pembuka undangan" aria-hidden={opened}>
     <div className={styles.coverInner}>
-      <p className={styles.coverLabel}>The Wedding Of</p>
+      <p className={styles.coverEyebrow}>{eyebrow}</p>
       <div className={styles.coverPortraits} aria-label={`Foto ${partnerOne.fullName} dan ${partnerTwo.fullName}`}>
         <ThemeImage src={partnerOne.photo} fallback={daztoreInv1Assets.partnerOnePlaceholder} alt={`Foto ${partnerOne.fullName}`} eager />
         <ThemeImage src={partnerTwo.photo} fallback={daztoreInv1Assets.partnerTwoPlaceholder} alt={`Foto ${partnerTwo.fullName}`} eager />
         <ThemeIcon name="heart" />
       </div>
       <h1>{partnerOne.nickname} <span>&amp;</span> {partnerTwo.nickname}</h1>
-      <p className={styles.recipientLabel}>Kepada Yth. Bapak/Ibu/Saudara/i</p>
-      <p className={styles.recipient} data-testid="recipient">{recipient}</p>
-      <button type="button" onClick={onOpen}><ThemeIcon name="envelope" /><span>Buka Undangan</span></button>
+      <p className={styles.coverTitle}>{title}</p>
+      <p className={styles.coverDate}>{formatEventDate(event.date)}</p>
+      <div className={styles.recipientBlock}>
+        <p className={styles.recipientLabel}>Kepada Yth. Bapak/Ibu/Saudara/i</p>
+        <p className={styles.recipient} data-testid="recipient">{recipient}</p>
+      </div>
+      <InvitationOpenButton><ThemeIcon name="envelope" /><span>Buka Undangan</span></InvitationOpenButton>
     </div>
   </section>;
 }

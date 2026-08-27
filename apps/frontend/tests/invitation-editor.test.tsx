@@ -39,4 +39,30 @@ describe("generic template editor routing", () => {
     expect(screen.queryByRole("checkbox", { name: /Konfirmasi pembuangan/ })).not.toBeInTheDocument();
     expect(screen.getByText(/tetap disimpan sebagai modul tidak aktif/)).toBeInTheDocument();
   });
+
+  it("updates the live preview theme immediately without changing invitation content", () => {
+    const invitation = InvitationSchema.parse(invitations[0]);
+    const view = render(<InvitationEditorClient initialInvitation={invitation} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="raka-dan-sinta-draft" />);
+    const initialContent = structuredClone(invitation.content);
+    fireEvent.click(screen.getByRole("button", { name: "Preview langsung" }));
+    expect(view.container.querySelector('[data-template="minimal-white@1"]')).toHaveAttribute("data-theme", "minimal-white-default@1");
+    const themeSelect = [...view.container.querySelectorAll("select")].find((select) => select.querySelector('option[value="minimal-white-sage@1"]'))!;
+    fireEvent.change(themeSelect, { target: { value: "minimal-white-sage@1" } });
+    expect(view.container.querySelector('[data-template="minimal-white@1"]')).toHaveAttribute("data-theme", "minimal-white-sage@1");
+    const serialized = view.container.querySelector<HTMLInputElement>('input[name="invitation"]')?.value ?? "{}";
+    expect(InvitationSchema.parse(JSON.parse(serialized)).content).toEqual(initialContent);
+    fireEvent.click(screen.getByRole("button", { name: "Tutup preview" }));
+    expect(screen.queryByRole("dialog", { name: "Preview undangan langsung" })).not.toBeInTheDocument();
+  });
+
+  it("edits shared music independently from theme tokens", () => {
+    const invitation = InvitationSchema.parse(invitations[0]);
+    const view = render(<InvitationEditorClient initialInvitation={invitation} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="raka-dan-sinta-draft" />);
+    fireEvent.change(screen.getByLabelText("Track"), { target: { value: "none" } });
+    fireEvent.change(screen.getByLabelText("Volume awal (0–100%)"), { target: { value: "20" } });
+    const serialized = view.container.querySelector<HTMLInputElement>('input[name="invitation"]')?.value ?? "{}";
+    const stored = InvitationSchema.parse(JSON.parse(serialized));
+    expect((stored.content.modules as Record<string, Record<string, unknown>>).music).toMatchObject({ trackId: "none", volume: 0.2 });
+    expect(stored.themeKey).toBe(invitation.themeKey);
+  });
 });

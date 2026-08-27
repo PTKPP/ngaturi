@@ -7,7 +7,8 @@ import { categoryRegistry } from "@/invitation-categories/registry";
 
 const initialSql = readFileSync(join(process.cwd(), "../../supabase/migrations/202608240001_initial_architecture.sql"), "utf8");
 const architectureSql = readFileSync(join(process.cwd(), "../../supabase/migrations/202608260001_category_module_architecture.sql"), "utf8");
-const sql = `${initialSql}\n${architectureSql}`;
+const compositionSql = readFileSync(join(process.cwd(), "../../supabase/migrations/202608270001_daztore_music_composition.sql"), "utf8");
+const sql = `${initialSql}\n${architectureSql}\n${compositionSql}`;
 
 describe("Supabase migration security and integrity", () => {
   it("defines all required tables, JSON object constraint, and focused indexes", () => {
@@ -36,18 +37,21 @@ describe("Supabase migration security and integrity", () => {
 
   it("seeds catalog keys in parity with the frontend registries", () => {
     for (const category of categoryRegistry) {
-      expect(architectureSql).toContain(`('${category.key}',${category.version},'${category.name}','${JSON.stringify(category.requiredModules)}','${JSON.stringify(category.capabilities)}')`);
+      const initialCapabilities = Object.fromEntries(Object.entries(category.capabilities).filter(([key]) => key !== "music"));
+      expect(architectureSql).toContain(`('${category.key}',${category.version},'${category.name}','${JSON.stringify(category.requiredModules)}','${JSON.stringify(initialCapabilities)}')`);
     }
+    expect(compositionSql).toContain("jsonb_set(capabilities, '{music}'");
+    expect(compositionSql).toContain("key = 'wedding' then '\"default\"'::jsonb else '\"optional\"'::jsonb");
     for (const templateModule of Object.values(templateRegistry)) {
       const manifest = templateModule.manifest;
       expect(sql).toContain(`('${manifest.key}',${manifest.version},'${manifest.name}'`);
       expect(initialSql).toContain(`('${manifest.key}',${manifest.version},'${manifest.name}'`);
       expect(architectureSql).toContain(`active_content_schema_version = 2`);
-      expect(architectureSql).toContain(JSON.stringify(manifest.sections));
-      expect(architectureSql).toContain(JSON.stringify(manifest.supportedModules));
-      expect(architectureSql).toContain(JSON.stringify(manifest.requiredModules));
-      expect(architectureSql).toContain(JSON.stringify(manifest.optionalModules));
-      expect(architectureSql).toContain(JSON.stringify(manifest.defaultEnabledModules));
+      expect(sql).toContain(JSON.stringify(manifest.sections));
+      expect(sql).toContain(JSON.stringify(manifest.supportedModules));
+      expect(sql).toContain(JSON.stringify(manifest.requiredModules));
+      expect(sql).toContain(JSON.stringify(manifest.optionalModules));
+      expect(sql).toContain(JSON.stringify(manifest.defaultEnabledModules));
     }
     for (const theme of themeRegistry) {
       expect(initialSql).toContain(`('${theme.key}',${theme.version},'${theme.templateKey}',${theme.templateVersion},'${theme.name}'`);

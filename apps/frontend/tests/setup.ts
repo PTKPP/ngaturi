@@ -4,6 +4,7 @@ import { afterEach, vi } from "vitest";
 
 vi.mock("next/font/google", () => ({
   Josefin_Sans: () => ({ variable: "font-josefin" }),
+  Cormorant_Garamond: () => ({ variable: "font-cormorant" }),
   Sacramento: () => ({ variable: "font-sacramento" }),
   Noto_Naskh_Arabic: () => ({ variable: "font-naskh" }),
 }));
@@ -23,5 +24,7 @@ if (!window.matchMedia) {
     })),
   });
 }
+
+Object.defineProperty(HTMLMediaElement.prototype, "pause", { configurable: true, value: vi.fn() });
 
 afterEach(cleanup);

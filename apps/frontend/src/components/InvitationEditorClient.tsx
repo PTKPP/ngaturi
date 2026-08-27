@@ -6,11 +6,13 @@ import type { Invitation, InvitationTemplate, InvitationTheme } from "@/domain";
 import { saveInvitationAction, switchTemplateAction } from "@/app/actions/invitations";
 import { TemplateEditorRouter } from "@/templates/editor-router";
 import { getTemplateModule } from "@/templates/registry";
+import { TemplateRenderer } from "@/templates/renderer";
 
 export function InvitationEditorClient({ initialInvitation, templates, themes, routeSlug }: { initialInvitation: Invitation; templates: InvitationTemplate[]; themes: InvitationTheme[]; routeSlug: string }) {
   const [invitation, setInvitation] = useState(initialInvitation);
   const currentTemplateId = `${invitation.templateKey}@${invitation.templateVersion}`;
   const [targetTemplateId, setTargetTemplateId] = useState(currentTemplateId);
+  const [livePreviewOpen, setLivePreviewOpen] = useState(false);
   const compatibleTemplates = templates.filter((template) => template.categoryKey === invitation.categoryKey && template.categoryVersion === invitation.categoryVersion);
   const compatibleThemes = themes.filter((theme) => theme.templateKey === invitation.templateKey && theme.templateVersion === invitation.templateVersion);
   return <>
@@ -26,7 +28,7 @@ export function InvitationEditorClient({ initialInvitation, templates, themes, r
       <section className="panel form-section">
         <TemplateEditorRouter templateKey={invitation.templateKey} templateVersion={invitation.templateVersion} contentSchemaVersion={invitation.contentSchemaVersion} value={invitation.content} onChange={(content) => setInvitation({ ...invitation, content, contentSchemaVersion: getTemplateModule(invitation.templateKey, invitation.templateVersion)?.activeContentSchemaVersion ?? invitation.contentSchemaVersion })} />
       </section>
-      <div className="actions"><button className="button" type="submit">Simpan perubahan</button><Link className="button secondary" href={`/dashboard/invitations/${invitation.id}/preview`}>Buka preview</Link></div>
+      <div className="actions"><button className="button" type="submit">Simpan perubahan</button><button className="button secondary" type="button" onClick={() => setLivePreviewOpen(true)}>Preview langsung</button><Link className="button ghost" href={`/dashboard/invitations/${invitation.id}/preview`}>Buka halaman preview</Link></div>
     </form>
     <section className="panel form-section">
       <h2>Ganti template</h2>
@@ -37,5 +39,6 @@ export function InvitationEditorClient({ initialInvitation, templates, themes, r
         <button className="button secondary" type="submit" disabled={invitation.status !== "draft" || targetTemplateId === currentTemplateId}>Ganti template</button>
       </form>
     </section>
+    {livePreviewOpen ? <div className="live-preview" role="dialog" aria-modal="true" aria-label="Preview undangan langsung"><button className="button live-preview-close" type="button" onClick={() => setLivePreviewOpen(false)}>Tutup preview</button><div className="live-preview-canvas"><TemplateRenderer invitation={invitation} preview /></div></div> : null}
   </>;
 }

@@ -42,7 +42,7 @@ export const categoryRegistry = InvitationCategoriesSchema.parse([
     requiredModules: ["cover", "couple-profile", "event", "closing"],
     capabilities: capabilities(
       ["cover", "couple-profile", "event", "closing"],
-      ["greeting", "quote", "countdown", "love-story", "gallery", "maps"],
+      ["greeting", "quote", "countdown", "love-story", "gallery", "maps", "music"],
       ["parents", "video", "rsvp", "gift", "wishes", "qr-check-in", "livestream"],
     ),
   },
@@ -52,7 +52,7 @@ export const categoryRegistry = InvitationCategoriesSchema.parse([
     capabilities: capabilities(
       ["cover", "child-profile", "event", "closing"],
       ["greeting", "parents", "quote", "countdown", "gallery", "maps"],
-      ["video", "rsvp", "gift", "wishes", "qr-check-in", "livestream"],
+      ["video", "rsvp", "gift", "wishes", "qr-check-in", "livestream", "music"],
     ),
   },
   {
@@ -61,7 +61,7 @@ export const categoryRegistry = InvitationCategoriesSchema.parse([
     capabilities: capabilities(
       ["cover", "child-profile", "birth-info", "event", "closing"],
       ["greeting", "parents", "quote", "gallery", "maps"],
-      ["countdown", "video", "rsvp", "gift", "wishes", "qr-check-in", "livestream"],
+      ["countdown", "video", "rsvp", "gift", "wishes", "qr-check-in", "livestream", "music"],
     ),
   },
   {
@@ -70,7 +70,7 @@ export const categoryRegistry = InvitationCategoriesSchema.parse([
     capabilities: capabilities(
       ["cover", "event", "closing"],
       ["greeting", "countdown", "gallery", "maps"],
-      ["child-profile", "parents", "quote", "video", "rsvp", "gift", "wishes", "qr-check-in", "livestream"],
+      ["child-profile", "parents", "quote", "video", "rsvp", "gift", "wishes", "qr-check-in", "livestream", "music"],
     ),
   },
   {
@@ -79,7 +79,7 @@ export const categoryRegistry = InvitationCategoriesSchema.parse([
     capabilities: capabilities(
       ["cover", "event", "closing"],
       ["greeting", "speaker", "agenda", "maps"],
-      ["countdown", "gallery", "video", "rsvp", "wishes", "qr-check-in", "livestream"],
+      ["countdown", "gallery", "video", "rsvp", "wishes", "qr-check-in", "livestream", "music"],
     ),
   },
 ]);

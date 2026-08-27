@@ -71,7 +71,11 @@ export function validateTemplateContent(template: InvitationTemplate, content: u
   for (const id of template.supportedModules) {
     const capability = category.capabilities[id];
     if (capability === "unsupported") throw new Error(`Modul ${id} tidak didukung kategori ${category.key}.`);
-    const value = parsed.modules[id];
+    let value = parsed.modules[id];
+    if (value === undefined && !template.requiredModules.includes(id)) {
+      value = moduleRegistry[id].createDefault();
+      parsed.modules[id] = value;
+    }
     if (value === undefined) throw new Error(`Konten modul ${id} wajib tersedia untuk template ${template.key}.`);
     const storedVersion = parsed.moduleVersions[id] ?? 1;
     parsed.modules[id] = moduleRegistry[id].migrate(storedVersion, value);

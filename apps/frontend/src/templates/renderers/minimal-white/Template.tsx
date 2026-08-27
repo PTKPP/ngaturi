@@ -3,11 +3,13 @@ import type { InvitationTemplateProps } from "@/templates/types";
 import styles from "./styles.module.css";
 import { themeCssVariables } from "@/themes/registry";
 import type { WeddingRenderModel } from "@/invitation-modules/schemas";
+import { DefaultInvitationCover } from "@/templates/shared/DefaultInvitationCover";
 
 export function MinimalWhiteTemplate({ invitation, content, theme, preview = false }: InvitationTemplateProps<WeddingRenderModel>) {
   const { couple, copy } = content;
   return (
     <main className={styles.page} data-template="minimal-white@1" data-theme={`${theme.key}@${theme.version}`} style={themeCssVariables(theme)}>
+      <DefaultInvitationCover eyebrow="The wedding of" names={`${couple.partnerOne.nickname} + ${couple.partnerTwo.nickname}`} date={content.events[0]?.date} />
       {preview ? <p className={styles.preview}>Preview undangan</p> : null}
       <header className={styles.hero}>
         <p>{invitation.title}</p>

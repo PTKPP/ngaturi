@@ -5,10 +5,10 @@ export const manifest = TemplateSchema.parse({
   description: "Tampilan bersih, lapang, dan modern dengan fokus pada informasi.",
   thumbnail: "/templates/minimal-white.svg", status: "active",
   categoryKey: "wedding", categoryVersion: 1, activeContentSchemaVersion: 2, themeSchemaVersion: 1,
-  supportedModules: ["cover", "greeting", "couple-profile", "quote", "event", "love-story", "gift", "closing"],
+  supportedModules: ["cover", "greeting", "couple-profile", "quote", "event", "love-story", "gift", "music", "closing"],
   requiredModules: ["cover", "couple-profile", "event", "closing"],
   optionalModules: ["gift"],
-  defaultEnabledModules: ["greeting", "quote", "love-story"],
+  defaultEnabledModules: ["greeting", "quote", "love-story", "music"],
   sections: [
     { id: "hero", moduleId: "cover", renderer: "minimal-hero" },
     { id: "greeting", moduleId: "greeting", renderer: "minimal-greeting" },

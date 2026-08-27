@@ -1,0 +1,25 @@
+.shell { min-width: 0; min-height: 100dvh; color: var(--theme-ink); background: var(--theme-bg); }
+.musicControl {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  z-index: 950;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--theme-surface) 55%, transparent);
+  border-radius: 50%;
+  color: var(--theme-surface);
+  background: color-mix(in srgb, var(--theme-dark) 92%, transparent);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--theme-dark) 35%, transparent);
+  backdrop-filter: blur(12px);
+}
+.musicControl span { transform: translateX(.05em); font-size: 1rem; line-height: 1; }
+.musicControl[data-playing="true"] { animation: musicPulse 2.4s ease-in-out infinite; }
+.musicControl:focus-visible { outline: 3px solid var(--theme-accent); outline-offset: 4px; }
+.shell:has([data-template="daztore-inv1@1"]) .musicControl { bottom: calc(5.75rem + env(safe-area-inset-bottom)); }
+@keyframes musicPulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--theme-accent) 25%, transparent), 0 12px 30px color-mix(in srgb, var(--theme-dark) 35%, transparent); } }
+@media (min-width: 64rem) { .musicControl, .shell:has([data-template="daztore-inv1@1"]) .musicControl { right: 1.5rem; bottom: 1.5rem; } }
+@media (prefers-reduced-motion: reduce) { .musicControl[data-playing="true"] { animation: none; } }

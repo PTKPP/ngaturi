@@ -80,5 +80,8 @@ h1, h2, h3, p { overflow-wrap: anywhere; }
 .choice small { color: var(--muted); }
 .text-link { color: var(--brand); font-weight: 700; text-decoration: underline; text-underline-offset: .2em; }
 .preview-frame { overflow: hidden; border: 1px solid var(--line); border-radius: 1rem; background: #fff; }
+.live-preview { position: fixed; inset: 0; z-index: 1000; overflow: auto; background: #111; }
+.live-preview-close { position: fixed; top: max(.75rem, env(safe-area-inset-top)); right: max(.75rem, env(safe-area-inset-right)); z-index: 2200; border-color: #ffffff88; box-shadow: 0 8px 24px #0005; }
+.live-preview-canvas { min-height: 100dvh; background: #fff; }
 @media (min-width: 40rem) { .filters { grid-template-columns: 1fr 13rem; } .grid.cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form.two-column { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form.two-column .full { grid-column: 1 / -1; } .login-card { padding: 2rem; } }
 @media (min-width: 64rem) { .grid.cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } .app-shell { padding-bottom: 2rem; } .bottom-nav { position: static; width: min(100% - 2rem, 68rem); min-height: 0; margin: 0 auto; padding: .5rem; border: 1px solid var(--line); border-radius: 1rem; } }

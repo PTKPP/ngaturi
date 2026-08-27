@@ -5,6 +5,11 @@ import { InvitationSchema } from "@/domain";
 import { DaztoreInv1Template } from "@/templates/renderers/daztore-inv1/Template";
 import type { WeddingRenderModel as DaztoreInv1Content } from "@/invitation-modules/schemas";
 import { getRegisteredTheme } from "@/themes/registry";
+import { themeCssVariables } from "@/themes/registry";
+import { parseTemplateContent } from "@/templates/registry";
+import { toWeddingRenderModel } from "@/invitation-modules/content";
+import { InvitationMusicSchema, resolveInvitationMusic } from "@/invitation-music/registry";
+import { InvitationExperienceShell } from "@/templates/shared/InvitationExperienceShell";
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
@@ -23,9 +28,16 @@ function fixture(overrides: Record<string, unknown> = {}) {
   return InvitationSchema.parse({ ...source, templateKey: "daztore-inv1", templateVersion: 1, content: { ...source.content, ...overrides } });
 }
 
-function renderTheme(overrides: Record<string, unknown> = {}, preview = false) {
-  const parsed = fixture(overrides); const { content, ...invitation } = parsed;
-  return render(<DaztoreInv1Template invitation={invitation} content={content as DaztoreInv1Content} theme={getRegisteredTheme("daztore-inv1-default", 1)!} preview={preview} />);
+function renderTheme(overrides: Record<string, unknown> = {}, preview = false, configure?: (value: ReturnType<typeof parseTemplateContent>) => void) {
+  const parsed = fixture(overrides); const { content: storedContent, ...invitation } = parsed;
+  const moduleContent = parseTemplateContent("daztore-inv1", 1, 1, storedContent);
+  configure?.(moduleContent);
+  const content = toWeddingRenderModel(moduleContent) as DaztoreInv1Content;
+  const theme = getRegisteredTheme("daztore-inv1-default", 1)!;
+  const music = resolveInvitationMusic(InvitationMusicSchema.parse(moduleContent.modules.music));
+  return render(<InvitationExperienceShell music={music} preview={preview} style={themeCssVariables(theme)}>
+    <DaztoreInv1Template invitation={invitation} content={content} moduleContent={moduleContent} theme={theme} preview={preview} />
+  </InvitationExperienceShell>);
 }
 
 describe("daztore-inv1 template", () => {
@@ -61,6 +73,24 @@ describe("daztore-inv1 template", () => {
     renderTheme({ settings: { showGiftInformation: false }, gallery: [] });
     expect(screen.queryByRole("heading", { name: "Tanda Kasih" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Galeri" })).not.toBeInTheDocument();
+  });
+
+  it("renders complete v2 optional sections from centralized module data", () => {
+    renderTheme({ gallery: ["/templates/daztore-inv1/thumbnail.svg"] }, false, (moduleContent) => {
+      const event = (moduleContent.modules.event as { items: Array<Record<string, unknown>> }).items[0];
+      event.mapUrl = "https://maps.google.com/?q=Pendopo";
+      moduleContent.modules.video = { url: "https://www.youtube.com/watch?v=abcdefghijk" };
+      moduleContent.modules.rsvp = { enabled: true };
+      moduleContent.modules.wishes = { enabled: true };
+      moduleContent.moduleState.video = { enabled: true };
+      moduleContent.moduleState.rsvp = { enabled: true };
+      moduleContent.moduleState.wishes = { enabled: true };
+    });
+    expect(screen.getByRole("heading", { name: "Cerita dalam gambar" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "RSVP" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Kirim Ucapan" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Temukan tempatnya" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Galeri" })).toBeInTheDocument();
   });
 
   it("shows gallery only for provided images", () => {

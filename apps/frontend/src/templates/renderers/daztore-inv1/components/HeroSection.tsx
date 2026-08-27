@@ -4,7 +4,6 @@ import { daztoreInv1Assets } from "../assets";
 import { buildGoogleCalendarUrl } from "../utilities/calendar";
 import { formatEventDate } from "../utilities/countdown";
 import styles from "../styles.module.css";
-import { Countdown } from "./Countdown";
 import { ThemeIcon, Wave } from "./Icons";
 import { ThemeImage } from "./ThemeImage";
 
@@ -18,9 +17,8 @@ export function HeroSection({ invitation, event }: { invitation: DaztoreInv1View
     <p className={styles.kicker}>Undangan Pernikahan</p>
     <h2 id="daztore-hero-title">{partnerOne.nickname} <span>&amp;</span> {partnerTwo.nickname}</h2>
     <p className={styles.heroDate}>{formatEventDate(event.date)}</p>
-    <Countdown event={event} className={styles.countdown} />
     <a className={styles.primaryAction} href={buildGoogleCalendarUrl(event, invitation.title)} target="_blank" rel="noopener noreferrer"><ThemeIcon name="calendar" /><span>Simpan ke kalender</span></a>
-    <a className={styles.scrollIndicator} href="#daztore-couple"><span>Geser untuk melanjutkan</span><span aria-hidden="true">↓</span></a>
+    <a className={styles.scrollIndicator} href="#daztore-greeting"><span>Geser untuk melanjutkan</span><span aria-hidden="true">↓</span></a>
     <div className={styles.waveBottom}><Wave /></div>
   </section>;
 }
