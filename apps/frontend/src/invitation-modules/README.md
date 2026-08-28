@@ -4,6 +4,6 @@
 
 Adding or versioning a module requires an explicit ID, one definition, category capability decisions, compatibility migration when stored data changes, and targeted tests. Template packages consume module IDs and parsed values; they must not define competing semantic schemas.
 
-Guest submissions such as RSVP and wishes are not invitation-content records. Their module definitions currently persist only owner configuration in invitation JSONB; future guest data must use dedicated application services, repositories, tables, RLS, and rate limiting.
+Guest submissions such as RSVP and wishes are not invitation-content records. Module definitions persist only owner configuration in invitation JSONB. RSVP guest data uses its dedicated application service, repository, tables, narrow service-role RPCs, RLS, idempotency, and rate limiting; Wishes must follow the same boundary when implemented, with its own moderation model.
 
 Image-bearing modules store controlled media IDs, never permanent Storage URLs. Alt text and image lifecycle belong to media metadata; ordered IDs in the gallery module remain the source of display order. Template renderers receive only a sanitized `{ id, altText }` projection and resolve bytes through the controlled same-origin media endpoint.

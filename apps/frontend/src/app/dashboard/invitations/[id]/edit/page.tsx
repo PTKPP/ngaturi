@@ -4,6 +4,9 @@ import { requireProfile } from "@/application/auth";
 import { createApplicationRepository } from "@/repositories/supabase";
 import { createInvitationMediaRepository } from "@/repositories/supabase";
 import { InvitationMediaService } from "@/application/media-service";
+import { InvitationRsvpService } from "@/application/rsvp-service";
+import { createInvitationRsvpRepository } from "@/repositories/supabase";
+import { RsvpOwnerPanel } from "@/components/RsvpOwnerPanel";
 
 export default async function EditInvitationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,6 +17,9 @@ export default async function EditInvitationPage({ params }: { params: Promise<{
   const mediaService = new InvitationMediaService(await createInvitationMediaRepository());
   const [images, audio] = await Promise.all([mediaService.listOwnedImages(profile, id), mediaService.listOwnedAudio(profile, id)]);
   const media = [...images, ...audio];
+  const rsvp = invitation.templateKey === "daztore-inv1"
+    ? await new InvitationRsvpService(createInvitationRsvpRepository()).getOwnerDashboard(profile, id)
+    : null;
   const routeSlug = routes.find(({ route }) => route.id === invitation.routeId)?.route.slug ?? "route-tidak-tersedia";
-  return <AppShell title="Editor undangan"><InvitationEditorClient initialInvitation={invitation} initialMedia={media} templates={templates} themes={themes} routeSlug={routeSlug} /></AppShell>;
+  return <AppShell title="Editor undangan">{rsvp ? <RsvpOwnerPanel summary={rsvp.summary} responses={rsvp.responses} /> : null}<InvitationEditorClient initialInvitation={invitation} initialMedia={media} templates={templates} themes={themes} routeSlug={routeSlug} /></AppShell>;
 }

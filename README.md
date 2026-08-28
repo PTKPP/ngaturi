@@ -4,7 +4,7 @@ Ngaturi adalah platform undangan digital mobile-first. Arsitektur aktif memakai 
 
 ## Menjalankan lokal
 
-1. Salin nama variabel dari `.env.example` ke `apps/frontend/.env.local` dan isi URL serta publishable key proyek Supabase. `SUPABASE_SERVICE_ROLE_KEY` hanya boleh tersedia di server dan diperlukan untuk pembuatan user admin serta endpoint media publik terkendali.
+1. Salin nama variabel dari `.env.example` ke `apps/frontend/.env.local` dan isi URL serta publishable key proyek Supabase. `SUPABASE_SERVICE_ROLE_KEY` dan `RSVP_RATE_LIMIT_SECRET` hanya boleh tersedia di server. Reverse proxy production harus menimpa `X-Real-IP`/`X-Forwarded-For`, bukan meneruskan nilai spoofed dari client, agar fingerprint rate limit RSVP stabil.
 2. Terapkan migrasi berurutan dari `supabase/migrations/` ke proyek lokal atau proyek yang memang Anda berwenang ubah.
 3. Dari `apps/frontend`, jalankan `npm install` lalu `npm run dev`.
 

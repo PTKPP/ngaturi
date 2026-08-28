@@ -22,7 +22,8 @@
     "test:supabase:lifecycle": "node scripts/test-local-media-lifecycle.mjs",
     "test:supabase:operations": "node scripts/test-local-media-operations-quota.mjs",
     "test:supabase:audio": "node scripts/test-local-audio-media-workflow.mjs",
-    "test:supabase": "npm run test:supabase:image && npm run test:supabase:lifecycle && npm run test:supabase:operations && npm run test:supabase:audio",
+    "test:supabase:rsvp": "node scripts/test-local-rsvp-workflow.mjs",
+    "test:supabase": "npm run test:supabase:image && npm run test:supabase:lifecycle && npm run test:supabase:operations && npm run test:supabase:audio && npm run test:supabase:rsvp",
     "media:cleanup": "node --conditions=react-server --import tsx scripts/run-media-cleanup.ts",
     "media:cleanup:scheduler": "node --conditions=react-server --import tsx scripts/run-media-cleanup.ts --schedule"
   },

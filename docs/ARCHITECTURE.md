@@ -36,6 +36,8 @@ Scheduler PM2 menjalankan service yang sama secara berurutan. Distributed run lo
 
 Hard quota image memakai reservation konservatif original plus ceiling tiga variant; audio mereservasi ukuran original karena tidak ditranscode. Trigger database memegang advisory transaction lock per owner dan mengubah counter owner/invitation secara atomik sebelum signed token dibuat. Reservation image berubah menjadi byte aktual setelah keempat object diverifikasi; audio tetap sebesar original. Semua status selain `deleted` dihitung dan transition cleanup ke tombstone melepaskan counter tepat sekali. `media_kind` serta `media_purpose` membedakan couple, gallery, dan invitation music tanpa memakai content JSON untuk accounting.
 
+RSVP memakai `invitation_rsvps` terpisah dari JSONB content. Client memanggil Server Action, application service melakukan schema validation/normalization, repository server-only memakai service-role client, lalu RPC sempit memverifikasi invitation published dan owner account aktif. Anonymous/authenticated tidak mendapat grant tabel atau RPC. Unique `(invitation_id, client_submission_id)` dan request hash membuat retry/double-click idempotent serta menolak penggunaan ID yang sama untuk payload berbeda. Rate-limit row per source dan invitation diubah atomik dalam transaksi submission; source berasal dari HMAC IP/proxy identity dan user agent yang hanya dihitung server. Owner list/summary memakai RPC dengan `owner_id` eksplisit dan projection yang tidak memuat hash internal.
+
 ## Portability
 
 Service bergantung pada interface async `ApplicationRepository`; detail RPC ada di adapter. Application backend dapat diekstrak ke Fastify kelak tanpa memindahkan renderer/UI, sementara constraint dan RLS tetap defense in depth.

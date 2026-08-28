@@ -19,19 +19,19 @@ Data konfigurasi section disimpan dalam invitation content JSONB v2. Save/publis
 | Love Story | `love-story@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
 | Gallery | `gallery@1`: ordered media IDs | Multiple upload, reorder, alt, replace, delete | Variant large + Next Image Optimization | Content owner-only; lifecycle media/RPC/RLS | Image workflow dan cleanup lifecycle siap; browser E2E lokal masih diperlukan |
 | Video | `video@1`: URL | Ada | YouTube/Vimeo HTTPS allowlist | URL di JSONB owner-only | Parsial: belum ada consent/privacy dan preview metadata |
-| RSVP | Konfigurasi enablement saja | Toggle saja | Placeholder eksplisit | Belum ada response table/repository/action | Belum fungsional |
+| RSVP | Konfigurasi enablement + response schema relasional | Toggle + owner summary/list | Form guest tanpa reload | Table khusus, Server Action, service/repository, RPC/RLS | Baseline production siap; browser E2E dan kalibrasi rate limit production tersisa |
 | Gift | `gift@1`: text bebas | Ada | Ada, copy dengan fallback | JSONB owner-only | Parsial: belum structured account/payment model |
 | Wishes | Konfigurasi enablement saja | Toggle saja | Placeholder eksplisit | Belum ada message table/repository/action/moderation | Belum fungsional |
 | Maps | Label modul + HTTPS `mapUrl` pada event | Ada | Link eksternal aman | JSONB owner-only | Baseline siap; provider/domain policy perlu difinalkan |
 | Closing | `closing@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
 
-Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset audio lokal, autoplay setelah gesture, pause/resume, failure handling, dan no-restart rerender sudah teruji. Upload audio user belum tersedia.
+Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset audio lokal dan custom MP3/M4A, signed direct upload, lifecycle/quota/cleanup reuse, autoplay setelah gesture, pause/resume, controlled delivery, failure handling, dan no-restart rerender sudah teruji terhadap Supabase lokal.
 
 ## Gap lintas modul
 
 1. **Media image**: signed direct upload, browser WebP 400/900/1600, original preservation, SHA-256 deduplication, Couple/Gallery UI, alt/reorder/replace/delete, variant metadata, private paths, object verification, timeout reconciliation, orphan grace/recheck, retry terbatas, scheduler anti-overlap, hard quota, structured logs, metrics, dan usage counter tersedia. Belum ada external alert delivery atau verified server-side decode/scan.
-2. **Audio user**: registry hanya mengizinkan track paket. Bucket/policy saat ini image-only; belum ada MIME/duration/quota/transcode/scan, media kind, atau resolver audio milik invitation.
-3. **RSVP**: tidak ada guest command, application service, repository contract, table, idempotency, rate limit, spam protection, owner dashboard, atau aggregate attendance.
+2. **Audio user**: workflow MP3/M4A tersedia tanpa transcoding; gap tersisa adalah browser/codec smoke production dan verified server-side byte probe bila threat model membutuhkannya.
+3. **RSVP**: guest command, application service, repository, table/RLS, service-role RPC, idempotency, rate limit, owner list, dan aggregate attendance tersedia. Gap tersisa adalah E2E browser, kalibrasi anti-spam production, pagination UI di atas 100 respons, dan kebijakan export/retention.
 4. **Wishes**: tidak ada persistence guest, moderation/status, rate limit, abuse handling, atau pagination.
 5. **Gift**: informasi masih teks bebas. Belum ada schema rekening/e-wallet terstruktur, masking, validation, atau keputusan eksplisit apakah transaksi pembayaran di luar scope.
 6. **Gallery/video/maps**: gallery sudah memakai workflow media; video/maps memakai URL eksternal dan membutuhkan kebijakan provider, privacy, error telemetry, serta E2E mobile.
@@ -51,12 +51,12 @@ Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset
 
 ### Phase 3 - user audio
 
-- Tambahkan audio MIME/duration/size validation, quota, lifecycle, serta resolver yang tetap membutuhkan user gesture.
+- Selesai: audio MIME/signature/duration/size validation, quota/lifecycle/cleanup reuse, custom source, dan controlled resolver yang tetap membutuhkan user gesture.
 
 ### Phase 4 - RSVP dan wishes
 
-- Pisahkan guest submissions dari invitation JSONB.
-- Tambahkan command/schema, application services, repository adapters, tables, RLS atau narrow security-definer RPC, idempotency, rate limiting, moderation, dan owner read models.
+- RSVP selesai dan terpisah dari invitation JSONB: command/schema, service/repository, table/RLS, narrow service-role RPC, idempotency, rate limiting, serta owner read model tersedia.
+- Wishes masih perlu persistence, moderation, pagination, dan abuse handling sendiri; jangan memakai tabel atau rate-limit identity RSVP sebagai model data Wishes.
 
 ### Phase 5 - structured gift dan external embeds
 

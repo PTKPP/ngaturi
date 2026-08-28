@@ -36,9 +36,11 @@ Media `ready` yang belum direferensikan mula-mula ditandai sebagai temporary orp
 
 Hard media quota dihitung dari reservation byte metadata, bukan content JSON. `uploading`, `processing`, `ready`, `failed`, dan `delete_pending` tetap aktif terhadap quota; hanya tombstone `deleted` yang melepaskan kapasitas. Default adalah 500 MiB per user, 200 MiB per invitation, dan 30 image gallery per invitation. Database mengunci counter owner secara atomik sebelum membuat metadata yang dapat memperoleh signed upload path.
 
+RSVP guest disimpan pada tabel relasional khusus, bukan content invitation. Guest dapat mengirim nama 2–100 karakter, status hadir/tidak hadir, 1–10 tamu bila hadir, dan catatan opsional maksimal 500 karakter hanya untuk invitation published milik akun aktif. Server Action memvalidasi dan menormalisasi input; RPC service-role-only menegakkan idempotency UUID serta rate limit atomik 5 submission per sumber dan 100 per invitation setiap 10 menit. Anonymous dan authenticated browser tidak mempunyai akses tabel/RPC langsung. Owner memperoleh daftar terbaru dan summary hadir, tidak hadir, total tamu hadir, serta total respons melalui read model terotorisasi.
+
 ## TBD
 
 - Reset/invite password dan email provider produksi.
 - Kebijakan override quota/admin UI dan alert delivery eksternal.
 - Audit log admin serta redirect historis slug.
-- Custom domain, analytics, RSVP, hadiah transaksional, dan editing lintas user.
+- Custom domain, analytics, hadiah transaksional, dan editing lintas user.

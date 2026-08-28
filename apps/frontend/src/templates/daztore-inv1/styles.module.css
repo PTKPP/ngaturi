@@ -141,6 +141,23 @@
 .interactionPanel { width: min(100%, 38rem); margin: 0 auto; padding: 2rem 1.25rem; border-block: 1px solid var(--theme-line); }
 .interactionPanel p { margin-bottom: .5rem; }
 .interactionPanel small { color: var(--theme-muted); line-height: 1.6; }
+.rsvpForm { display: grid; gap: 1rem; margin-top: 1.5rem; text-align: left; }
+.rsvpField { display: grid; min-width: 0; gap: .4rem; }
+.rsvpField > span, .rsvpChoices legend { font-size: .78rem; font-weight: 750; letter-spacing: .05em; text-transform: uppercase; }
+.rsvpField input, .rsvpField select, .rsvpField textarea { width: 100%; min-width: 0; min-height: 48px; padding: .75rem .85rem; border: 1px solid var(--theme-line); border-radius: .35rem; color: var(--theme-ink); background: var(--theme-surface); font: inherit; }
+.rsvpField textarea { min-height: 7rem; resize: vertical; }
+.rsvpField input:focus-visible, .rsvpField select:focus-visible, .rsvpField textarea:focus-visible, .rsvpChoices input:focus-visible { outline: 3px solid color-mix(in srgb, var(--theme-accent) 35%, transparent); outline-offset: 2px; border-color: var(--theme-accent); }
+.rsvpChoices { display: grid; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; margin: 0; padding: 0; border: 0; }
+.rsvpChoices legend { grid-column: 1 / -1; margin-bottom: .4rem; }
+.rsvpChoices label { display: flex; min-width: 0; min-height: 48px; align-items: center; gap: .6rem; padding: .7rem; border: 1px solid var(--theme-line); background: var(--theme-surface); cursor: pointer; }
+.rsvpChoices input { width: 1.25rem; height: 1.25rem; flex: none; margin: 0; accent-color: var(--theme-dark); }
+.rsvpForm .primaryAction { width: 100%; border: 0; }
+.rsvpForm .primaryAction:disabled { cursor: not-allowed; opacity: .6; }
+.rsvpSuccess { display: grid; gap: .35rem; margin-top: 1.5rem; padding: 1rem; border: 1px solid var(--theme-accent); color: var(--theme-dark); background: color-mix(in srgb, var(--theme-accent) 12%, var(--theme-surface)); }
+.rsvpError, .rsvpNotice { margin: 0; padding: .8rem; line-height: 1.55; }
+.rsvpError { color: #7c1f1f; background: #fff0f0; }
+.rsvpNotice { color: var(--theme-muted); background: color-mix(in srgb, var(--theme-line) 30%, transparent); }
+.rsvpHoneypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 
 .giftSection { background: var(--theme-surface); }
 .giftCard { width: min(100%, 38rem); margin: 0 auto; padding: 2rem 1.25rem; border: 1px solid var(--theme-line); background: var(--theme-bg); }

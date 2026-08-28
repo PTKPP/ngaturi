@@ -18,6 +18,7 @@ import { GuestInteractionSection } from "./components/GuestInteractionSection";
 import { HeroSection } from "./components/HeroSection";
 import { MapsSection } from "./components/MapsSection";
 import { QuoteSection } from "./components/QuoteSection";
+import { RsvpSection } from "./components/RsvpSection";
 import { StorySection } from "./components/StorySection";
 import { VideoSection } from "./components/VideoSection";
 import { WelcomeCover } from "./components/WelcomeCover";
@@ -31,7 +32,7 @@ const headingFont = Cormorant_Garamond({ subsets: ["latin"], variable: "--daztor
 const scriptFont = Sacramento({ weight: "400", subsets: ["latin"], variable: "--daztore-font-script", display: "swap" });
 const arabicFont = Noto_Naskh_Arabic({ subsets: ["arabic"], variable: "--daztore-font-arabic", display: "swap" });
 
-export function DaztoreInv1Template({ invitation, content, moduleContent, media = [], theme }: InvitationTemplateProps<WeddingRenderModel>) {
+export function DaztoreInv1Template({ invitation, content, moduleContent, media = [], theme, preview = false }: InvitationTemplateProps<WeddingRenderModel>) {
   const { opened } = useInvitationExperience();
   const viewModel: DaztoreInv1ViewModel = { ...invitation, ...content, content: content.copy };
   const events = [...content.events].sort((left, right) => left.sortOrder - right.sortOrder);
@@ -60,9 +61,9 @@ export function DaztoreInv1Template({ invitation, content, moduleContent, media 
       <StorySection story={content.copy.story} />
       <GallerySection gallery={content.gallery} coupleNames={coupleNames} media={media} />
       {isModuleEnabled(moduleContent, "video") ? <VideoSection url={video.url} /> : null}
-      {isModuleEnabled(moduleContent, "rsvp") && rsvp.enabled ? <GuestInteractionSection kind="rsvp" /> : null}
+      {isModuleEnabled(moduleContent, "rsvp") && rsvp.enabled ? <RsvpSection invitationId={invitation.id} preview={preview} /> : null}
       {hasGift ? <GiftSection information={content.copy.giftInformation} /> : null}
-      {isModuleEnabled(moduleContent, "wishes") && wishes.enabled ? <GuestInteractionSection kind="wishes" /> : null}
+      {isModuleEnabled(moduleContent, "wishes") && wishes.enabled ? <GuestInteractionSection /> : null}
       {isModuleEnabled(moduleContent, "maps") ? <MapsSection events={events} label={maps.label} /> : null}
     </main>
     <ClosingSection invitation={viewModel} />

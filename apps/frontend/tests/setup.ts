@@ -2,6 +2,8 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
 vi.mock("next/font/google", () => ({
   Josefin_Sans: () => ({ variable: "font-josefin" }),
   Cormorant_Garamond: () => ({ variable: "font-cormorant" }),
