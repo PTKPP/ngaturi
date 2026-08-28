@@ -46,6 +46,7 @@ describe("generic template editor routing", () => {
     const media = [partnerMediaId, galleryOneId, galleryTwoId].map((id, index): InvitationImageMedia => ({
       id,
       invitationId: invitation.id,
+      purpose: index === 0 ? "couple" : "gallery",
       altText: "Image " + (index + 1),
       originalFilename: "image-" + index + ".jpg",
       mimeType: "image/jpeg",

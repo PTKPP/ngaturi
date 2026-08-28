@@ -40,7 +40,7 @@ function variants(paths, width = 2, height = 2) {
   return ["thumbnail", "medium", "large"].map((key) => ({ key, path: paths[key], targetWidth: width, targetHeight: height }));
 }
 
-function rpcUploadPayload({ ownerId, invitationId, mediaId, clientUploadId, bytes, altText, paths, width = 2, height = 2 }) {
+function rpcUploadPayload({ ownerId, invitationId, mediaId, clientUploadId, bytes, altText, paths, width = 2, height = 2, purpose = "gallery" }) {
   return {
     p_media_id: mediaId,
     p_invitation_id: invitationId,
@@ -54,6 +54,7 @@ function rpcUploadPayload({ ownerId, invitationId, mediaId, clientUploadId, byte
     p_alt_text: altText,
     p_original_path: paths.original,
     p_variants: variants(paths, width, height),
+    p_media_purpose: purpose,
     ownerId,
   };
 }

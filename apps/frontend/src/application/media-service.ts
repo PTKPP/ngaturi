@@ -69,6 +69,7 @@ export class InvitationMediaService {
   }
 
   private validateDescriptor(candidate: ImageUploadDescriptor): ImageUploadDescriptor {
+    if (candidate.purpose !== "couple" && candidate.purpose !== "gallery") throw new Error("Tujuan media image tidak valid.");
     const originalFilename = candidate.originalFilename.trim().slice(0, 180);
     if (!originalFilename) throw new Error("Nama file image wajib tersedia.");
     if (!ALLOWED_IMAGE_TYPES.has(candidate.mimeType) || !Number.isSafeInteger(candidate.sizeBytes) || candidate.sizeBytes <= 0 || candidate.sizeBytes > MAX_IMAGE_BYTES) {

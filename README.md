@@ -23,7 +23,7 @@ npm run build
 
 Jika Supabase CLI dan Docker tersedia, jalankan `supabase db reset` dari root untuk memverifikasi migrasi pada database bersih. Tidak ada perintah deploy atau perubahan proyek remote yang dijalankan otomatis.
 
-`make app-build` dan konfigurasi PM2 aktif hanya membangun/menjalankan frontend Next.js. `make legacy-backend-build` tersedia untuk verifikasi eksplisit arsip Go, tetapi service tersebut tidak dijalankan oleh konfigurasi PM2 aktif.
+`make app-build` dan konfigurasi PM2 aktif menjalankan frontend Next.js serta scheduler `ngaturi-media-cleanup`. Worker berjalan berurutan setiap lima menit secara default dan memakai distributed run lock; set `MEDIA_CLEANUP_ALLOW_REMOTE=true` hanya pada environment production yang memang berwenang memakai project tersebut. `make legacy-backend-build` tersedia untuk verifikasi eksplisit arsip Go, tetapi service tersebut tidak dijalankan oleh konfigurasi PM2 aktif. Lihat `docs/MEDIA_OPERATIONS_RUNBOOK.md` untuk konfigurasi, alternatif cron, dan remediation.
 
 ## Status
 

@@ -28,8 +28,31 @@ export type MediaCleanupRunResult = {
   metrics: Record<string, unknown>;
 };
 
+export type ExclusiveMediaCleanupRunResult =
+  | { status: "skipped_overlap" }
+  | { status: "completed"; result: MediaCleanupRunResult };
+
 export class InvitationMediaCleanupService {
   constructor(private readonly repository: InvitationMediaCleanupRepository) {}
+
+  async runExclusive(options: MediaCleanupRunOptions, runLockLease: string): Promise<ExclusiveMediaCleanupRunResult> {
+    const lockToken = await this.repository.acquireRunLock(options.workerId, runLockLease);
+    if (!lockToken) return { status: "skipped_overlap" };
+    let runError: unknown;
+    try {
+      return { status: "completed", result: await this.runOnce(options) };
+    } catch (error) {
+      runError = error;
+      throw error;
+    } finally {
+      try {
+        const released = await this.repository.releaseRunLock(lockToken);
+        if (!released && !runError) throw new Error("Lock run cleanup media tidak lagi dimiliki worker.");
+      } catch (releaseError) {
+        if (!runError) throw releaseError;
+      }
+    }
+  }
 
   async runOnce(options: MediaCleanupRunOptions): Promise<MediaCleanupRunResult> {
     this.validate(options);

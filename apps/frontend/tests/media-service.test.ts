@@ -13,6 +13,7 @@ const invitationId = "3e531e88-863c-4344-baf4-c3d8349f13db";
 const readyMedia: InvitationImageMedia = {
   id: mediaId,
   invitationId,
+  purpose: "couple",
   altText: "Foto pasangan",
   originalFilename: "couple.jpg",
   mimeType: "image/jpeg",
@@ -49,6 +50,7 @@ function repository(owned: boolean) {
 }
 
 const descriptor = {
+  purpose: "couple" as const,
   clientUploadId: uploadId,
   originalFilename: "  couple.jpg  ",
   mimeType: "image/jpeg",
@@ -74,6 +76,15 @@ describe("invitation image media application boundary", () => {
       invitationId,
       descriptor: { ...descriptor, originalFilename: "couple.jpg", altText: "Foto pasangan" },
     });
+  });
+
+  it("rejects an unknown media purpose before repository prepare", async () => {
+    const adapter = repository(true);
+    await expect(new InvitationMediaService(adapter).prepareImageUpload(owner, invitationId, {
+      ...descriptor,
+      purpose: "audio" as never,
+    })).rejects.toThrow("Tujuan media image tidak valid");
+    expect(adapter.prepareImageUpload).not.toHaveBeenCalled();
   });
 
   it("enforces UPLOADING to PROCESSING to READY ordering", async () => {

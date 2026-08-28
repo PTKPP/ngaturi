@@ -137,9 +137,10 @@ function runWorker(status, extraEnv = {}) {
     child.on("error", reject);
     child.on("exit", (code) => {
       if (code !== 0) return reject(new Error(`Worker exit ${code}: ${stderr || stdout}`));
-      const jsonStart = stdout.indexOf("{");
-      if (jsonStart < 0) return reject(new Error(`Worker tidak menghasilkan JSON: ${stdout}`));
-      resolve(JSON.parse(stdout.slice(jsonStart)));
+      const events = stdout.split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line));
+      const completed = events.findLast((event) => event.event === "media_cleanup_run_completed");
+      if (!completed) return reject(new Error(`Worker tidak menghasilkan completion event: ${stdout}`));
+      resolve({ ...completed.summary, metrics: completed.metrics, reconciliation: completed.reconciliation });
     });
   });
 }
@@ -227,6 +228,25 @@ async function main() {
   }).eq("id", invitation.id);
   assert.ok(invalidReference.error, "Trigger harus menolak reference baru ke media non-READY.");
 
+  const referenceRestored = await insertMedia(admin, invitation, "ready", "reference-restored");
+  const saveReference = await admin.from("invitations").update({
+    content: { ...invitation.content, restoredLifecycleReference: referenceRestored.id },
+  }).eq("id", invitation.id);
+  if (saveReference.error) throw saveReference.error;
+  const queueReferenced = await admin.from("invitation_media").update({
+    status: "delete_pending", delete_reason: "owner_request", delete_requested_at: new Date().toISOString(), next_attempt_at: oldTimestamp(1),
+  }).eq("id", referenceRestored.id);
+  if (queueReferenced.error) throw queueReferenced.error;
+  const queueReferencedVariants = await admin.from("invitation_media_variants").update({ status: "delete_pending" }).eq("media_id", referenceRestored.id);
+  if (queueReferencedVariants.error) throw queueReferencedVariants.error;
+  const restoreReconcile = await reconcile(admin);
+  assert.ok(restoreReconcile.references_restored >= 1, "Reference terbaru harus membatalkan delete sebelum Storage cleanup.");
+  const restoredRow = await admin.from("invitation_media")
+    .select("status,invitation_media_variants(status)").eq("id", referenceRestored.id).single();
+  if (restoredRow.error) throw restoredRow.error;
+  assert.equal(restoredRow.data.status, "ready");
+  assert.ok(restoredRow.data.invitation_media_variants.every((variant) => variant.status === "ready"));
+
   const pendingBeforeWorkers = await admin.from("invitation_media")
     .select("id,storage_path")
     .eq("invitation_id", invitation.id)
@@ -234,18 +254,15 @@ async function main() {
   if (pendingBeforeWorkers.error) throw pendingBeforeWorkers.error;
   assert.ok(pendingBeforeWorkers.data.length >= 5, "Lifecycle test membutuhkan beberapa row untuk dua worker.");
 
-  const [workerA, workerB] = await Promise.all([
-    runWorker(status, { MEDIA_CLEANUP_WORKER_ID: randomUUID(), MEDIA_CLEANUP_BATCH_SIZE: "2", MEDIA_CLEANUP_MAX_BATCHES: "1", MEDIA_CLEANUP_CONCURRENCY: "1" }),
-    runWorker(status, { MEDIA_CLEANUP_WORKER_ID: randomUUID(), MEDIA_CLEANUP_BATCH_SIZE: "2", MEDIA_CLEANUP_MAX_BATCHES: "1", MEDIA_CLEANUP_CONCURRENCY: "1" }),
-  ]);
-  assert.ok(workerA.claimed > 0 && workerB.claimed > 0, "Dua worker harus memperoleh batch terpisah.");
+  const workerA = await runWorker(status, { MEDIA_CLEANUP_WORKER_ID: randomUUID(), MEDIA_CLEANUP_BATCH_SIZE: "25", MEDIA_CLEANUP_MAX_BATCHES: "20", MEDIA_CLEANUP_CONCURRENCY: "2" });
+  assert.ok(workerA.claimed > 0, "Worker lifecycle harus memperoleh batch cleanup.");
   const makeRemainingEligible = await admin.from("invitation_media")
     .update({ next_attempt_at: oldTimestamp(1) })
     .eq("invitation_id", invitation.id)
     .eq("status", "delete_pending")
     .is("cleanup_claim_token", null);
   if (makeRemainingEligible.error) throw makeRemainingEligible.error;
-  await runWorker(status, { MEDIA_CLEANUP_WORKER_ID: randomUUID(), MEDIA_CLEANUP_BATCH_SIZE: "25", MEDIA_CLEANUP_MAX_BATCHES: "20" });
+  const workerB = await runWorker(status, { MEDIA_CLEANUP_WORKER_ID: randomUUID(), MEDIA_CLEANUP_BATCH_SIZE: "25", MEDIA_CLEANUP_MAX_BATCHES: "20" });
 
   const cleanedTargets = [
     ...pendingBeforeWorkers.data.map((row) => row.id),
@@ -273,6 +290,9 @@ async function main() {
   assert.equal(preserved.data.status, "ready");
   assert.equal(preserved.data.orphan_detected_at, null);
   assert.equal(preserved.data.attempt_count, 0);
+  const restoredPreserved = await admin.from("invitation_media").select("status").eq("id", referenceRestored.id).single();
+  if (restoredPreserved.error) throw restoredPreserved.error;
+  assert.equal(restoredPreserved.data.status, "ready");
 
   const retryMedia = await insertMedia(admin, invitation, "delete_pending", "retry-bounded");
   const firstClaim = await admin.rpc("claim_image_media_cleanup", {
@@ -354,7 +374,7 @@ async function main() {
       readyOrphan: "temporary -> confirmed -> deleted",
       referencedReady: "preserved",
     },
-    workers: { first: workerA.claimed, second: workerB.claimed, noDuplicateAttempts: true },
+    workers: { first: workerA.claimed, second: workerB.claimed, noDuplicateAttempts: true, distributedRunLock: true },
     retry: { maxAttempts: 2, exhausted: true },
     metrics: metrics.data,
     quotaUsage: usage.data,

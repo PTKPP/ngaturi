@@ -26,16 +26,16 @@ pm2-reload: app-build
 	$(PM2) reload ecosystem.config.cjs --update-env
 
 pm2-stop:
-	$(PM2) stop ngaturi-frontend
+	$(PM2) stop ngaturi-frontend ngaturi-media-cleanup
 
 pm2-delete:
-	$(PM2) delete ngaturi-frontend
+	$(PM2) delete ngaturi-frontend ngaturi-media-cleanup
 
 pm2-status:
 	$(PM2) status
 
 pm2-logs:
-	$(PM2) logs ngaturi-backend ngaturi-frontend
+	$(PM2) logs ngaturi-frontend ngaturi-media-cleanup
 
 knowledge-up:
 	$(COMPOSE) up -d chromadb

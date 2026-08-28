@@ -34,9 +34,11 @@ Lifecycle image adalah `uploading -> processing -> ready` atau `failed`. Delete/
 
 Media `ready` yang belum direferensikan mula-mula ditandai sebagai temporary orphan. Worker hanya mengubahnya menjadi confirmed orphan setelah grace period dan pemeriksaan ulang terhadap content invitation terbaru. Kegagalan cleanup memakai retry terbatas dengan backoff dan failure reason; object Storage yang sudah hilang dianggap hasil idempotent.
 
+Hard media quota dihitung dari reservation byte metadata, bukan content JSON. `uploading`, `processing`, `ready`, `failed`, dan `delete_pending` tetap aktif terhadap quota; hanya tombstone `deleted` yang melepaskan kapasitas. Default adalah 500 MiB per user, 200 MiB per invitation, dan 30 image gallery per invitation. Database mengunci counter owner secara atomik sebelum membuat metadata yang dapat memperoleh signed upload path.
+
 ## TBD
 
 - Reset/invite password dan email provider produksi.
-- Scheduler produksi, alerting, dan kebijakan kapasitas/quota media final.
+- Kebijakan override quota/admin UI dan alert delivery eksternal.
 - Audit log admin serta redirect historis slug.
 - Custom domain, analytics, RSVP, hadiah transaksional, dan editing lintas user.

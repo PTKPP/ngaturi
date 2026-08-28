@@ -1,54 +1,99 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+import { parseMediaCleanupConfig } from "@/application/media-cleanup-config";
 import { InvitationMediaCleanupService } from "@/application/media-cleanup-service";
 import { SupabaseInvitationMediaCleanupRepository } from "@/repositories/supabase/media-cleanup-repository";
 
-function integer(name: string, fallback: number) {
-  const value = process.env[name];
-  if (!value) return fallback;
-  const parsed = Number(value);
-  if (!Number.isInteger(parsed)) throw new Error(`${name} harus integer.`);
-  return parsed;
-}
+type LogLevel = "info" | "warn" | "error";
 
-function required(name: string) {
-  const value = process.env[name]?.trim();
-  if (!value) throw new Error(`${name} wajib tersedia untuk worker cleanup media.`);
-  return value;
+function log(level: LogLevel, event: string, fields: Record<string, unknown> = {}) {
+  const target = level === "error" ? console.error : console.log;
+  target(JSON.stringify({ timestamp: new Date().toISOString(), level, event, ...fields }));
 }
 
 async function main() {
-  const url = required("NEXT_PUBLIC_SUPABASE_URL");
-  const serviceRoleKey = required("SUPABASE_SERVICE_ROLE_KEY");
-  const host = new URL(url).hostname;
-  const local = host === "127.0.0.1" || host === "localhost";
-  if (!local && process.env.MEDIA_CLEANUP_ALLOW_REMOTE !== "true") {
-    throw new Error("Worker menolak Supabase non-lokal tanpa MEDIA_CLEANUP_ALLOW_REMOTE=true.");
+  const scheduled = process.argv.includes("--schedule");
+  const config = parseMediaCleanupConfig(process.env, scheduled);
+  const client = createClient(config.supabaseUrl, config.serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const service = new InvitationMediaCleanupService(new SupabaseInvitationMediaCleanupRepository(client));
+  let stopping = false;
+  let wakeScheduler: (() => void) | undefined;
+  const stop = (signal: string) => {
+    stopping = true;
+    wakeScheduler?.();
+    log("info", "media_cleanup_scheduler_stopping", { signal });
+  };
+  process.once("SIGINT", () => stop("SIGINT"));
+  process.once("SIGTERM", () => stop("SIGTERM"));
+
+  const execute = async () => {
+    const runId = randomUUID();
+    const startedAt = Date.now();
+    log("info", "media_cleanup_run_started", { runId, workerId: config.runOptions.workerId });
+    try {
+      const outcome = await service.runExclusive(config.runOptions, config.runLockLease);
+      const durationMs = Date.now() - startedAt;
+      if (outcome.status === "skipped_overlap") {
+        log("warn", "media_cleanup_run_skipped_overlap", { runId, workerId: config.runOptions.workerId, durationMs });
+        return 0;
+      }
+      const { result } = outcome;
+      const summary = {
+        claimed: result.claimed,
+        deleted: result.deleted,
+        failed: result.failed,
+        retried: result.retryScheduled,
+        retryExhausted: result.retryExhausted,
+        orphanDetected: result.reconciliation.temporaryOrphans + result.reconciliation.confirmedOrphans,
+        durationMs,
+      };
+      const degraded = result.failed > 0 || result.failureRecordingErrors > 0;
+      log(degraded ? "error" : "info", "media_cleanup_run_completed", {
+        runId,
+        workerId: result.workerId,
+        summary,
+        reconciliation: result.reconciliation,
+        metrics: result.metrics,
+      });
+      return degraded ? 1 : 0;
+    } catch (error) {
+      const reason = error instanceof Error ? { name: error.name, message: error.message } : { message: String(error) };
+      log("error", "media_cleanup_run_failed", { runId, workerId: config.runOptions.workerId, durationMs: Date.now() - startedAt, error: reason });
+      return 1;
+    }
+  };
+
+  if (!config.scheduled) {
+    process.exitCode = await execute();
+    return;
   }
 
-  const client = createClient(url, serviceRoleKey, { auth: { autoRefreshToken: false, persistSession: false } });
-  const service = new InvitationMediaCleanupService(new SupabaseInvitationMediaCleanupRepository(client));
-  const result = await service.runOnce({
-    workerId: process.env.MEDIA_CLEANUP_WORKER_ID ?? randomUUID(),
-    batchSize: integer("MEDIA_CLEANUP_BATCH_SIZE", 25),
-    concurrency: integer("MEDIA_CLEANUP_CONCURRENCY", 4),
-    maxBatches: integer("MEDIA_CLEANUP_MAX_BATCHES", 20),
-    maxAttempts: integer("MEDIA_CLEANUP_MAX_ATTEMPTS", 8),
-    leaseTimeout: process.env.MEDIA_CLEANUP_LEASE_TIMEOUT ?? "10 minutes",
-    reconciliation: {
-      batchSize: integer("MEDIA_RECONCILE_BATCH_SIZE", 100),
-      uploadTimeout: process.env.MEDIA_UPLOAD_TIMEOUT ?? "2 hours",
-      processingTimeout: process.env.MEDIA_PROCESSING_TIMEOUT ?? "1 hour",
-      failedRetention: process.env.MEDIA_FAILED_RETENTION ?? "24 hours",
-      readyOrphanGrace: process.env.MEDIA_READY_ORPHAN_GRACE ?? "7 days",
-      referenceRecheckInterval: process.env.MEDIA_REFERENCE_RECHECK_INTERVAL ?? "1 hour",
-    },
+  log("info", "media_cleanup_scheduler_started", {
+    workerId: config.runOptions.workerId,
+    intervalMs: config.intervalMs,
+    runLockLease: config.runLockLease,
   });
-  console.log(JSON.stringify(result, null, 2));
-  if (result.failed > 0 || result.failureRecordingErrors > 0) process.exitCode = 1;
+  while (!stopping) {
+    const startedAt = Date.now();
+    await execute();
+    if (stopping) break;
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, Math.max(0, config.intervalMs - (Date.now() - startedAt)));
+      wakeScheduler = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+    });
+    wakeScheduler = undefined;
+  }
+  log("info", "media_cleanup_scheduler_stopped", { workerId: config.runOptions.workerId });
 }
 
 main().catch((error) => {
-  console.error(error);
+  log("error", "media_cleanup_process_failed", {
+    error: error instanceof Error ? { name: error.name, message: error.message } : { message: String(error) },
+  });
   process.exitCode = 1;
 });

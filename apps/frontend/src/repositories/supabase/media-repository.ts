@@ -9,14 +9,22 @@ import {
   type InvitationImageMedia,
   type InvitationMediaRepository,
   type InvitationMediaStatus,
+  MediaQuotaError,
   type PreparedImageUpload,
   type SignedImageUploadSlot,
 } from "@/repositories/contracts";
 
-const mediaColumns = "id,invitation_id,alt_text,original_filename,mime_type,size_bytes,width_px,height_px,status,created_at,variants:invitation_media_variants(variant_key,storage_path,width_px,height_px,size_bytes,status,target_width_px,target_height_px)";
+const mediaColumns = "id,invitation_id,media_purpose,alt_text,original_filename,mime_type,size_bytes,width_px,height_px,status,created_at,variants:invitation_media_variants(variant_key,storage_path,width_px,height_px,size_bytes,status,target_width_px,target_height_px)";
 const targetWidths: Record<ImageVariantKey, number> = { thumbnail: 400, medium: 900, large: 1600 };
 
 function fail(error: { message: string } | null, fallback: string): never {
+  const quotaErrors = {
+    media_user_quota_exceeded: ["MEDIA_USER_QUOTA_EXCEEDED", "Kuota media akun sudah penuh. Hapus media yang tidak digunakan lalu tunggu cleanup selesai."],
+    media_invitation_quota_exceeded: ["MEDIA_INVITATION_QUOTA_EXCEEDED", "Kuota media undangan ini sudah penuh. Hapus media yang tidak digunakan lalu tunggu cleanup selesai."],
+    media_gallery_quota_exceeded: ["MEDIA_GALLERY_QUOTA_EXCEEDED", "Jumlah maksimum image galeri untuk undangan ini sudah tercapai."],
+  } as const;
+  const quota = Object.entries(quotaErrors).find(([key]) => error?.message.includes(key));
+  if (quota) throw new MediaQuotaError(quota[1][0], quota[1][1]);
   throw new Error(error?.message ?? fallback);
 }
 
@@ -30,6 +38,7 @@ function mapMedia(row: Record<string, unknown>): InvitationImageMedia {
   return {
     id: String(row.id),
     invitationId: String(row.invitation_id),
+    purpose: String(row.media_purpose ?? "legacy") as InvitationImageMedia["purpose"],
     altText: String(row.alt_text),
     originalFilename: String(row.original_filename),
     mimeType: String(row.mime_type),
@@ -85,6 +94,7 @@ export class SupabaseInvitationMediaRepository implements InvitationMediaReposit
       p_alt_text: descriptor.altText,
       p_original_path: originalPath,
       p_variants: variants,
+      p_media_purpose: descriptor.purpose,
     });
     if (error) fail(error, "Metadata upload image gagal disiapkan.");
     const prepared = Array.isArray(data) ? data[0] : data;

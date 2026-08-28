@@ -1,7 +1,20 @@
 export const IMAGE_VARIANT_KEYS = ["thumbnail", "medium", "large"] as const;
 
 export type ImageVariantKey = (typeof IMAGE_VARIANT_KEYS)[number];
+export type ImageMediaPurpose = "couple" | "gallery";
 export type InvitationMediaStatus = "uploading" | "processing" | "ready" | "failed" | "delete_pending";
+
+export type MediaQuotaErrorCode =
+  | "MEDIA_USER_QUOTA_EXCEEDED"
+  | "MEDIA_INVITATION_QUOTA_EXCEEDED"
+  | "MEDIA_GALLERY_QUOTA_EXCEEDED";
+
+export class MediaQuotaError extends Error {
+  constructor(public readonly code: MediaQuotaErrorCode, message: string) {
+    super(message);
+    this.name = "MediaQuotaError";
+  }
+}
 
 export interface ImageVariantMetadata {
   key: ImageVariantKey;
@@ -15,6 +28,7 @@ export interface ImageVariantMetadata {
 export interface InvitationImageMedia {
   id: string;
   invitationId: string;
+  purpose: ImageMediaPurpose | "legacy";
   altText: string;
   originalFilename: string;
   mimeType: string;
@@ -32,6 +46,7 @@ export interface PublishedInvitationImage {
 }
 
 export interface ImageUploadDescriptor {
+  purpose: ImageMediaPurpose;
   clientUploadId: string;
   originalFilename: string;
   mimeType: string;

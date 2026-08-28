@@ -36,6 +36,8 @@ describe("InvitationMediaCleanupService", () => {
     const calls: string[] = [];
     let claims = 0;
     const repository: InvitationMediaCleanupRepository = {
+      acquireRunLock: vi.fn().mockResolvedValue("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
+      releaseRunLock: vi.fn().mockResolvedValue(true),
       reconcile: vi.fn().mockResolvedValue(reconciliation),
       claim: vi.fn().mockImplementation(async () => claims++ === 0 ? [{
         mediaId: "22222222-2222-4222-8222-222222222222",
@@ -62,6 +64,8 @@ describe("InvitationMediaCleanupService", () => {
   it("records a bounded retry when Storage deletion fails", async () => {
     let claims = 0;
     const repository: InvitationMediaCleanupRepository = {
+      acquireRunLock: vi.fn().mockResolvedValue("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
+      releaseRunLock: vi.fn().mockResolvedValue(true),
       reconcile: vi.fn().mockResolvedValue(reconciliation),
       claim: vi.fn().mockImplementation(async () => claims++ === 0 ? [{
         mediaId: "55555555-5555-4555-8555-555555555555",
@@ -89,5 +93,42 @@ describe("InvitationMediaCleanupService", () => {
     expect(repository.deleteOriginal).not.toHaveBeenCalled();
     expect(repository.complete).not.toHaveBeenCalled();
     expect(result).toMatchObject({ failed: 1, retryScheduled: 0, retryExhausted: 1 });
+  });
+
+  it("skips an overlapping scheduled run before reconciliation", async () => {
+    const repository: InvitationMediaCleanupRepository = {
+      acquireRunLock: vi.fn().mockResolvedValue(null),
+      releaseRunLock: vi.fn(),
+      reconcile: vi.fn(),
+      claim: vi.fn(),
+      deleteVariants: vi.fn(),
+      deleteOriginal: vi.fn(),
+      complete: vi.fn(),
+      fail: vi.fn(),
+      metrics: vi.fn(),
+    };
+    const { InvitationMediaCleanupService } = await import("@/application/media-cleanup-service");
+    await expect(new InvitationMediaCleanupService(repository).runExclusive(options(), "30 minutes"))
+      .resolves.toEqual({ status: "skipped_overlap" });
+    expect(repository.reconcile).not.toHaveBeenCalled();
+    expect(repository.releaseRunLock).not.toHaveBeenCalled();
+  });
+
+  it("always releases the distributed run lock after a worker failure", async () => {
+    const repository: InvitationMediaCleanupRepository = {
+      acquireRunLock: vi.fn().mockResolvedValue("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
+      releaseRunLock: vi.fn().mockResolvedValue(true),
+      reconcile: vi.fn().mockRejectedValue(new Error("database unavailable")),
+      claim: vi.fn(),
+      deleteVariants: vi.fn(),
+      deleteOriginal: vi.fn(),
+      complete: vi.fn(),
+      fail: vi.fn(),
+      metrics: vi.fn(),
+    };
+    const { InvitationMediaCleanupService } = await import("@/application/media-cleanup-service");
+    await expect(new InvitationMediaCleanupService(repository).runExclusive(options(), "30 minutes"))
+      .rejects.toThrow("database unavailable");
+    expect(repository.releaseRunLock).toHaveBeenCalledWith("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
   });
 });

@@ -20,8 +20,10 @@
     "supabase:reset": "supabase db reset --workdir ../.. --local",
     "test:supabase:image": "node scripts/test-local-image-media-workflow.mjs",
     "test:supabase:lifecycle": "node scripts/test-local-media-lifecycle.mjs",
-    "test:supabase": "npm run test:supabase:image && npm run test:supabase:lifecycle",
-    "media:cleanup": "node --conditions=react-server --import tsx scripts/run-media-cleanup.ts"
+    "test:supabase:operations": "node scripts/test-local-media-operations-quota.mjs",
+    "test:supabase": "npm run test:supabase:image && npm run test:supabase:lifecycle && npm run test:supabase:operations",
+    "media:cleanup": "node --conditions=react-server --import tsx scripts/run-media-cleanup.ts",
+    "media:cleanup:scheduler": "node --conditions=react-server --import tsx scripts/run-media-cleanup.ts --schedule"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
@@ -30,6 +32,7 @@
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "server-only": "^0.0.1",
+    "tsx": "4.23.12",
     "zod": "4.4.3"
   },
   "devDependencies": {
@@ -42,7 +45,6 @@
     "eslint-config-next": "16.3.2",
     "jsdom": "29.1.1",
     "supabase": "2.116.0",
-    "tsx": "4.23.12",
     "typescript": "6.0.3",
     "vitest": "4.1.10"
   },

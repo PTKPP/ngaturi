@@ -9,7 +9,7 @@ import {
   updateImageAltAction,
 } from "@/app/actions/media";
 import type { WeddingRenderModel } from "@/invitation-modules/schemas";
-import type { InvitationImageMedia } from "@/repositories/contracts";
+import type { ImageMediaPurpose, InvitationImageMedia } from "@/repositories/contracts";
 import { inspectBrowserImage, uploadPreparedImage } from "./client-image";
 
 const MEDIA_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -19,8 +19,9 @@ function defaultAlt(file: File) {
   return name ? "Foto " + name : "Foto undangan";
 }
 
-function ImageUploader({ invitationId, label, multiple = false, onUploaded, onBusyChange }: {
+function ImageUploader({ invitationId, purpose, label, multiple = false, onUploaded, onBusyChange }: {
   invitationId: string;
+  purpose: ImageMediaPurpose;
   label: string;
   multiple?: boolean;
   onUploaded(media: InvitationImageMedia[]): void;
@@ -39,6 +40,7 @@ function ImageUploader({ invitationId, label, multiple = false, onUploaded, onBu
       for (const file of files) {
         const inspected = await inspectBrowserImage(file);
         const prepared = await prepareImageUploadAction(invitationId, {
+          purpose,
           clientUploadId: crypto.randomUUID(),
           originalFilename: file.name,
           mimeType: file.type,
@@ -159,14 +161,14 @@ export function DaztoreImageMediaEditor({ invitationId, value, media, onChange, 
           <h3>Foto {partner.fullName}</h3>
           {current ? <Image src={"/api/public-media/" + current.id + "?variant=thumbnail"} alt={current.altText} width={400} height={400} /> : <p className="hint">Belum memakai image milik user.</p>}
           {current ? <AltTextEditor invitationId={invitationId} media={current} onMediaChange={onMediaChange} /> : null}
-          <ImageUploader invitationId={invitationId} label={current ? "Ganti foto" : "Upload foto"} onUploaded={(items) => { if (items[0]) replacePartner(key, items[0]); }} onBusyChange={onBusyChange} />
+          <ImageUploader invitationId={invitationId} purpose="couple" label={current ? "Ganti foto" : "Upload foto"} onUploaded={(items) => { if (items[0]) replacePartner(key, items[0]); }} onBusyChange={onBusyChange} />
           {current ? <button className="button danger compact" type="button" onClick={() => clearPartner(key)}>Hapus foto</button> : null}
           <small>Partner {index + 1}</small>
         </article>;
       })}
     </div>
     <div className="event-heading"><div><h2>Galeri</h2><p>Upload banyak image, atur alt text, lalu ubah urutan dengan kontrol berikut.</p></div></div>
-    <ImageUploader invitationId={invitationId} label="Tambah image galeri" multiple onUploaded={(items) => {
+    <ImageUploader invitationId={invitationId} purpose="gallery" label="Tambah image galeri" multiple onUploaded={(items) => {
       items.forEach(onMediaChange);
       onChange({ ...value, gallery: [...value.gallery, ...items.map((item) => item.id)] });
     }} onBusyChange={onBusyChange} />
@@ -181,7 +183,7 @@ export function DaztoreImageMediaEditor({ invitationId, value, media, onChange, 
           <button className="button ghost compact" type="button" disabled={index === value.gallery.length - 1} onClick={() => moveGallery(index, 1)}>Turun</button>
           <button className="button danger compact" type="button" onClick={() => removeGallery(index)}>Hapus</button>
         </div>
-        <ImageUploader invitationId={invitationId} label="Ganti image" onUploaded={(items) => { if (items[0]) replaceGallery(index, items[0]); }} onBusyChange={onBusyChange} />
+        <ImageUploader invitationId={invitationId} purpose="gallery" label="Ganti image" onUploaded={(items) => { if (items[0]) replaceGallery(index, items[0]); }} onBusyChange={onBusyChange} />
       </article>;
     })}</div>
   </section>;

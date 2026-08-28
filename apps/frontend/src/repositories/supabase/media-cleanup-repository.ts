@@ -25,6 +25,21 @@ function isMissingStorageObject(error: { message?: string; statusCode?: string |
 export class SupabaseInvitationMediaCleanupRepository implements InvitationMediaCleanupRepository {
   constructor(private readonly client: SupabaseClient) {}
 
+  async acquireRunLock(workerId: string, leaseTimeout: string) {
+    const { data, error } = await this.client.rpc("acquire_image_media_cleanup_run_lock", {
+      p_holder_id: workerId,
+      p_lease_timeout: leaseTimeout,
+    });
+    if (error) fail(error, "Lock run cleanup media gagal diperoleh.");
+    return data == null ? null : String(data);
+  }
+
+  async releaseRunLock(lockToken: string) {
+    const { data, error } = await this.client.rpc("release_image_media_cleanup_run_lock", { p_lock_token: lockToken });
+    if (error) fail(error, "Lock run cleanup media gagal dilepas.");
+    return Boolean(data);
+  }
+
   async reconcile(options: MediaLifecycleReconcileOptions): Promise<MediaLifecycleReconcileResult> {
     const { data, error } = await this.client.rpc("reconcile_image_media_lifecycle", {
       p_batch_size: options.batchSize,

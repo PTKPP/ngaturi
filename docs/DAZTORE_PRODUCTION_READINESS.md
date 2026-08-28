@@ -29,13 +29,13 @@ Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset
 
 ## Gap lintas modul
 
-1. **Media image**: signed direct upload, browser WebP 400/900/1600, original preservation, SHA-256 deduplication, Couple/Gallery UI, alt/reorder/replace/delete, variant metadata, private paths, object verification, timeout reconciliation, orphan grace/recheck, retry terbatas, cleanup worker, metrics, dan usage view tersedia. Belum ada scheduler/alerting produksi, quota enforcement, atau verified server-side decode/scan.
+1. **Media image**: signed direct upload, browser WebP 400/900/1600, original preservation, SHA-256 deduplication, Couple/Gallery UI, alt/reorder/replace/delete, variant metadata, private paths, object verification, timeout reconciliation, orphan grace/recheck, retry terbatas, scheduler anti-overlap, hard quota, structured logs, metrics, dan usage counter tersedia. Belum ada external alert delivery atau verified server-side decode/scan.
 2. **Audio user**: registry hanya mengizinkan track paket. Bucket/policy saat ini image-only; belum ada MIME/duration/quota/transcode/scan, media kind, atau resolver audio milik invitation.
 3. **RSVP**: tidak ada guest command, application service, repository contract, table, idempotency, rate limit, spam protection, owner dashboard, atau aggregate attendance.
 4. **Wishes**: tidak ada persistence guest, moderation/status, rate limit, abuse handling, atau pagination.
 5. **Gift**: informasi masih teks bebas. Belum ada schema rekening/e-wallet terstruktur, masking, validation, atau keputusan eksplisit apakah transaksi pembayaran di luar scope.
 6. **Gallery/video/maps**: gallery sudah memakai workflow media; video/maps memakai URL eksternal dan membutuhkan kebijakan provider, privacy, error telemetry, serta E2E mobile.
-7. **Cleanup storage**: lifecycle worker sudah menangani stale upload/processing, `failed`, unreferenced `ready`, dan `delete_pending` dengan reference recheck, grace period, bounded retry, locking, tombstone, usage, dan metrics. Gap tersisa adalah scheduler/alerting produksi, runbook remediation, dan quota enforcement.
+7. **Cleanup storage**: lifecycle worker sudah menangani stale upload/processing, `failed`, unreferenced `ready`, dan `delete_pending` dengan reference recheck, grace period, bounded retry, distributed run lock, PM2 scheduler, tombstone, hard quota counters, structured logs, metrics, dan remediation runbook. Gap tersisa adalah external alert delivery dan kalibrasi quota production.
 
 ## Urutan phase implementasi
 
@@ -47,7 +47,7 @@ Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset
 ### Phase 2 - media lifecycle
 
 - Selesai pada migration `202608270003_image_media_lifecycle.sql`: reconciliation, orphan grace/recheck, concurrent claim, bounded retry, idempotent Storage cleanup, tombstone, metrics, dan usage view.
-- Operasionalkan scheduler, alerting, runbook, serta quota enforcement sebelum rollout produksi. Verifikasi fingerprint/dimensi output secara server-side bila threat model membutuhkan proteksi dari owner client yang dimodifikasi.
+- Scheduler PM2, structured logging, runbook, dan hard quota selesai pada migration `202608280001_media_operations_hard_quota.sql`. Tambahkan external alert delivery dan kalibrasi nilai quota dari metrics production. Verifikasi fingerprint/dimensi output secara server-side bila threat model membutuhkan proteksi dari owner client yang dimodifikasi.
 
 ### Phase 3 - user audio
 

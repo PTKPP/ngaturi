@@ -33,6 +33,8 @@ export type ClaimMediaCleanupOptions = {
 };
 
 export interface InvitationMediaCleanupRepository {
+  acquireRunLock(workerId: string, leaseTimeout: string): Promise<string | null>;
+  releaseRunLock(lockToken: string): Promise<boolean>;
   reconcile(options: MediaLifecycleReconcileOptions): Promise<MediaLifecycleReconcileResult>;
   claim(options: ClaimMediaCleanupOptions): Promise<ClaimedMediaCleanup[]>;
   deleteVariants(paths: string[]): Promise<void>;

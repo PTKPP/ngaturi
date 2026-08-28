@@ -32,6 +32,10 @@ Gambar memakai same-origin `/api/public-media/{uuid}?variant=large` setelah memb
 
 Media Lifecycle berjalan sebagai worker server terpisah melalui `MediaCleanupService`, kontrak repository, adapter Supabase Storage, dan RPC service-role sempit. Rekonsiliasi memeriksa referensi content terbaru sebelum memindahkan stale upload/processing, failed, atau ready orphan. Claim batch memakai `FOR UPDATE SKIP LOCKED`, claim token, worker ID, dan lease agar beberapa worker aman berjalan bersamaan. Deletion menghapus variant sebelum original; object yang sudah hilang bukan kegagalan. Retry dibatasi, memakai backoff dan reason, sedangkan metadata selesai menjadi tombstone `deleted`. View usage dan RPC metrics menjadi fondasi quota serta observability tanpa memberi browser akses cleanup.
 
+Scheduler PM2 menjalankan service yang sama secara berurutan. Distributed run lock dengan expiry mencegah overlap lintas process/deployment; lock tidak menggantikan claim/lease per media. Crash setelah sebagian object terhapus aman karena Storage deletion idempotent dan claim dapat direbut kembali setelah lease. Setiap run menulis JSON log terstruktur dengan outcome, duration, reconciliation, dan metrics.
+
+Hard quota memakai reservation konservatif original plus ceiling tiga variant sebelum signed token dibuat. Trigger database memegang advisory transaction lock per owner dan mengubah counter owner/invitation secara atomik. Reservation berubah menjadi byte aktual setelah keempat object diverifikasi, tetapi tidak dapat tumbuh melewati reservation awal. Semua status selain `deleted` tetap dihitung; transition cleanup ke tombstone melepaskan counter tepat sekali. `media_purpose` membedakan couple dan gallery tanpa membaca invitation content.
+
 ## Portability
 
 Service bergantung pada interface async `ApplicationRepository`; detail RPC ada di adapter. Application backend dapat diekstrak ke Fastify kelak tanpa memindahkan renderer/UI, sementara constraint dan RLS tetap defense in depth.
