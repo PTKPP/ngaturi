@@ -10,6 +10,8 @@ import { parseTemplateContent } from "@/templates/registry";
 import { toWeddingRenderModel } from "@/invitation-modules/content";
 import { InvitationMusicSchema, resolveInvitationMusic } from "@/invitation-music/registry";
 import { InvitationExperienceShell } from "@/templates/shared/InvitationExperienceShell";
+import giftFixture from "../../../contracts/dummy-data/gift-module-v2.json";
+import { GiftModuleSchema } from "@/invitation-modules/definitions/gift";
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
@@ -83,7 +85,7 @@ describe("daztore-inv1 template", () => {
     renderTheme({ gallery: ["/templates/daztore-inv1/thumbnail.svg"] }, false, (moduleContent) => {
       const event = (moduleContent.modules.event as { items: Array<Record<string, unknown>> }).items[0];
       event.mapUrl = "https://maps.google.com/?q=Pendopo";
-      moduleContent.modules.video = { url: "https://www.youtube.com/watch?v=abcdefghijk" };
+      moduleContent.modules.video = { provider: "youtube", videoId: "abcdefghijk", embedEnabled: true, legacyUnsupportedUrl: "" };
       moduleContent.modules.rsvp = { enabled: true };
       moduleContent.modules.wishes = { enabled: true };
       moduleContent.moduleState.video = { enabled: true };
@@ -95,6 +97,7 @@ describe("daztore-inv1 template", () => {
     expect(screen.getByRole("heading", { name: "Kirim Ucapan" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Temukan tempatnya" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Galeri" })).toBeInTheDocument();
+    expect(screen.queryByTitle("Video perjalanan pasangan")).not.toBeInTheDocument();
   });
 
   it("shows gallery only for provided images", () => {
@@ -131,6 +134,17 @@ describe("daztore-inv1 template", () => {
     fireEvent.click(screen.getByRole("button", { name: "Salin Informasi Hadiah" }));
     await waitFor(() => expect(writeText).toHaveBeenCalledWith((fixture().content.copy as Record<string, string>).giftInformation));
     expect(screen.getByText("Informasi hadiah berhasil disalin.")).toHaveAttribute("aria-live", "polite");
+  });
+
+  it("renders structured Gift module data through Daztore", () => {
+    renderTheme({}, false, (moduleContent) => {
+      moduleContent.modules.gift = GiftModuleSchema.parse(giftFixture);
+      moduleContent.moduleVersions.gift = 2;
+      moduleContent.moduleState.gift = { enabled: true };
+    });
+    expect(screen.getByRole("heading", { name: "BCA" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "GoPay" })).toBeInTheDocument();
+    expect(screen.getByText("Jl. Melati No. 10, Bandung")).toBeInTheDocument();
   });
 
   it("shows navigation only for rendered sections and one initial active item", () => {

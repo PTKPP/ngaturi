@@ -26,6 +26,7 @@ import styles from "./styles.module.css";
 import { themeCssVariables } from "@/themes/css-variables";
 import type { DaztoreInv1ViewModel } from "./view-model";
 import { useInvitationExperience } from "@/templates/shared/InvitationExperienceShell";
+import { hasPublicGift } from "@/invitation-modules/definitions/gift";
 
 const bodyFont = Josefin_Sans({ subsets: ["latin"], variable: "--daztore-font-body", display: "swap" });
 const headingFont = Cormorant_Garamond({ subsets: ["latin"], variable: "--daztore-font-heading", display: "swap" });
@@ -42,9 +43,10 @@ export function DaztoreInv1Template({ invitation, content, moduleContent, media 
   const video = moduleRegistry.video.schema.parse(moduleContent.modules.video);
   const rsvp = moduleRegistry.rsvp.schema.parse(moduleContent.modules.rsvp);
   const wishes = moduleRegistry.wishes.schema.parse(moduleContent.modules.wishes);
+  const gift = moduleRegistry.gift.schema.parse(moduleContent.modules.gift);
   const maps = moduleRegistry.maps.schema.parse(moduleContent.modules.maps);
   const hasGallery = isModuleEnabled(moduleContent, "gallery") && content.gallery.length > 0;
-  const hasGift = isModuleEnabled(moduleContent, "gift") && content.settings.showGiftInformation && Boolean(content.copy.giftInformation.trim());
+  const hasGift = isModuleEnabled(moduleContent, "gift") && hasPublicGift(gift);
   const coupleNames = `${content.couple.partnerOne.nickname} & ${content.couple.partnerTwo.nickname}`;
 
   return <div className={`${styles.root} ${bodyFont.variable} ${headingFont.variable} ${scriptFont.variable} ${arabicFont.variable}`} data-template="daztore-inv1@1" data-theme={`${theme.key}@${theme.version}`} data-pattern={theme.tokens.backgroundPattern} data-ornament={theme.tokens.ornament} data-opened={opened ? "true" : "false"} style={themeCssVariables(theme)}>
@@ -56,15 +58,15 @@ export function DaztoreInv1Template({ invitation, content, moduleContent, media 
       <GreetingSection text={content.copy.openingText} />
       <CoupleSection invitation={viewModel} media={media} />
       <QuoteSection invitation={viewModel} />
-      <EventSection events={events} />
+      <EventSection events={events} showMapLinks={isModuleEnabled(moduleContent, "maps")} />
       {isModuleEnabled(moduleContent, "countdown") ? <CountdownSection event={mainEvent} label={countdown.label} /> : null}
       <StorySection story={content.copy.story} />
       <GallerySection gallery={content.gallery} coupleNames={coupleNames} media={media} />
-      {isModuleEnabled(moduleContent, "video") ? <VideoSection url={video.url} /> : null}
+      {isModuleEnabled(moduleContent, "video") ? <VideoSection video={video} /> : null}
       {isModuleEnabled(moduleContent, "rsvp") && rsvp.enabled ? <RsvpSection invitationId={invitation.id} preview={preview} /> : null}
-      {hasGift ? <GiftSection information={content.copy.giftInformation} /> : null}
+      {hasGift ? <GiftSection gift={gift} /> : null}
       {isModuleEnabled(moduleContent, "wishes") && wishes.enabled ? <WishesSection invitationId={invitation.id} preview={preview} /> : null}
-      {isModuleEnabled(moduleContent, "maps") ? <MapsSection events={events} label={maps.label} /> : null}
+      {isModuleEnabled(moduleContent, "maps") ? <MapsSection events={events} config={maps} /> : null}
     </main>
     <ClosingSection invitation={viewModel} />
     <BottomNavigation visible={opened} hasGallery={hasGallery} hasGift={hasGift} />

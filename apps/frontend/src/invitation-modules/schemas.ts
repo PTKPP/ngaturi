@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SupportedMapUrlSchema } from "./definitions/external-embeds";
 
 export const OptionalUrlSchema = z.union([z.literal(""), z.string().url()]);
 export const TimeSchema = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, "Waktu harus menggunakan format 24 jam HH:MM.");
@@ -11,15 +12,24 @@ export const PartnerSchema = z.object({
   photo: MediaReferenceSchema,
 });
 
-export const EventSchema = z.object({
+const EventCoreSchema = z.object({
   id: z.string().min(1), type: z.string().trim().min(1), title: z.string().trim().min(1),
   date: z.string().date(), startTime: TimeSchema, endTime: TimeSchema,
   timezone: z.string().trim().min(1), venueName: z.string().trim().min(1),
-  address: z.string().trim().min(1), mapUrl: OptionalUrlSchema,
+  address: z.string().trim().min(1),
   sortOrder: z.number().int().nonnegative(),
-}).superRefine((event, context) => {
-  if (event.endTime <= event.startTime) context.addIssue({ code: "custom", path: ["endTime"], message: "Waktu selesai harus setelah waktu mulai." });
 });
+
+function validateEventTime(event: { startTime: string; endTime: string }, context: z.RefinementCtx) {
+  if (event.endTime <= event.startTime) context.addIssue({ code: "custom", path: ["endTime"], message: "Waktu selesai harus setelah waktu mulai." });
+}
+
+export const LegacyEventSchema = EventCoreSchema.extend({ mapUrl: OptionalUrlSchema }).superRefine(validateEventTime);
+
+export const EventSchema = EventCoreSchema.extend({
+  mapUrl: SupportedMapUrlSchema,
+  legacyUnsupportedMapUrl: z.union([z.literal(""), z.string().max(1_000).url().refine((value) => value.startsWith("https://"))]).optional(),
+}).superRefine(validateEventTime);
 
 export const InvitationEventsSchema = z.array(EventSchema).min(1).superRefine((events, context) => {
   const ids = new Set<string>();
@@ -33,14 +43,27 @@ export const InvitationEventsSchema = z.array(EventSchema).min(1).superRefine((e
   if (actual.some((value, index) => value !== index)) context.addIssue({ code: "custom", message: "Urutan acara harus berurutan mulai dari 0." });
 });
 
+export const LegacyInvitationEventsSchema = z.array(LegacyEventSchema).min(1);
+
+const WeddingCopySchema = z.object({ openingText: z.string(), quote: z.string(), story: z.string(), closingText: z.string(), giftInformation: z.string() });
+const WeddingSettingsSchema = z.object({ showGiftInformation: z.boolean() });
+
 export const LegacyWeddingContentV1Schema = z.object({
   couple: z.object({ partnerOne: PartnerSchema, partnerTwo: PartnerSchema }),
-  events: InvitationEventsSchema,
-  copy: z.object({ openingText: z.string(), quote: z.string(), story: z.string(), closingText: z.string(), giftInformation: z.string() }),
+  events: LegacyInvitationEventsSchema,
+  copy: WeddingCopySchema,
   gallery: z.array(MediaReferenceSchema),
-  settings: z.object({ showGiftInformation: z.boolean() }),
+  settings: WeddingSettingsSchema,
+});
+
+export const WeddingRenderModelSchema = z.object({
+  couple: z.object({ partnerOne: PartnerSchema, partnerTwo: PartnerSchema }),
+  events: InvitationEventsSchema,
+  copy: WeddingCopySchema,
+  gallery: z.array(MediaReferenceSchema),
+  settings: WeddingSettingsSchema,
 });
 
 export type Partner = z.infer<typeof PartnerSchema>;
 export type InvitationEvent = z.infer<typeof EventSchema>;
-export type WeddingRenderModel = z.infer<typeof LegacyWeddingContentV1Schema>;
+export type WeddingRenderModel = z.infer<typeof WeddingRenderModelSchema>;

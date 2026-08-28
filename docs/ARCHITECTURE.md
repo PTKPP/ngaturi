@@ -40,6 +40,8 @@ RSVP memakai `invitation_rsvps` terpisah dari JSONB content. Client memanggil Se
 
 Wishes memakai boundary setara melalui `invitation_wishes`, tetapi mempunyai rate counter sendiri agar abuse pada ucapan tidak mengurangi kapasitas RSVP. Submission guest selalu `pending`. Public Server Action memanggil projection RPC service-role-only yang mensyaratkan invitation published, memfilter `approved`, tidak mengembalikan status/fingerprint, dan memakai cursor `(created_at,id)` dengan page size 10. Owner list dipisahkan per status dan dibatasi 50 row per halaman. Moderation RPC mengunci wish, memverifikasi owner aktif, dan mencocokkan `expected_updated_at`; keputusan concurrent yang stale ditolak sementara retry ke status yang sama idempotent.
 
+Gift adalah capability module reusable, bukan service atau route khusus template. `gift@2` memiliki schema, default, editor, validation, dan migrator `gift@1 {text}` sendiri di `invitation-modules`. Module version berubah independen dari content envelope v2; parse/save/publish menaikkan `moduleVersions.gift` setelah migrasi tanpa SQL atau rewrite massal. Compatibility projection mengubah data terstruktur menjadi teks hanya untuk renderer template lama, sedangkan Daztore membaca struktur module secara langsung. Enablement tetap di `moduleState.gift`; data alamat fisik yang tersimpan tetapi disabled tidak masuk renderer public.
+
 ## Portability
 
 Service bergantung pada interface async `ApplicationRepository`; detail RPC ada di adapter. Application backend dapat diekstrak ke Fastify kelak tanpa memindahkan renderer/UI, sementara constraint dan RLS tetap defense in depth.

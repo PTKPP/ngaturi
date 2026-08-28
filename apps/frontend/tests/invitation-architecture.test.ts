@@ -31,10 +31,11 @@ describe("final invitation architecture", () => {
     expect(Object.keys(moduleRegistry).sort()).toEqual([...INVITATION_MODULE_IDS].sort());
     for (const id of INVITATION_MODULE_IDS) {
       expect(moduleRegistry[id].id).toBe(id);
-      expect(moduleRegistry[id].version).toBe(1);
+      expect(moduleRegistry[id].version).toBeGreaterThanOrEqual(1);
       expect(moduleRegistry[id].schema.safeParse(moduleRegistry[id].createDefault()).success).toBe(true);
-      expect(moduleRegistry[id].migrate(1, moduleRegistry[id].createDefault())).toBeTruthy();
+      expect(moduleRegistry[id].migrate(moduleRegistry[id].version, moduleRegistry[id].createDefault())).toBeTruthy();
     }
+    expect(moduleRegistry.gift.version).toBe(2);
   });
 
   it("binds templates to categories, capability-compatible modules, and complete section renderer maps", () => {

@@ -2,8 +2,9 @@ import { z } from "zod";
 import type { InvitationTemplate } from "@/domain/template";
 import { getInvitationCategory } from "@/invitation-categories/registry";
 import { moduleRegistry } from "./registry";
-import { LegacyWeddingContentV1Schema, type WeddingRenderModel } from "./schemas";
+import { LegacyWeddingContentV1Schema, WeddingRenderModelSchema, type WeddingRenderModel } from "./schemas";
 import type { InvitationModuleId } from "./types";
+import { giftToCompatibilityText, hasPublicGift, type GiftModule } from "./definitions/gift";
 
 export const ACTIVE_INVITATION_CONTENT_VERSION = 2;
 export const ModuleStateSchema = z.object({ enabled: z.boolean() });
@@ -36,12 +37,14 @@ export function migrateLegacyWeddingContent(content: unknown, template: Invitati
   const legacy = LegacyWeddingContentV1Schema.parse(source);
   const next = createTemplateContent(template);
   next.modules["couple-profile"] = legacy.couple;
-  next.modules.event = { items: legacy.events };
+  next.modules.event = moduleRegistry.event.migrate(1, { items: legacy.events });
+  next.moduleVersions.event = moduleRegistry.event.version;
   next.modules.greeting = { text: legacy.copy.openingText };
   next.modules.quote = { text: legacy.copy.quote };
   next.modules["love-story"] = { text: legacy.copy.story };
   next.modules.closing = { text: legacy.copy.closingText };
-  next.modules.gift = { text: legacy.copy.giftInformation };
+  next.modules.gift = moduleRegistry.gift.migrate(1, { text: legacy.copy.giftInformation });
+  next.moduleVersions.gift = moduleRegistry.gift.version;
   next.modules.gallery = { items: legacy.gallery };
   next.moduleState.gift = { enabled: legacy.settings.showGiftInformation };
   const unknown = Object.fromEntries(Object.entries(source).filter(([key]) => !["couple", "events", "copy", "gallery", "settings"].includes(key)));
@@ -58,7 +61,10 @@ export function migrateTemplateContent(template: InvitationTemplate, version: nu
 export function adaptContentToTemplate(source: InvitationModuleContent, template: InvitationTemplate): InvitationModuleContent {
   const next: InvitationModuleContent = structuredClone(source);
   for (const id of template.supportedModules) {
-    if (next.modules[id] === undefined) next.modules[id] = moduleRegistry[id].createDefault();
+    if (next.modules[id] === undefined) {
+      next.modules[id] = moduleRegistry[id].createDefault();
+      next.moduleVersions[id] = moduleRegistry[id].version;
+    }
     if (next.moduleState[id] === undefined) next.moduleState[id] = { enabled: defaultEnabled(template, id) };
   }
   return validateTemplateContent(template, next);
@@ -75,6 +81,7 @@ export function validateTemplateContent(template: InvitationTemplate, content: u
     if (value === undefined && !template.requiredModules.includes(id)) {
       value = moduleRegistry[id].createDefault();
       parsed.modules[id] = value;
+      parsed.moduleVersions[id] = moduleRegistry[id].version;
     }
     if (value === undefined) throw new Error(`Konten modul ${id} wajib tersedia untuk template ${template.key}.`);
     const storedVersion = parsed.moduleVersions[id] ?? 1;
@@ -92,14 +99,16 @@ export function isModuleEnabled(content: InvitationModuleContent, id: Invitation
 export function toWeddingRenderModel(content: InvitationModuleContent, respectModuleState = true): WeddingRenderModel {
   const couple = moduleRegistry["couple-profile"].schema.parse(content.modules["couple-profile"]);
   const events = moduleRegistry.event.schema.parse(content.modules.event).items;
-  const text = (id: "greeting" | "quote" | "love-story" | "gift" | "closing") => moduleRegistry[id].schema.parse(content.modules[id]).text;
-  const enabledText = (id: "greeting" | "quote" | "love-story" | "gift" | "closing") => !respectModuleState || isModuleEnabled(content, id) ? text(id) : "";
-  return LegacyWeddingContentV1Schema.parse({
+  const text = (id: "greeting" | "quote" | "love-story" | "closing") => moduleRegistry[id].schema.parse(content.modules[id]).text;
+  const enabledText = (id: "greeting" | "quote" | "love-story" | "closing") => !respectModuleState || isModuleEnabled(content, id) ? text(id) : "";
+  const gift = moduleRegistry.gift.schema.parse(content.modules.gift) as GiftModule;
+  const giftEnabled = (!respectModuleState || isModuleEnabled(content, "gift")) && hasPublicGift(gift);
+  return WeddingRenderModelSchema.parse({
     couple,
     events,
-    copy: { openingText: enabledText("greeting"), quote: enabledText("quote"), story: enabledText("love-story"), closingText: text("closing"), giftInformation: enabledText("gift") },
+    copy: { openingText: enabledText("greeting"), quote: enabledText("quote"), story: enabledText("love-story"), closingText: text("closing"), giftInformation: giftEnabled ? giftToCompatibilityText(gift) : "" },
     gallery: !respectModuleState || isModuleEnabled(content, "gallery") ? moduleRegistry.gallery.schema.parse(content.modules.gallery).items : [],
-    settings: { showGiftInformation: isModuleEnabled(content, "gift") && Boolean(text("gift")) },
+    settings: { showGiftInformation: isModuleEnabled(content, "gift") && hasPublicGift(gift) },
   });
 }
 
@@ -107,6 +116,6 @@ export function updateFromWeddingRenderModel(base: InvitationModuleContent, valu
   return InvitationModuleContentSchema.parse({ ...base, modules: { ...base.modules,
     "couple-profile": value.couple, event: { items: value.events }, greeting: { text: value.copy.openingText },
     quote: { text: value.copy.quote }, "love-story": { text: value.copy.story }, closing: { text: value.copy.closingText },
-    gift: { text: value.copy.giftInformation }, gallery: { items: value.gallery },
-  }, moduleState: { ...base.moduleState, gift: { enabled: value.settings.showGiftInformation } } });
+    gallery: { items: value.gallery },
+  } });
 }

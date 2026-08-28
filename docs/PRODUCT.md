@@ -40,6 +40,8 @@ RSVP guest disimpan pada tabel relasional khusus, bukan content invitation. Gues
 
 Wishes guest disimpan pada `invitation_wishes`, bukan content invitation. Guest dapat mengirim nama 2–100 karakter dan ucapan 2–1000 karakter hanya untuk invitation published milik akun aktif. Submission baru selalu `pending`; hanya `approved` yang masuk projection public ber-cursor maksimal 10 item per halaman. Server Action memakai fingerprint HMAC tepercaya, validasi/normalisasi server, UUID idempotency, dan rate limit atomik 5 submission per sumber serta 100 per invitation setiap 10 menit. Browser tidak mendapat akses tabel maupun RPC langsung. Owner dapat memfilter `pending`, `approved`, atau `rejected`, melihat summary per status, lalu approve/reject dengan optimistic concurrency.
 
+Gift bersifat informasi hadiah/pembayaran, bukan gateway atau transaksi. Module `gift@2` menyimpan maksimal delapan akun terstruktur—bank dan e-wallet masing-masing maksimal lima—berisi provider, nomor akun, dan pemilik, serta satu tujuan hadiah fisik opsional. Alamat hadiah fisik hanya tampil jika owner mengaktifkannya. Nomor akun, alamat, dan teks legacy mempunyai batas panjang, normalisasi whitespace, serta duplicate validation. Gift lama berupa teks dimigrasikan in-memory ke `legacyText` dan tetap tampil sampai owner mengosongkannya. Data Gift tetap berada pada content JSONB tervalidasi dan tidak membuat tabel payment.
+
 ## TBD
 
 - Reset/invite password dan email provider produksi.

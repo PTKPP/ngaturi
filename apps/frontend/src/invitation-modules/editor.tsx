@@ -8,6 +8,10 @@ import { InvitationMusicSchema } from "@/invitation-music/registry";
 import type { InvitationAudioMedia, InvitationImageMedia, InvitationOwnedMedia } from "@/repositories/contracts";
 import { DaztoreImageMediaEditor } from "@/invitation-media/DaztoreImageMediaEditor";
 import { InvitationAudioMediaEditor } from "@/invitation-media/InvitationAudioMediaEditor";
+import { GiftModuleEditor } from "./editors/GiftModuleEditor";
+import { GiftModuleSchema } from "./definitions/gift";
+import { MapsModuleEditor } from "./editors/MapsModuleEditor";
+import { VideoModuleEditor } from "./editors/VideoModuleEditor";
 
 function ModuleConfigurationEditors({ template, invitationId, media, value, onChange, onMediaChange, onScheduleMediaDeletion, onMediaBusyChange }: {
   template: InvitationTemplate;
@@ -23,7 +27,6 @@ function ModuleConfigurationEditors({ template, invitationId, media, value, onCh
   const cover = moduleRegistry.cover.schema.parse(value.modules.cover);
   const countdown = template.supportedModules.includes("countdown") ? moduleRegistry.countdown.schema.parse(value.modules.countdown) : null;
   const video = template.supportedModules.includes("video") ? moduleRegistry.video.schema.parse(value.modules.video) : null;
-  const maps = template.supportedModules.includes("maps") ? moduleRegistry.maps.schema.parse(value.modules.maps) : null;
   const music = template.supportedModules.includes("music") ? InvitationMusicSchema.parse(value.modules.music) : null;
   return <>
     <section className="form-section form">
@@ -34,8 +37,7 @@ function ModuleConfigurationEditors({ template, invitationId, media, value, onCh
       </div>
     </section>
     {countdown ? <section className="form-section form"><h2>Hitung mundur</h2><label className="field"><span>Label hitung mundur</span><input value={countdown.label} onChange={(event) => updateModule("countdown", { label: event.target.value })} /></label></section> : null}
-    {video ? <section className="form-section form"><h2>Video</h2><label className="field"><span>URL YouTube atau Vimeo</span><input type="url" value={video.url} onChange={(event) => updateModule("video", { url: event.target.value })} placeholder="https://www.youtube.com/watch?v=..." /></label></section> : null}
-    {maps ? <section className="form-section form"><h2>Peta</h2><label className="field"><span>Label tombol peta</span><input value={maps.label} onChange={(event) => updateModule("maps", { label: event.target.value })} /></label></section> : null}
+    {video ? <VideoModuleEditor value={video} onChange={(next) => updateModule("video", next)} /> : null}
     {music ? <section className="form-section form" data-music-editor>
       <div><h2>Musik undangan</h2><p>Musik terpisah dari tema dan hanya mulai setelah tamu membuka undangan.</p></div>
       <div className="form two-column">
@@ -74,6 +76,8 @@ export function InvitationModuleEditor({ template, invitationId, media = [], val
   const required = new Set(template.requiredModules);
   const toggleable = template.supportedModules.filter((id) => !required.has(id));
   const hasImageWorkflow = template.supportedModules.includes("couple-profile") && template.supportedModules.includes("gallery");
+  const weddingContent = toWeddingRenderModel(value, false);
+  const maps = template.supportedModules.includes("maps") ? moduleRegistry.maps.schema.parse(value.modules.maps) : null;
   return <div className="form" data-template-editor data-module-editor>
     <section className="form-section">
       <h2>Modul undangan</h2>
@@ -83,7 +87,9 @@ export function InvitationModuleEditor({ template, invitationId, media = [], val
         <span>{moduleRegistry[id].name}</span>
       </label>)}</div>
     </section>
-    <WeddingModuleEditor value={toWeddingRenderModel(value, false)} hideMediaFields={hasImageWorkflow} onChange={(next) => onChange(updateFromWeddingRenderModel(value, next))} />
+    <WeddingModuleEditor value={weddingContent} hideMediaFields={hasImageWorkflow} onChange={(next) => onChange(updateFromWeddingRenderModel(value, next))} />
+    {maps ? <MapsModuleEditor content={weddingContent} value={maps} onContentChange={(next) => onChange(updateFromWeddingRenderModel(value, next))} onChange={(next) => onChange({ ...value, modules: { ...value.modules, maps: next } })} /> : null}
+    {template.supportedModules.includes("gift") ? <GiftModuleEditor value={GiftModuleSchema.parse(value.modules.gift)} onChange={(gift) => onChange({ ...value, modules: { ...value.modules, gift } })} /> : null}
     {hasImageWorkflow && invitationId ? <DaztoreImageMediaEditor
       invitationId={invitationId}
       value={toWeddingRenderModel(value, false)}

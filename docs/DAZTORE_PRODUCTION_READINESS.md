@@ -14,15 +14,15 @@ Data konfigurasi section disimpan dalam invitation content JSONB v2. Save/publis
 | Greeting | `greeting@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
 | Couple | `couple-profile@1`: dua partner, parents, media ID | Upload/replace/delete dan alt text | Ada, `next/image`, fallback terdaftar | JSONB media ID + metadata/variant owner-scoped | Image workflow siap; browser E2E lokal masih diperlukan |
 | Quote | `quote@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
-| Event | `event@1`: daftar acara berurutan | Ada | Ada, calendar URL dihitung | JSONB owner-only | Baseline siap; validasi timezone perlu diperketat |
+| Event | `event@2`: daftar acara berurutan + allowlisted map link | Ada | Ada, calendar URL dihitung | JSONB owner-only | Baseline siap; validasi timezone perlu diperketat |
 | Countdown | `countdown@1`: label, target dari event | Ada | Ada dan cleanup timer teruji | JSONB owner-only | Baseline siap |
 | Love Story | `love-story@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
 | Gallery | `gallery@1`: ordered media IDs | Multiple upload, reorder, alt, replace, delete | Variant large + Next Image Optimization | Content owner-only; lifecycle media/RPC/RLS | Image workflow dan cleanup lifecycle siap; browser E2E lokal masih diperlukan |
-| Video | `video@1`: URL | Ada | YouTube/Vimeo HTTPS allowlist | URL di JSONB owner-only | Parsial: belum ada consent/privacy dan preview metadata |
+| Video | `video@2`: provider + canonical ID | URL owner dinormalisasi | Consent-gated YouTube no-cookie/Vimeo DNT + fallback | JSONB owner-only; tidak menyimpan iframe | Baseline siap; browser E2E provider production tersisa |
 | RSVP | Konfigurasi enablement + response schema relasional | Toggle + owner summary/list | Form guest tanpa reload | Table khusus, Server Action, service/repository, RPC/RLS | Baseline production siap; browser E2E dan kalibrasi rate limit production tersisa |
-| Gift | `gift@1`: text bebas | Ada | Ada, copy dengan fallback | JSONB owner-only | Parsial: belum structured account/payment model |
+| Gift | `gift@2`: bank, e-wallet, physical gift, legacy adapter | Add/remove/reorder, mask/reveal/copy, toggle alamat | Card mobile + copy per nomor/alamat | JSONB owner-only; module schema/version validation | Baseline production siap; privacy copy dan browser E2E tersisa |
 | Wishes | Konfigurasi enablement | Toggle + dashboard moderasi | Form guest dan daftar approved ber-cursor | Tabel khusus, pending-by-default, RPC/RLS guest dan owner | Baseline production siap; browser E2E dan kalibrasi rate tersisa |
-| Maps | Label modul + HTTPS `mapUrl` pada event | Ada | Link eksternal aman | JSONB owner-only | Baseline siap; provider/domain policy perlu difinalkan |
+| Maps | `maps@2` + allowlisted link pada `event@2` | URL dinormalisasi + toggle embed | Address-first, consent-gated optional embed, fallback | JSONB owner-only; legacy unsupported inert | Baseline siap; browser E2E provider production tersisa |
 | Closing | `closing@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
 
 Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset audio lokal dan custom MP3/M4A, signed direct upload, lifecycle/quota/cleanup reuse, autoplay setelah gesture, pause/resume, controlled delivery, failure handling, dan no-restart rerender sudah teruji terhadap Supabase lokal.
@@ -33,8 +33,8 @@ Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset
 2. **Audio user**: workflow MP3/M4A tersedia tanpa transcoding; gap tersisa adalah browser/codec smoke production dan verified server-side byte probe bila threat model membutuhkannya.
 3. **RSVP**: guest command, application service, repository, table/RLS, service-role RPC, idempotency, rate limit, owner list, dan aggregate attendance tersedia. Gap tersisa adalah E2E browser, kalibrasi anti-spam production, pagination UI di atas 100 respons, dan kebijakan export/retention.
 4. **Wishes**: persistence, status moderation, idempotency, rate limit, owner filter/summary, serta cursor pagination public tersedia. Gap tersisa adalah browser E2E dan kalibrasi anti-spam production.
-5. **Gift**: informasi masih teks bebas. Belum ada schema rekening/e-wallet terstruktur, masking, validation, atau keputusan eksplisit apakah transaksi pembayaran di luar scope.
-6. **Gallery/video/maps**: gallery sudah memakai workflow media; video/maps memakai URL eksternal dan membutuhkan kebijakan provider, privacy, error telemetry, serta E2E mobile.
+5. **Gift**: data informasi bank/e-wallet/alamat fisik sudah terstruktur dan bukan transaksi. Gap tersisa adalah finalisasi privacy copy serta browser E2E clipboard pada target production.
+6. **Gallery/video/maps**: gallery memakai workflow media; video/maps memiliki provider allowlist, migration legacy, explicit consent, privacy-conscious source, fallback, dan telemetry ringan. Gap tersisa adalah E2E provider pada browser/mobile production.
 7. **Cleanup storage**: lifecycle worker sudah menangani stale upload/processing, `failed`, unreferenced `ready`, dan `delete_pending` dengan reference recheck, grace period, bounded retry, distributed run lock, PM2 scheduler, tombstone, hard quota counters, structured logs, metrics, dan remediation runbook. Gap tersisa adalah external alert delivery dan kalibrasi quota production.
 
 ## Urutan phase implementasi
@@ -60,8 +60,8 @@ Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset
 
 ### Phase 5 - structured gift dan external embeds
 
-- Putuskan scope hadiah transaksional. Untuk informational-only, gunakan schema akun terstruktur dan masking.
-- Finalisasi allowlist provider video/maps, consent/privacy copy, fallback, dan observability.
+- Selesai sebagai informational-only: `gift@2`, compatibility `gift@1`, editor masking, validation, dan renderer terstruktur tanpa tabel/payment integration.
+- Selesai: allowlist provider video/maps, consent/privacy copy, fallback, dan telemetry ringan. Lanjutkan browser E2E pada jaringan/provider production.
 
 ### Phase 6 - production evidence
 

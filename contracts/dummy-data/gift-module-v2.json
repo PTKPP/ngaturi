@@ -1,0 +1,27 @@
+{
+  "bankAccounts": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "type": "bank",
+      "provider": "BCA",
+      "accountNumber": "1234 5678 90",
+      "accountHolder": "Dara Permata"
+    }
+  ],
+  "eWallets": [
+    {
+      "id": "6ba7b810-9dad-41d1-80b4-00c04fd430c8",
+      "type": "e_wallet",
+      "provider": "GoPay",
+      "accountNumber": "0812 3456 7890",
+      "accountHolder": "Bima Pratama"
+    }
+  ],
+  "physicalGift": {
+    "enabled": true,
+    "recipient": "Dara & Bima",
+    "address": "Jl. Melati No. 10, Bandung",
+    "note": "Mohon konfirmasi kepada keluarga sebelum pengiriman."
+  },
+  "legacyText": ""
+}

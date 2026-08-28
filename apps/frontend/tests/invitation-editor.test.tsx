@@ -88,6 +88,18 @@ describe("generic template editor routing", () => {
     expect(projected.events).toHaveLength(3);
   });
 
+  it("enables and disables Gift through reusable module capability state", () => {
+    const source = InvitationSchema.parse(invitations[0]);
+    const invitation = InvitationSchema.parse({ ...source, templateKey: "daztore-inv1", templateVersion: 1, themeKey: "daztore-inv1-default", themeVersion: 1 });
+    const view = render(<InvitationEditorClient initialInvitation={invitation} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="raka-dan-sinta-draft" />);
+    const toggle = screen.getByRole("checkbox", { name: "Hadiah" }) as HTMLInputElement;
+    const before = toggle.checked;
+    fireEvent.click(toggle);
+    const stored = InvitationSchema.parse(JSON.parse(view.container.querySelector<HTMLInputElement>('input[name="invitation"]')!.value));
+    expect((stored.content.moduleState as Record<string, { enabled: boolean }>).gift.enabled).toBe(!before);
+    expect(screen.getByRole("heading", { name: "Informasi hadiah" })).toBeInTheDocument();
+  });
+
   it("disables template switching outside draft", () => {
     const published = InvitationSchema.parse(invitations[1]);
     render(<InvitationEditorClient initialInvitation={published} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="dara-dan-bima" />);

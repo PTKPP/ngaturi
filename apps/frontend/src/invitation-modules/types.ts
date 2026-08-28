@@ -20,5 +20,5 @@ export interface InvitationModuleDefinition<T = unknown> {
   schema: z.ZodType<T>;
   createDefault(): T;
   migrate(version: number, value: unknown): T;
-  editor: "text" | "long-text" | "event-list" | "couple-profile" | "media-list" | "configuration";
+  editor: "text" | "long-text" | "event-list" | "couple-profile" | "media-list" | "configuration" | "gift";
 }

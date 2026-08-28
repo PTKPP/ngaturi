@@ -4,8 +4,8 @@ import type { InvitationModuleDefinition, InvitationModuleId } from "../types";
 export const textSchema = z.object({ text: z.string() });
 export const configSchema = z.object({ enabled: z.boolean().default(true) }).passthrough();
 
-export function defineModule<T>(value: Omit<InvitationModuleDefinition<T>, "version">): InvitationModuleDefinition<T> {
-  return { ...value, version: 1 };
+export function defineModule<T>(value: Omit<InvitationModuleDefinition<T>, "version"> & { version?: number }): InvitationModuleDefinition<T> {
+  return { ...value, version: value.version ?? 1 };
 }
 
 export function stable<T>(schema: z.ZodType<T>) {
