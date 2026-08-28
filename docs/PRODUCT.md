@@ -38,6 +38,8 @@ Hard media quota dihitung dari reservation byte metadata, bukan content JSON. `u
 
 RSVP guest disimpan pada tabel relasional khusus, bukan content invitation. Guest dapat mengirim nama 2–100 karakter, status hadir/tidak hadir, 1–10 tamu bila hadir, dan catatan opsional maksimal 500 karakter hanya untuk invitation published milik akun aktif. Server Action memvalidasi dan menormalisasi input; RPC service-role-only menegakkan idempotency UUID serta rate limit atomik 5 submission per sumber dan 100 per invitation setiap 10 menit. Anonymous dan authenticated browser tidak mempunyai akses tabel/RPC langsung. Owner memperoleh daftar terbaru dan summary hadir, tidak hadir, total tamu hadir, serta total respons melalui read model terotorisasi.
 
+Wishes guest disimpan pada `invitation_wishes`, bukan content invitation. Guest dapat mengirim nama 2–100 karakter dan ucapan 2–1000 karakter hanya untuk invitation published milik akun aktif. Submission baru selalu `pending`; hanya `approved` yang masuk projection public ber-cursor maksimal 10 item per halaman. Server Action memakai fingerprint HMAC tepercaya, validasi/normalisasi server, UUID idempotency, dan rate limit atomik 5 submission per sumber serta 100 per invitation setiap 10 menit. Browser tidak mendapat akses tabel maupun RPC langsung. Owner dapat memfilter `pending`, `approved`, atau `rejected`, melihat summary per status, lalu approve/reject dengan optimistic concurrency.
+
 ## TBD
 
 - Reset/invite password dan email provider produksi.

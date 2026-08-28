@@ -14,6 +14,10 @@ import { InvitationExperienceShell } from "@/templates/shared/InvitationExperien
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
 }));
+vi.mock("@/app/actions/wishes", () => ({
+  submitWishAction: vi.fn(),
+  listApprovedWishesAction: vi.fn(async () => ({ ok: true, items: [], nextCursor: null })),
+}));
 
 const playMock = vi.fn(function (this: HTMLMediaElement) {
   this.dispatchEvent(new Event("play"));

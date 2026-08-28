@@ -21,7 +21,7 @@ Data konfigurasi section disimpan dalam invitation content JSONB v2. Save/publis
 | Video | `video@1`: URL | Ada | YouTube/Vimeo HTTPS allowlist | URL di JSONB owner-only | Parsial: belum ada consent/privacy dan preview metadata |
 | RSVP | Konfigurasi enablement + response schema relasional | Toggle + owner summary/list | Form guest tanpa reload | Table khusus, Server Action, service/repository, RPC/RLS | Baseline production siap; browser E2E dan kalibrasi rate limit production tersisa |
 | Gift | `gift@1`: text bebas | Ada | Ada, copy dengan fallback | JSONB owner-only | Parsial: belum structured account/payment model |
-| Wishes | Konfigurasi enablement saja | Toggle saja | Placeholder eksplisit | Belum ada message table/repository/action/moderation | Belum fungsional |
+| Wishes | Konfigurasi enablement | Toggle + dashboard moderasi | Form guest dan daftar approved ber-cursor | Tabel khusus, pending-by-default, RPC/RLS guest dan owner | Baseline production siap; browser E2E dan kalibrasi rate tersisa |
 | Maps | Label modul + HTTPS `mapUrl` pada event | Ada | Link eksternal aman | JSONB owner-only | Baseline siap; provider/domain policy perlu difinalkan |
 | Closing | `closing@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
 
@@ -32,7 +32,7 @@ Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset
 1. **Media image**: signed direct upload, browser WebP 400/900/1600, original preservation, SHA-256 deduplication, Couple/Gallery UI, alt/reorder/replace/delete, variant metadata, private paths, object verification, timeout reconciliation, orphan grace/recheck, retry terbatas, scheduler anti-overlap, hard quota, structured logs, metrics, dan usage counter tersedia. Belum ada external alert delivery atau verified server-side decode/scan.
 2. **Audio user**: workflow MP3/M4A tersedia tanpa transcoding; gap tersisa adalah browser/codec smoke production dan verified server-side byte probe bila threat model membutuhkannya.
 3. **RSVP**: guest command, application service, repository, table/RLS, service-role RPC, idempotency, rate limit, owner list, dan aggregate attendance tersedia. Gap tersisa adalah E2E browser, kalibrasi anti-spam production, pagination UI di atas 100 respons, dan kebijakan export/retention.
-4. **Wishes**: tidak ada persistence guest, moderation/status, rate limit, abuse handling, atau pagination.
+4. **Wishes**: persistence, status moderation, idempotency, rate limit, owner filter/summary, serta cursor pagination public tersedia. Gap tersisa adalah browser E2E dan kalibrasi anti-spam production.
 5. **Gift**: informasi masih teks bebas. Belum ada schema rekening/e-wallet terstruktur, masking, validation, atau keputusan eksplisit apakah transaksi pembayaran di luar scope.
 6. **Gallery/video/maps**: gallery sudah memakai workflow media; video/maps memakai URL eksternal dan membutuhkan kebijakan provider, privacy, error telemetry, serta E2E mobile.
 7. **Cleanup storage**: lifecycle worker sudah menangani stale upload/processing, `failed`, unreferenced `ready`, dan `delete_pending` dengan reference recheck, grace period, bounded retry, distributed run lock, PM2 scheduler, tombstone, hard quota counters, structured logs, metrics, dan remediation runbook. Gap tersisa adalah external alert delivery dan kalibrasi quota production.
@@ -56,7 +56,7 @@ Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset
 ### Phase 4 - RSVP dan wishes
 
 - RSVP selesai dan terpisah dari invitation JSONB: command/schema, service/repository, table/RLS, narrow service-role RPC, idempotency, rate limiting, serta owner read model tersedia.
-- Wishes masih perlu persistence, moderation, pagination, dan abuse handling sendiri; jangan memakai tabel atau rate-limit identity RSVP sebagai model data Wishes.
+- Wishes selesai dengan persistence dan rate counter sendiri, pending-by-default moderation, approved-only projection, serta pagination terkontrol.
 
 ### Phase 5 - structured gift dan external embeds
 

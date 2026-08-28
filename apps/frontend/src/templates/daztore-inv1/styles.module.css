@@ -158,6 +158,15 @@
 .rsvpError { color: #7c1f1f; background: #fff0f0; }
 .rsvpNotice { color: var(--theme-muted); background: color-mix(in srgb, var(--theme-line) 30%, transparent); }
 .rsvpHoneypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.wishPublicList { display: grid; min-width: 0; gap: .85rem; margin-top: 2rem; text-align: left; }
+.wishPublicList h3 { margin: 0; text-align: center; }
+.wishCard { display: grid; min-width: 0; gap: .75rem; padding: 1rem; border: 1px solid var(--theme-line); background: var(--theme-surface); }
+.wishCard p { margin: 0; color: var(--theme-ink); font-family: var(--daztore-font-heading), serif; font-size: 1.08rem; line-height: 1.7; }
+.wishCard footer { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .4rem .75rem; color: var(--theme-muted); font-size: .78rem; }
+.wishCard strong { color: var(--theme-dark); }
+.wishListState { margin: 0; padding: 1rem; border: 1px dashed var(--theme-line); text-align: center; }
+.wishListState p { margin: 0 0 .75rem; }
+.wishPublicList .secondaryAction { width: 100%; min-height: 48px; }
 
 .giftSection { background: var(--theme-surface); }
 .giftCard { width: min(100%, 38rem); margin: 0 auto; padding: 2rem 1.25rem; border: 1px solid var(--theme-line); background: var(--theme-bg); }

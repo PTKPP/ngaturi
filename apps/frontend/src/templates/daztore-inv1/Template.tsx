@@ -14,7 +14,6 @@ import { EventSection } from "./components/EventSection";
 import { GallerySection } from "./components/GallerySection";
 import { GiftSection } from "./components/GiftSection";
 import { GreetingSection } from "./components/GreetingSection";
-import { GuestInteractionSection } from "./components/GuestInteractionSection";
 import { HeroSection } from "./components/HeroSection";
 import { MapsSection } from "./components/MapsSection";
 import { QuoteSection } from "./components/QuoteSection";
@@ -22,6 +21,7 @@ import { RsvpSection } from "./components/RsvpSection";
 import { StorySection } from "./components/StorySection";
 import { VideoSection } from "./components/VideoSection";
 import { WelcomeCover } from "./components/WelcomeCover";
+import { WishesSection } from "./components/WishesSection";
 import styles from "./styles.module.css";
 import { themeCssVariables } from "@/themes/css-variables";
 import type { DaztoreInv1ViewModel } from "./view-model";
@@ -63,7 +63,7 @@ export function DaztoreInv1Template({ invitation, content, moduleContent, media 
       {isModuleEnabled(moduleContent, "video") ? <VideoSection url={video.url} /> : null}
       {isModuleEnabled(moduleContent, "rsvp") && rsvp.enabled ? <RsvpSection invitationId={invitation.id} preview={preview} /> : null}
       {hasGift ? <GiftSection information={content.copy.giftInformation} /> : null}
-      {isModuleEnabled(moduleContent, "wishes") && wishes.enabled ? <GuestInteractionSection /> : null}
+      {isModuleEnabled(moduleContent, "wishes") && wishes.enabled ? <WishesSection invitationId={invitation.id} preview={preview} /> : null}
       {isModuleEnabled(moduleContent, "maps") ? <MapsSection events={events} label={maps.label} /> : null}
     </main>
     <ClosingSection invitation={viewModel} />
