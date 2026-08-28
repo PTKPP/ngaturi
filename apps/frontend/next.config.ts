@@ -12,6 +12,22 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(process.cwd(), "../.."),
   },
+   images: {
+    localPatterns: [
+      {
+        pathname: "/api/public-media/**",
+        search: "?variant=thumbnail",
+      },
+      {
+        pathname: "/api/public-media/**",
+        search: "?variant=medium",
+      },
+      {
+        pathname: "/api/public-media/**",
+        search: "?variant=large",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

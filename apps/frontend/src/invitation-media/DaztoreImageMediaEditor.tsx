@@ -159,7 +159,7 @@ export function DaztoreImageMediaEditor({ invitationId, value, media, onChange, 
         const current = mediaById.get(partner.photo);
         return <article className="media-card" key={key}>
           <h3>Foto {partner.fullName}</h3>
-          {current ? <Image src={"/api/public-media/" + current.id + "?variant=thumbnail"} alt={current.altText} width={400} height={400} /> : <p className="hint">Belum memakai image milik user.</p>}
+          {current ? <Image src={"/api/public-media/" + current.id + "?variant=thumbnail"} alt={current.altText} width={400} height={400} unoptimized/> : <p className="hint">Belum memakai image milik user.</p>}
           {current ? <AltTextEditor invitationId={invitationId} media={current} onMediaChange={onMediaChange} /> : null}
           <ImageUploader invitationId={invitationId} purpose="couple" label={current ? "Ganti foto" : "Upload foto"} onUploaded={(items) => { if (items[0]) replacePartner(key, items[0]); }} onBusyChange={onBusyChange} />
           {current ? <button className="button danger compact" type="button" onClick={() => clearPartner(key)}>Hapus foto</button> : null}
@@ -176,7 +176,7 @@ export function DaztoreImageMediaEditor({ invitationId, value, media, onChange, 
       const item = mediaById.get(mediaId);
       return <article className="media-card" key={mediaId + "-" + index}>
         <h3>Image {index + 1}</h3>
-        {item ? <Image src={"/api/public-media/" + item.id + "?variant=thumbnail"} alt={item.altText} width={400} height={400} /> : <p className="form-error">Metadata media tidak tersedia.</p>}
+        {item ? <Image src={"/api/public-media/" + item.id + "?variant=thumbnail"} alt={item.altText} width={400} height={400} unoptimized/> : <p className="form-error">Metadata media tidak tersedia.</p>}
         {item ? <AltTextEditor invitationId={invitationId} media={item} onMediaChange={onMediaChange} /> : null}
         <div className="media-actions">
           <button className="button ghost compact" type="button" disabled={index === 0} onClick={() => moveGallery(index, -1)}>Naik</button>
