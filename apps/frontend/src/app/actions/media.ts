@@ -1,6 +1,6 @@
 "use server";
 
-import type { CompletedImageObject, ImageUploadDescriptor } from "@/repositories/contracts";
+import type { AudioUploadDescriptor, CompletedImageObject, ImageUploadDescriptor } from "@/repositories/contracts";
 import { requireProfile } from "@/application/auth";
 import { InvitationMediaService } from "@/application/media-service";
 import { createInvitationMediaRepository } from "@/repositories/supabase";
@@ -23,4 +23,16 @@ export async function failImageUploadAction(invitationId: string, mediaId: strin
 
 export async function updateImageAltAction(invitationId: string, mediaId: string, altText: string) {
   return (await service()).updateImageAlt(await requireProfile(), invitationId, mediaId, altText);
+}
+
+export async function prepareAudioUploadAction(invitationId: string, descriptor: AudioUploadDescriptor) {
+  return (await service()).prepareAudioUpload(await requireProfile(), invitationId, descriptor);
+}
+
+export async function finalizeAudioUploadAction(invitationId: string, mediaId: string) {
+  return (await service()).finalizeAudioUpload(await requireProfile(), invitationId, mediaId);
+}
+
+export async function failAudioUploadAction(invitationId: string, mediaId: string, reason: string) {
+  await (await service()).failAudioUpload(await requireProfile(), invitationId, mediaId, reason);
 }

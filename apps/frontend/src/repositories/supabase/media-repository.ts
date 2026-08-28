@@ -3,18 +3,22 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   IMAGE_VARIANT_KEYS,
+  type AudioUploadDescriptor,
   type CompletedImageObject,
   type ImageUploadDescriptor,
   type ImageVariantKey,
   type InvitationImageMedia,
+  type InvitationAudioMedia,
   type InvitationMediaRepository,
   type InvitationMediaStatus,
   MediaQuotaError,
   type PreparedImageUpload,
+  type PreparedAudioUpload,
   type SignedImageUploadSlot,
 } from "@/repositories/contracts";
 
-const mediaColumns = "id,invitation_id,media_purpose,alt_text,original_filename,mime_type,size_bytes,width_px,height_px,status,created_at,variants:invitation_media_variants(variant_key,storage_path,width_px,height_px,size_bytes,status,target_width_px,target_height_px)";
+const mediaColumns = "id,invitation_id,media_kind,media_purpose,alt_text,original_filename,mime_type,size_bytes,width_px,height_px,status,created_at,variants:invitation_media_variants(variant_key,storage_path,width_px,height_px,size_bytes,status,target_width_px,target_height_px)";
+const audioColumns = "id,invitation_id,media_kind,media_purpose,original_filename,mime_type,size_bytes,duration_ms,status,created_at";
 const targetWidths: Record<ImageVariantKey, number> = { thumbnail: 400, medium: 900, large: 1600 };
 
 function fail(error: { message: string } | null, fallback: string): never {
@@ -36,6 +40,7 @@ function dimensions(width: number, height: number, targetWidth: number) {
 function mapMedia(row: Record<string, unknown>): InvitationImageMedia {
   const variants = Array.isArray(row.variants) ? row.variants as Record<string, unknown>[] : [];
   return {
+    kind: "image",
     id: String(row.id),
     invitationId: String(row.invitation_id),
     purpose: String(row.media_purpose ?? "legacy") as InvitationImageMedia["purpose"],
@@ -55,6 +60,21 @@ function mapMedia(row: Record<string, unknown>): InvitationImageMedia {
       sizeBytes: variant.size_bytes == null && variant.sizeBytes == null ? null : Number(variant.size_bytes ?? variant.sizeBytes),
       status: String(variant.status) as InvitationMediaStatus,
     })),
+  };
+}
+
+function mapAudio(row: Record<string, unknown>): InvitationAudioMedia {
+  return {
+    kind: "audio",
+    id: String(row.id),
+    invitationId: String(row.invitation_id),
+    purpose: "invitation_music",
+    originalFilename: String(row.original_filename),
+    mimeType: String(row.mime_type) as InvitationAudioMedia["mimeType"],
+    sizeBytes: Number(row.size_bytes),
+    durationMs: Number(row.duration_ms),
+    status: String(row.status) as InvitationMediaStatus,
+    createdAt: String(row.created_at),
   };
 }
 
@@ -140,7 +160,7 @@ export class SupabaseInvitationMediaRepository implements InvitationMediaReposit
   }
 
   async listOwnedImages(_ownerId: string, invitationId: string) {
-    const { data, error } = await this.client.from("invitation_media").select(mediaColumns).eq("invitation_id", invitationId).in("status", ["uploading", "processing", "ready", "failed"]).order("created_at");
+    const { data, error } = await this.client.from("invitation_media").select(mediaColumns).eq("invitation_id", invitationId).eq("media_kind", "image").in("status", ["uploading", "processing", "ready", "failed"]).order("created_at");
     if (error) fail(error, "Daftar media undangan gagal dimuat.");
     return (data ?? []).map((row) => mapMedia(row as Record<string, unknown>));
   }
@@ -168,6 +188,65 @@ export class SupabaseInvitationMediaRepository implements InvitationMediaReposit
     if (error) fail(error, "Media belum dapat dijadwalkan untuk dihapus.");
   }
 
+  async prepareAudioUpload({ ownerId, invitationId, descriptor }: { ownerId: string; invitationId: string; descriptor: AudioUploadDescriptor }): Promise<PreparedAudioUpload> {
+    const mediaId = crypto.randomUUID();
+    const authenticatedId = await this.currentUserId();
+    if (authenticatedId !== ownerId) throw new Error("Actor upload tidak cocok dengan sesi Supabase.");
+    const extension = descriptor.mimeType === "audio/mpeg" ? "mp3" : "m4a";
+    const path = `${ownerId}/${invitationId}/${mediaId}/original/${crypto.randomUUID()}.${extension}`;
+    const { data, error } = await this.client.rpc("prepare_audio_media_upload", {
+      p_media_id: mediaId,
+      p_invitation_id: invitationId,
+      p_client_upload_id: descriptor.clientUploadId,
+      p_original_filename: descriptor.originalFilename,
+      p_mime_type: descriptor.mimeType,
+      p_size_bytes: descriptor.sizeBytes,
+      p_duration_ms: descriptor.durationMs,
+      p_sha256: descriptor.sha256,
+      p_content_signature: descriptor.contentSignature,
+      p_original_path: path,
+    });
+    if (error) fail(error, "Metadata upload audio gagal disiapkan.");
+    const prepared = Array.isArray(data) ? data[0] : data;
+    const preparedId = String((prepared as Record<string, unknown>)?.media_id ?? "");
+    const reused = Boolean((prepared as Record<string, unknown>)?.reused);
+    const media = await this.getOwnedAudio(invitationId, preparedId);
+    if (!media) throw new Error("Metadata upload audio tidak ditemukan setelah prepare.");
+    if (reused) return { media, reused: true, slot: null };
+    try {
+      const { data: signed, error: signedError } = await this.client.storage.from("invitation-media").createSignedUploadUrl(path, { upsert: false });
+      if (signedError || !signed?.token) fail(signedError, "Signed upload audio gagal dibuat.");
+      return { media, reused: false, slot: { path, token: signed.token, contentType: descriptor.mimeType } };
+    } catch (error) {
+      await this.markAudioFailed("", invitationId, preparedId, "Signed upload token audio gagal dibuat.").catch(() => undefined);
+      throw error;
+    }
+  }
+
+  async beginAudioProcessing(_ownerId: string, invitationId: string, mediaId: string) {
+    const { error } = await this.client.rpc("begin_image_media_processing", { p_invitation_id: invitationId, p_media_id: mediaId });
+    if (error) fail(error, "Audio tidak dapat masuk tahap processing.");
+  }
+
+  async completeAudioProcessing(_ownerId: string, invitationId: string, mediaId: string) {
+    const { error } = await this.client.rpc("complete_audio_media_processing", { p_invitation_id: invitationId, p_media_id: mediaId });
+    if (error) fail(error, "Object audio belum lengkap atau tidak sesuai metadata.");
+    const media = await this.getOwnedAudio(invitationId, mediaId);
+    if (!media) throw new Error("Audio READY tidak ditemukan setelah finalisasi.");
+    return media;
+  }
+
+  async markAudioFailed(_ownerId: string, invitationId: string, mediaId: string, reason: string) {
+    const { error } = await this.client.rpc("fail_image_media_upload", { p_invitation_id: invitationId, p_media_id: mediaId, p_reason: reason });
+    if (error) fail(error, "Status gagal audio tidak dapat dicatat.");
+  }
+
+  async listOwnedAudio(_ownerId: string, invitationId: string) {
+    const { data, error } = await this.client.from("invitation_media").select(audioColumns).eq("invitation_id", invitationId).eq("media_kind", "audio").in("status", ["uploading", "processing", "ready", "failed"]).order("created_at");
+    if (error) fail(error, "Daftar audio undangan gagal dimuat.");
+    return (data ?? []).map((row) => mapAudio(row as Record<string, unknown>));
+  }
+
   private async currentUserId() {
     const { data, error } = await this.client.auth.getUser();
     if (error || !data.user) fail(error, "Autentikasi upload tidak tersedia.");
@@ -175,9 +254,16 @@ export class SupabaseInvitationMediaRepository implements InvitationMediaReposit
   }
 
   private async getOwnedImage(invitationId: string, mediaId: string) {
-    const { data, error } = await this.client.from("invitation_media").select(mediaColumns).eq("id", mediaId).eq("invitation_id", invitationId).maybeSingle();
+    const { data, error } = await this.client.from("invitation_media").select(mediaColumns).eq("id", mediaId).eq("invitation_id", invitationId).eq("media_kind", "image").maybeSingle();
     if (error) fail(error, "Metadata image gagal dimuat.");
     if (!data) return null;
     return mapMedia(data as Record<string, unknown>);
+  }
+
+  private async getOwnedAudio(invitationId: string, mediaId: string) {
+    const { data, error } = await this.client.from("invitation_media").select(audioColumns).eq("id", mediaId).eq("invitation_id", invitationId).eq("media_kind", "audio").maybeSingle();
+    if (error) fail(error, "Metadata audio gagal dimuat.");
+    if (!data) return null;
+    return mapAudio(data as Record<string, unknown>);
   }
 }

@@ -5,6 +5,7 @@ import { InvitationOpenButton } from "@/templates/shared/InvitationOpenButton";
 
 const music: ResolvedInvitationMusic = {
   trackId: "ambient-soft",
+  mediaId: "",
   title: "Ambient lembut",
   source: "/invitation-music/ambient-soft.wav",
   startAtSeconds: 0,

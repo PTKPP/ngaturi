@@ -5,10 +5,20 @@ import { WeddingModuleEditor } from "./editors/WeddingContentEditor";
 import { moduleRegistry } from "./registry";
 import { toWeddingRenderModel, updateFromWeddingRenderModel, type InvitationModuleContent } from "./content";
 import { InvitationMusicSchema } from "@/invitation-music/registry";
-import type { InvitationImageMedia } from "@/repositories/contracts";
+import type { InvitationAudioMedia, InvitationImageMedia, InvitationOwnedMedia } from "@/repositories/contracts";
 import { DaztoreImageMediaEditor } from "@/invitation-media/DaztoreImageMediaEditor";
+import { InvitationAudioMediaEditor } from "@/invitation-media/InvitationAudioMediaEditor";
 
-function ModuleConfigurationEditors({ template, value, onChange }: { template: InvitationTemplate; value: InvitationModuleContent; onChange(value: InvitationModuleContent): void }) {
+function ModuleConfigurationEditors({ template, invitationId, media, value, onChange, onMediaChange, onScheduleMediaDeletion, onMediaBusyChange }: {
+  template: InvitationTemplate;
+  invitationId?: string;
+  media: InvitationOwnedMedia[];
+  value: InvitationModuleContent;
+  onChange(value: InvitationModuleContent): void;
+  onMediaChange(media: InvitationOwnedMedia): void;
+  onScheduleMediaDeletion(mediaId: string): void;
+  onMediaBusyChange(busy: boolean): void;
+}) {
   const updateModule = (id: string, next: unknown) => onChange({ ...value, modules: { ...value.modules, [id]: next } });
   const cover = moduleRegistry.cover.schema.parse(value.modules.cover);
   const countdown = template.supportedModules.includes("countdown") ? moduleRegistry.countdown.schema.parse(value.modules.countdown) : null;
@@ -29,12 +39,24 @@ function ModuleConfigurationEditors({ template, value, onChange }: { template: I
     {music ? <section className="form-section form" data-music-editor>
       <div><h2>Musik undangan</h2><p>Musik terpisah dari tema dan hanya mulai setelah tamu membuka undangan.</p></div>
       <div className="form two-column">
-        <label className="field"><span>Track</span><select value={music.trackId} onChange={(event) => updateModule("music", { ...music, trackId: event.target.value })}><option value="none">Tanpa musik</option><option value="ambient-soft">Ambient lembut</option></select></label>
+        <label className="field"><span>Track</span><select value={music.trackId} onChange={(event) => {
+          const trackId = event.target.value;
+          updateModule("music", { ...music, trackId, mediaId: trackId === "custom" ? music.mediaId : "" });
+        }}><option value="none">Tanpa musik</option><option value="ambient-soft">Ambient lembut</option>{music.trackId === "custom" ? <option value="custom">Custom audio</option> : null}</select></label>
         <label className="field"><span>Judul track</span><input value={music.title} maxLength={80} onChange={(event) => updateModule("music", { ...music, title: event.target.value })} /></label>
         <label className="field"><span>Mulai pada detik</span><input type="number" min="0" max="300" value={music.startAtSeconds} onChange={(event) => updateModule("music", { ...music, startAtSeconds: Number(event.target.value) })} /></label>
         <label className="field"><span>Volume awal (0–100%)</span><input type="number" min="0" max="100" value={Math.round(music.volume * 100)} onChange={(event) => updateModule("music", { ...music, volume: Number(event.target.value) / 100 })} /></label>
       </div>
       <label className="check-field"><input type="checkbox" checked={music.loop} onChange={(event) => updateModule("music", { ...music, loop: event.target.checked })} /><span>Ulangi musik</span></label>
+      {invitationId ? <InvitationAudioMediaEditor
+        invitationId={invitationId}
+        value={music}
+        media={media.filter((item): item is InvitationAudioMedia => item.kind === "audio")}
+        onChange={(next) => updateModule("music", next)}
+        onMediaChange={onMediaChange}
+        onScheduleDeletion={onScheduleMediaDeletion}
+        onBusyChange={onMediaBusyChange}
+      /> : null}
     </section> : null}
   </>;
 }
@@ -42,10 +64,10 @@ function ModuleConfigurationEditors({ template, value, onChange }: { template: I
 export function InvitationModuleEditor({ template, invitationId, media = [], value, onChange, onMediaChange = () => undefined, onScheduleMediaDeletion = () => undefined, onMediaBusyChange = () => undefined }: {
   template: InvitationTemplate;
   invitationId?: string;
-  media?: InvitationImageMedia[];
+  media?: InvitationOwnedMedia[];
   value: InvitationModuleContent;
   onChange(value: InvitationModuleContent): void;
-  onMediaChange?(media: InvitationImageMedia): void;
+  onMediaChange?(media: InvitationOwnedMedia): void;
   onScheduleMediaDeletion?(mediaId: string): void;
   onMediaBusyChange?(busy: boolean): void;
 }) {
@@ -65,12 +87,12 @@ export function InvitationModuleEditor({ template, invitationId, media = [], val
     {hasImageWorkflow && invitationId ? <DaztoreImageMediaEditor
       invitationId={invitationId}
       value={toWeddingRenderModel(value, false)}
-      media={media}
+      media={media.filter((item): item is InvitationImageMedia => item.kind === "image")}
       onChange={(next) => onChange(updateFromWeddingRenderModel(value, next))}
       onMediaChange={onMediaChange}
       onScheduleDeletion={onScheduleMediaDeletion}
       onBusyChange={onMediaBusyChange}
     /> : null}
-    <ModuleConfigurationEditors template={template} value={value} onChange={onChange} />
+    <ModuleConfigurationEditors template={template} invitationId={invitationId} media={media} value={value} onChange={onChange} onMediaChange={onMediaChange} onScheduleMediaDeletion={onScheduleMediaDeletion} onMediaBusyChange={onMediaBusyChange} />
   </div>;
 }

@@ -5,14 +5,19 @@ import templates from "../../../contracts/dummy-data/templates.json";
 import themes from "../../../contracts/dummy-data/themes.json";
 import { InvitationSchema, TemplatesSchema, InvitationThemesSchema } from "@/domain";
 import { toWeddingRenderModel } from "@/invitation-modules/content";
-import type { InvitationImageMedia } from "@/repositories/contracts";
+import type { InvitationAudioMedia, InvitationImageMedia } from "@/repositories/contracts";
+import { parseTemplateContent } from "@/templates/registry";
 
 vi.mock("@/app/actions/invitations", () => ({ saveInvitationAction: vi.fn(), switchTemplateAction: vi.fn() }));
+vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(window.location.search) }));
 vi.mock("@/app/actions/media", () => ({
   prepareImageUploadAction: vi.fn(),
   finalizeImageUploadAction: vi.fn(),
   failImageUploadAction: vi.fn(),
   updateImageAltAction: vi.fn(),
+  prepareAudioUploadAction: vi.fn(),
+  finalizeAudioUploadAction: vi.fn(),
+  failAudioUploadAction: vi.fn(),
 }));
 
 import { InvitationEditorClient } from "@/components/InvitationEditorClient";
@@ -44,6 +49,7 @@ describe("generic template editor routing", () => {
     content.gallery = [galleryOneId, galleryTwoId];
     const invitation = InvitationSchema.parse({ ...source, templateKey: "daztore-inv1", templateVersion: 1, themeKey: "daztore-inv1-default", themeVersion: 1, content });
     const media = [partnerMediaId, galleryOneId, galleryTwoId].map((id, index): InvitationImageMedia => ({
+      kind: "image",
       id,
       invitationId: invitation.id,
       purpose: index === 0 ? "couple" : "gallery",
@@ -122,5 +128,23 @@ describe("generic template editor routing", () => {
     const stored = InvitationSchema.parse(JSON.parse(serialized));
     expect((stored.content.modules as Record<string, Record<string, unknown>>).music).toMatchObject({ trackId: "none", volume: 0.2 });
     expect(stored.themeKey).toBe(invitation.themeKey);
+  });
+
+  it("selects custom audio for the existing music controller and defers delete until save", () => {
+    const source = InvitationSchema.parse(invitations[0]);
+    const content = parseTemplateContent("daztore-inv1", 1, source.contentSchemaVersion, source.content);
+    const mediaId = "7ab6d9dc-73ef-4da8-8e70-713a0cc53b30";
+    content.modules.music = { trackId: "custom", mediaId, title: "Lagu kami", startAtSeconds: 0, volume: 0.35, loop: true };
+    const invitation = InvitationSchema.parse({ ...source, templateKey: "daztore-inv1", templateVersion: 1, themeKey: "daztore-inv1-default", themeVersion: 1, contentSchemaVersion: 2, content });
+    const audio: InvitationAudioMedia = { kind: "audio", id: mediaId, invitationId: invitation.id, purpose: "invitation_music", originalFilename: "lagu-kami.mp3", mimeType: "audio/mpeg", sizeBytes: 2048, durationMs: 90_000, status: "ready", createdAt: "2026-08-28T00:00:00.000Z" };
+    const view = render(<InvitationEditorClient initialInvitation={invitation} initialMedia={[audio]} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="raka-dan-sinta-draft" />);
+    expect(screen.getByText("lagu-kami.mp3")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Preview langsung" }));
+    expect(view.container.querySelector("audio")).toHaveAttribute("src", `/api/public-audio/${mediaId}`);
+    fireEvent.click(screen.getByRole("button", { name: "Tutup preview" }));
+    fireEvent.click(screen.getByRole("button", { name: "Hapus custom audio" }));
+    const stored = InvitationSchema.parse(JSON.parse(view.container.querySelector<HTMLInputElement>('input[name="invitation"]')!.value));
+    expect((stored.content.modules as Record<string, Record<string, unknown>>).music).toMatchObject({ trackId: "ambient-soft", mediaId: "" });
+    expect(JSON.parse(view.container.querySelector<HTMLInputElement>('input[name="deleteMediaIds"]')!.value)).toEqual([mediaId]);
   });
 });

@@ -3,6 +3,7 @@ import "server-only";
 import type { User } from "@/domain";
 import {
   IMAGE_VARIANT_KEYS,
+  type AudioUploadDescriptor,
   type CompletedImageObject,
   type ImageUploadDescriptor,
   type InvitationMediaRepository,
@@ -14,6 +15,9 @@ const MAX_IMAGE_DIMENSION = 12_000;
 const MAX_IMAGE_PIXELS = 40_000_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SHA256 = /^[0-9a-f]{64}$/;
+const ALLOWED_AUDIO_TYPES = new Set(["audio/mpeg", "audio/mp4"]);
+const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
+const MAX_AUDIO_DURATION_MS = 15 * 60 * 1000;
 
 export class InvitationMediaService {
   constructor(private readonly repository: InvitationMediaRepository) {}
@@ -68,6 +72,40 @@ export class InvitationMediaService {
     await this.repository.requestImageDeletion(actor.id, invitationId, mediaId, expectedInvitationUpdatedAt);
   }
 
+  async prepareAudioUpload(actor: User, invitationId: string, candidate: AudioUploadDescriptor) {
+    this.assertActor(actor);
+    await this.assertInvitationOwner(actor.id, invitationId);
+    const descriptor = this.validateAudioDescriptor(candidate);
+    return this.repository.prepareAudioUpload({ ownerId: actor.id, invitationId, descriptor });
+  }
+
+  async finalizeAudioUpload(actor: User, invitationId: string, mediaId: string) {
+    this.assertActor(actor);
+    await this.assertInvitationOwner(actor.id, invitationId);
+    this.assertMediaId(mediaId);
+    await this.repository.beginAudioProcessing(actor.id, invitationId, mediaId);
+    try {
+      return await this.repository.completeAudioProcessing(actor.id, invitationId, mediaId);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "Finalisasi audio gagal.";
+      await this.repository.markAudioFailed(actor.id, invitationId, mediaId, reason.slice(0, 500)).catch(() => undefined);
+      throw error;
+    }
+  }
+
+  async failAudioUpload(actor: User, invitationId: string, mediaId: string, reason: string) {
+    this.assertActor(actor);
+    await this.assertInvitationOwner(actor.id, invitationId);
+    this.assertMediaId(mediaId);
+    await this.repository.markAudioFailed(actor.id, invitationId, mediaId, reason.trim().slice(0, 500) || "Upload audio dibatalkan.");
+  }
+
+  async listOwnedAudio(actor: User, invitationId: string) {
+    this.assertActor(actor);
+    await this.assertInvitationOwner(actor.id, invitationId);
+    return this.repository.listOwnedAudio(actor.id, invitationId);
+  }
+
   private validateDescriptor(candidate: ImageUploadDescriptor): ImageUploadDescriptor {
     if (candidate.purpose !== "couple" && candidate.purpose !== "gallery") throw new Error("Tujuan media image tidak valid.");
     const originalFilename = candidate.originalFilename.trim().slice(0, 180);
@@ -94,6 +132,25 @@ export class InvitationMediaService {
     });
     if (expected.size) throw new Error("Variant image belum lengkap.");
     return normalized;
+  }
+
+  private validateAudioDescriptor(candidate: AudioUploadDescriptor): AudioUploadDescriptor {
+    if (candidate.purpose !== "invitation_music") throw new Error("Tujuan media audio tidak valid.");
+    const originalFilename = candidate.originalFilename.trim().slice(0, 180);
+    if (!originalFilename) throw new Error("Nama file audio wajib tersedia.");
+    if (!ALLOWED_AUDIO_TYPES.has(candidate.mimeType) || !Number.isSafeInteger(candidate.sizeBytes) || candidate.sizeBytes <= 0 || candidate.sizeBytes > MAX_AUDIO_BYTES) {
+      throw new Error("File harus MP3 atau M4A dan maksimal 15 MB.");
+    }
+    if (!Number.isSafeInteger(candidate.durationMs) || candidate.durationMs < 1000 || candidate.durationMs > MAX_AUDIO_DURATION_MS) {
+      throw new Error("Durasi audio harus antara 1 detik dan 15 menit.");
+    }
+    if (!UUID.test(candidate.clientUploadId)) throw new Error("Upload ID tidak valid.");
+    if (!SHA256.test(candidate.sha256)) throw new Error("Fingerprint audio tidak valid.");
+    const signatureValid = candidate.mimeType === "audio/mpeg"
+      ? candidate.contentSignature === "id3" || candidate.contentSignature === "mpeg-frame"
+      : candidate.contentSignature === "mp4-ftyp";
+    if (!signatureValid) throw new Error("Signature file tidak cocok dengan format audio.");
+    return { ...candidate, originalFilename, sha256: candidate.sha256.toLowerCase() };
   }
 
   private normalizeAlt(value: string) {

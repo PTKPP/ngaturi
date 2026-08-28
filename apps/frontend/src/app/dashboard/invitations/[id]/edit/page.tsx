@@ -11,7 +11,9 @@ export default async function EditInvitationPage({ params }: { params: Promise<{
   const repository = await createApplicationRepository();
   const [invitation, templates, themes, routes] = await Promise.all([repository.findOwnedInvitation(profile.id, id), repository.listTemplates(), repository.listThemes(), repository.listOwnedRoutes(profile.id)]);
   if (!invitation) return <AppShell title="Editor undangan"><main className="state-card"><h2>Undangan tidak ditemukan</h2></main></AppShell>;
-  const media = await new InvitationMediaService(await createInvitationMediaRepository()).listOwnedImages(profile, id);
+  const mediaService = new InvitationMediaService(await createInvitationMediaRepository());
+  const [images, audio] = await Promise.all([mediaService.listOwnedImages(profile, id), mediaService.listOwnedAudio(profile, id)]);
+  const media = [...images, ...audio];
   const routeSlug = routes.find(({ route }) => route.id === invitation.routeId)?.route.slug ?? "route-tidak-tersedia";
   return <AppShell title="Editor undangan"><InvitationEditorClient initialInvitation={invitation} initialMedia={media} templates={templates} themes={themes} routeSlug={routeSlug} /></AppShell>;
 }

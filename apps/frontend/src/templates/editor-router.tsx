@@ -4,17 +4,17 @@ import { getTemplateModule } from "./registry";
 import { parseTemplateContent } from "./registry";
 import { InvitationModuleEditor } from "@/invitation-modules/editor";
 import type { InvitationModuleContent } from "@/invitation-modules/content";
-import type { InvitationImageMedia } from "@/repositories/contracts";
+import type { InvitationOwnedMedia } from "@/repositories/contracts";
 
 export function TemplateEditorRouter({ templateKey, templateVersion, contentSchemaVersion, invitationId, media, value, onChange, onMediaChange, onScheduleMediaDeletion, onMediaBusyChange }: {
   templateKey: string;
   templateVersion: number;
   contentSchemaVersion: number;
   invitationId?: string;
-  media?: InvitationImageMedia[];
+  media?: InvitationOwnedMedia[];
   value: unknown;
   onChange(value: InvitationModuleContent): void;
-  onMediaChange?(media: InvitationImageMedia): void;
+  onMediaChange?(media: InvitationOwnedMedia): void;
   onScheduleMediaDeletion?(mediaId: string): void;
   onMediaBusyChange?(busy: boolean): void;
 }) {

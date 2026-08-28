@@ -8,7 +8,7 @@ import { TemplateEditorRouter } from "@/templates/editor-router";
 import { getTemplateModule } from "@/templates/registry";
 import { TemplateRenderer } from "@/templates/renderer";
 import { isTemplateAvailableForCreation } from "@/templates/registry";
-import type { InvitationImageMedia } from "@/repositories/contracts";
+import type { InvitationOwnedMedia } from "@/repositories/contracts";
 
 const MEDIA_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 function collectMediaIds(value: unknown, target = new Set<string>()): Set<string> {
@@ -18,7 +18,7 @@ function collectMediaIds(value: unknown, target = new Set<string>()): Set<string
   return target;
 }
 
-export function InvitationEditorClient({ initialInvitation, initialMedia = [], templates, themes, routeSlug }: { initialInvitation: Invitation; initialMedia?: InvitationImageMedia[]; templates: InvitationTemplate[]; themes: InvitationTheme[]; routeSlug: string }) {
+export function InvitationEditorClient({ initialInvitation, initialMedia = [], templates, themes, routeSlug }: { initialInvitation: Invitation; initialMedia?: InvitationOwnedMedia[]; templates: InvitationTemplate[]; themes: InvitationTheme[]; routeSlug: string }) {
   const [invitation, setInvitation] = useState(initialInvitation);
   const [media, setMedia] = useState(initialMedia);
   const [pendingMediaDeletion, setPendingMediaDeletion] = useState<string[]>([]);
@@ -30,7 +30,7 @@ export function InvitationEditorClient({ initialInvitation, initialMedia = [], t
   const compatibleThemes = themes.filter((theme) => theme.templateKey === invitation.templateKey && theme.templateVersion === invitation.templateVersion);
   const referencedMedia = collectMediaIds(invitation.content);
   const effectiveMediaDeletion = pendingMediaDeletion.filter((mediaId) => !referencedMedia.has(mediaId));
-  const updateMedia = (next: InvitationImageMedia) => setMedia((current) => [...current.filter((item) => item.id !== next.id), next]);
+  const updateMedia = (next: InvitationOwnedMedia) => setMedia((current) => [...current.filter((item) => item.id !== next.id), next]);
   return <>
     <form className="form" action={saveInvitationAction}>
       <input type="hidden" name="invitation" value={JSON.stringify(invitation)} />
@@ -61,6 +61,6 @@ export function InvitationEditorClient({ initialInvitation, initialMedia = [], t
         <button className="button secondary" type="submit" disabled={invitation.status !== "draft" || targetTemplateId === currentTemplateId}>Ganti template</button>
       </form>
     </section>
-    {livePreviewOpen ? <div className="live-preview" role="dialog" aria-modal="true" aria-label="Preview undangan langsung"><button className="button live-preview-close" type="button" onClick={() => setLivePreviewOpen(false)}>Tutup preview</button><div className="live-preview-canvas"><TemplateRenderer invitation={invitation} media={media} preview /></div></div> : null}
+    {livePreviewOpen ? <div className="live-preview" role="dialog" aria-modal="true" aria-label="Preview undangan langsung"><button className="button live-preview-close" type="button" onClick={() => setLivePreviewOpen(false)}>Tutup preview</button><div className="live-preview-canvas"><TemplateRenderer invitation={invitation} media={media.filter((item) => item.kind === "image")} preview /></div></div> : null}
   </>;
 }
