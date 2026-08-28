@@ -32,7 +32,7 @@ describe("controlled private audio delivery", () => {
     const { GET } = await import("@/app/api/public-audio/[id]/route");
     const response = await GET(new Request(`http://localhost/api/public-audio/${mediaId}`), { params: Promise.resolve({ id: mediaId }) });
     expect(response.status).toBe(307);
-    expect(createSignedUrl).toHaveBeenCalledWith("owner/inv/media/original/audio.mp3", 60);
+    expect(createSignedUrl).toHaveBeenCalledWith("owner/inv/media/original/audio.mp3", 1800);
   });
 
   it("hides draft audio from another user", async () => {

@@ -34,7 +34,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (!actor || actor.id !== data.owner_id) return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { data: signed, error: signedError } = await admin.storage.from("invitation-media").createSignedUrl(String(data.storage_path), 60);
+  const AUDIO_SIGNED_URL_TTL_SECONDS = 30 * 60;
+  const { data: signed, error: signedError } = await admin.storage.from("invitation-media").createSignedUrl(String(data.storage_path), AUDIO_SIGNED_URL_TTL_SECONDS);
   if (signedError || !signed?.signedUrl) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const response = NextResponse.redirect(signed.signedUrl, 307);
   response.headers.set("Cache-Control", "private, no-store");
