@@ -5,6 +5,8 @@ import { WeddingModuleEditor } from "./editors/WeddingContentEditor";
 import { moduleRegistry } from "./registry";
 import { toWeddingRenderModel, updateFromWeddingRenderModel, type InvitationModuleContent } from "./content";
 import { InvitationMusicSchema } from "@/invitation-music/registry";
+import type { InvitationImageMedia } from "@/repositories/contracts";
+import { DaztoreImageMediaEditor } from "@/invitation-media/DaztoreImageMediaEditor";
 
 function ModuleConfigurationEditors({ template, value, onChange }: { template: InvitationTemplate; value: InvitationModuleContent; onChange(value: InvitationModuleContent): void }) {
   const updateModule = (id: string, next: unknown) => onChange({ ...value, modules: { ...value.modules, [id]: next } });
@@ -37,9 +39,19 @@ function ModuleConfigurationEditors({ template, value, onChange }: { template: I
   </>;
 }
 
-export function InvitationModuleEditor({ template, value, onChange }: { template: InvitationTemplate; value: InvitationModuleContent; onChange(value: InvitationModuleContent): void }) {
+export function InvitationModuleEditor({ template, invitationId, media = [], value, onChange, onMediaChange = () => undefined, onScheduleMediaDeletion = () => undefined, onMediaBusyChange = () => undefined }: {
+  template: InvitationTemplate;
+  invitationId?: string;
+  media?: InvitationImageMedia[];
+  value: InvitationModuleContent;
+  onChange(value: InvitationModuleContent): void;
+  onMediaChange?(media: InvitationImageMedia): void;
+  onScheduleMediaDeletion?(mediaId: string): void;
+  onMediaBusyChange?(busy: boolean): void;
+}) {
   const required = new Set(template.requiredModules);
   const toggleable = template.supportedModules.filter((id) => !required.has(id));
+  const hasImageWorkflow = template.supportedModules.includes("couple-profile") && template.supportedModules.includes("gallery");
   return <div className="form" data-template-editor data-module-editor>
     <section className="form-section">
       <h2>Modul undangan</h2>
@@ -49,7 +61,16 @@ export function InvitationModuleEditor({ template, value, onChange }: { template
         <span>{moduleRegistry[id].name}</span>
       </label>)}</div>
     </section>
-    <WeddingModuleEditor value={toWeddingRenderModel(value, false)} onChange={(next) => onChange(updateFromWeddingRenderModel(value, next))} />
+    <WeddingModuleEditor value={toWeddingRenderModel(value, false)} hideMediaFields={hasImageWorkflow} onChange={(next) => onChange(updateFromWeddingRenderModel(value, next))} />
+    {hasImageWorkflow && invitationId ? <DaztoreImageMediaEditor
+      invitationId={invitationId}
+      value={toWeddingRenderModel(value, false)}
+      media={media}
+      onChange={(next) => onChange(updateFromWeddingRenderModel(value, next))}
+      onMediaChange={onMediaChange}
+      onScheduleDeletion={onScheduleMediaDeletion}
+      onBusyChange={onMediaBusyChange}
+    /> : null}
     <ModuleConfigurationEditors template={template} value={value} onChange={onChange} />
   </div>;
 }

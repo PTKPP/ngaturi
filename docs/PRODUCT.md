@@ -28,11 +28,15 @@ Konten schema v2 disimpan sebagai JSON modul dan status enablement. Adapter v1 m
 
 ## Publication dan media
 
-Guest lookup mengembalikan hanya invitation published. Storage private; media publik memakai ID terkendali yang membuktikan invitation published. Upload dibatasi JPEG, PNG, WebP, atau AVIF maksimal 10 MB. Delete/replace membersihkan object dan metadata; kegagalan antara Storage dan PostgreSQL dicatat sebagai cleanup operasional karena tidak ada transaksi lintas layanan.
+Guest lookup mengembalikan hanya invitation published. Storage private; media publik memakai ID terkendali yang membuktikan invitation published. Upload image dibatasi JPEG, PNG, WebP, atau AVIF maksimal 10 MB dan 40 megapiksel. Browser mengunggah original serta variant WebP melalui signed upload path; file besar tidak melewati Next.js. Content hanya menyimpan media ID.
+
+Lifecycle image adalah `uploading -> processing -> ready` atau `failed`. Delete/replace menghapus referensi content terlebih dahulu, lalu menandai metadata `delete_pending` dengan optimistic invitation version check. Object tidak dihapus sinkron oleh editor. Worker server melakukan rekonsiliasi timeout dan orphan, mengklaim batch dengan lease, menghapus variant lalu original secara idempotent, dan mempertahankan metadata sebagai tombstone `deleted` untuk audit serta accounting.
+
+Media `ready` yang belum direferensikan mula-mula ditandai sebagai temporary orphan. Worker hanya mengubahnya menjadi confirmed orphan setelah grace period dan pemeriksaan ulang terhadap content invitation terbaru. Kegagalan cleanup memakai retry terbatas dengan backoff dan failure reason; object Storage yang sudah hilang dianggap hasil idempotent.
 
 ## TBD
 
 - Reset/invite password dan email provider produksi.
-- Retensi dan job rekonsiliasi orphan media.
+- Scheduler produksi, alerting, dan kebijakan kapasitas/quota media final.
 - Audit log admin serta redirect historis slug.
 - Custom domain, analytics, RSVP, hadiah transaksional, dan editing lintas user.

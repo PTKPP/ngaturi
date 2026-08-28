@@ -12,7 +12,7 @@ Mutation mengalir dari form/client component ke Server Action/Route Handler, aut
 
 ## Data model dan JSONB
 
-`profiles` mereferensikan `auth.users`; `invitation_routes` mempunyai slug unik dan owner; katalog kategori menyimpan kapabilitas; katalog template terikat kategori dan menyimpan komposisi modul/section; katalog tema menyimpan preset aman. `invitations` menyimpan owner/route/category/template/theme, override tema tervalidasi, content schema version, status/timestamps, dan `content JSONB NOT NULL`; `invitation_media` hanya metadata/path.
+`profiles` mereferensikan `auth.users`; `invitation_routes` mempunyai slug unik dan owner; katalog kategori menyimpan kapabilitas; katalog template terikat kategori dan menyimpan komposisi modul/section; katalog tema menyimpan preset aman. `invitations` menyimpan owner/route/category/template/theme, override tema tervalidasi, content schema version, status/timestamps, dan `content JSONB NOT NULL`; `invitation_media` menyimpan lifecycle original/fingerprint/metadata dan `invitation_media_variants` menyimpan thumbnail, medium, serta large.
 
 Composite FK `(route_id, owner_id)` mencegah mismatch owner. Composite theme/template FK mencegah tema lintas template. Trigger route mengunci profile `FOR UPDATE` sebelum menghitung route sehingga klaim serentak tidak melampaui kuota; unique slug menyelesaikan race slug. RPC membuat route+invitation atomik. Tidak ada GIN content karena belum ada query JSONB.
 
@@ -24,9 +24,13 @@ Load/render menerima content v1 melalui adapter in-memory. Mutation yang menguba
 
 ## Public SSR dan Storage
 
-Guest lookup memakai `SECURITY DEFINER get_published_invitation_by_slug` dengan `search_path=''`, input tervalidasi, return terkontrol, dan execute-only grant. Storage bucket private dan policy membatasi folder owner/invitation. Gambar memakai same-origin `/api/public-media/{uuid}` setelah membuktikan media ready dan invitation published, kompatibel dengan Next Image Optimization tanpa wildcard remote host.
+Guest lookup memakai `SECURITY DEFINER get_published_invitation_by_slug` dengan `search_path=''`, input tervalidasi, return terkontrol, dan execute-only grant. Storage bucket private dan policy insert hanya menerima path original/variant yang sudah disiapkan metadata `uploading`. Path immutable memakai `{owner}/{invitation}/{media}/original|variants/{random}` dan signed token dibuat dengan `upsert=false`.
 
-Upload object dan insert metadata bukan transaksi lintas layanan. Service menghapus object bila insert gagal. Saat delete, object dihapus sebelum row; kegagalan delete row memerlukan retry cleanup metadata. Job rekonsiliasi menjadi pekerjaan berikutnya.
+Browser menghitung SHA-256, membaca dimensi, menghasilkan WebP sekitar 400/900/1600 px tanpa upscale, dan melakukan direct signed upload original + variant. Application service hanya menerima metadata, memverifikasi actor/ownership/MIME/size/dimensi/alt, lalu repository menyiapkan signed slot. Finalisasi bergerak `uploading -> processing -> ready`; RPC mengunci row dan mencocokkan seluruh object Storage dengan path, MIME, ukuran, serta rencana dimensi sebelum `ready`.
+
+Gambar memakai same-origin `/api/public-media/{uuid}?variant=large` setelah membuktikan media ready dan invitation published atau request berasal dari owner untuk preview. Delete memakai `delete_pending`; RPC mengunci invitation, memeriksa `updated_at`, dan menolak media yang masih direferensikan JSONB. Tidak ada delete Storage dari browser.
+
+Media Lifecycle berjalan sebagai worker server terpisah melalui `MediaCleanupService`, kontrak repository, adapter Supabase Storage, dan RPC service-role sempit. Rekonsiliasi memeriksa referensi content terbaru sebelum memindahkan stale upload/processing, failed, atau ready orphan. Claim batch memakai `FOR UPDATE SKIP LOCKED`, claim token, worker ID, dan lease agar beberapa worker aman berjalan bersamaan. Deletion menghapus variant sebelum original; object yang sudah hilang bukan kegagalan. Retry dibatasi, memakai backoff dan reason, sedangkan metadata selesai menjadi tombstone `deleted`. View usage dan RPC metrics menjadi fondasi quota serta observability tanpa memberi browser akses cleanup.
 
 ## Portability
 

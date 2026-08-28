@@ -61,6 +61,15 @@ h1, h2, h3, p { overflow-wrap: anywhere; }
 .event-editor { min-width: 0; margin: 0; padding: 1rem; border: 1px solid var(--line); border-radius: .8rem; }
 .event-editor legend { max-width: 100%; padding-inline: .4rem; font-weight: 800; overflow-wrap: anywhere; }
 .event-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.image-media-editor { padding-top: 1rem; border-top: 1px solid var(--line); }
+.image-media-editor h2, .image-media-editor h3, .image-media-editor p { margin-block: 0; }
+.media-grid { display: grid; min-width: 0; gap: 1rem; }
+.media-card { display: grid; min-width: 0; gap: .75rem; padding: .85rem; border: 1px solid var(--line); border-radius: .8rem; background: #fafcfb; }
+.media-card > img { width: 100%; height: auto; max-height: 22rem; border-radius: .65rem; object-fit: cover; background: var(--line); }
+.media-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.media-uploader { display: grid; gap: .5rem; min-width: 0; }
+.media-uploader small, .media-alt small { color: var(--muted); }
+.media-status { margin: 0; color: var(--brand); font-weight: 700; }
 .check-field { display: flex; align-items: center; gap: .65rem; min-height: 44px; }
 .check-field input { width: 1.25rem; height: 1.25rem; margin: 0; }
 .quota-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-bottom: 1rem; }
@@ -83,5 +92,5 @@ h1, h2, h3, p { overflow-wrap: anywhere; }
 .live-preview { position: fixed; inset: 0; z-index: 1000; overflow: auto; background: #111; }
 .live-preview-close { position: fixed; top: max(.75rem, env(safe-area-inset-top)); right: max(.75rem, env(safe-area-inset-right)); z-index: 2200; border-color: #ffffff88; box-shadow: 0 8px 24px #0005; }
 .live-preview-canvas { min-height: 100dvh; background: #fff; }
-@media (min-width: 40rem) { .filters { grid-template-columns: 1fr 13rem; } .grid.cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form.two-column { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form.two-column .full { grid-column: 1 / -1; } .login-card { padding: 2rem; } }
+@media (min-width: 40rem) { .filters { grid-template-columns: 1fr 13rem; } .grid.cards, .media-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form.two-column { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form.two-column .full { grid-column: 1 / -1; } .login-card { padding: 2rem; } }
 @media (min-width: 64rem) { .grid.cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } .app-shell { padding-bottom: 2rem; } .bottom-nav { position: static; width: min(100% - 2rem, 68rem); min-height: 0; margin: 0 auto; padding: .5rem; border: 1px solid var(--line); border-radius: 1rem; } }

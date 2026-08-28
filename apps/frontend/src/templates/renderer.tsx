@@ -7,8 +7,9 @@ import { isModuleEnabled } from "@/invitation-modules/content";
 import { InvitationMusicSchema, resolveInvitationMusic } from "@/invitation-music/registry";
 import { InvitationExperienceShell } from "./shared/InvitationExperienceShell";
 import { themeCssVariables } from "@/themes/registry";
+import type { TemplateMedia } from "./types";
 
-export function TemplateRenderer({ invitation, preview = false }: { invitation: Invitation; preview?: boolean }) {
+export function TemplateRenderer({ invitation, media = [], preview = false }: { invitation: Invitation; media?: TemplateMedia[]; preview?: boolean }) {
   const templateModule = getTemplateModule(invitation.templateKey, invitation.templateVersion);
   if (!templateModule) return <main className="state-card"><h1>Template tidak tersedia</h1><p>Template undangan ini belum terdaftar pada aplikasi.</p></main>;
   const resolved = resolveRegisteredTheme(invitation.templateKey, invitation.templateVersion, invitation.themeKey, invitation.themeVersion, invitation.themeOverrides);
@@ -28,6 +29,6 @@ export function TemplateRenderer({ invitation, preview = false }: { invitation: 
   const musicValue = isModuleEnabled(moduleContent, "music") ? InvitationMusicSchema.parse(moduleContent.modules.music) : null;
   const music = musicValue ? resolveInvitationMusic(musicValue) : null;
   return <InvitationExperienceShell music={music} preview={preview} style={themeCssVariables(resolved.theme)}>
-    <Component invitation={base} content={content} moduleContent={moduleContent} theme={resolved.theme} preview={preview} />
+    <Component invitation={base} content={content} moduleContent={moduleContent} media={media.map(({ id, altText }) => ({ id, altText }))} theme={resolved.theme} preview={preview} />
   </InvitationExperienceShell>;
 }

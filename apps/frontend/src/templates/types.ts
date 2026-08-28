@@ -3,12 +3,17 @@ import type { Invitation, InvitationTemplate, InvitationTheme } from "@/domain";
 import type { WeddingRenderModel } from "@/invitation-modules/schemas";
 import type { InvitationModuleContent } from "@/invitation-modules/content";
 import type { TemplateThemeDefinition } from "@/themes/types";
+export interface TemplateMedia {
+  id: string;
+  altText: string;
+}
 
 export interface InvitationTemplateProps<TContent> {
   invitation: Omit<Invitation, "content">;
   content: TContent;
   theme: InvitationTheme;
   moduleContent: InvitationModuleContent;
+  media?: TemplateMedia[];
   preview?: boolean;
 }
 

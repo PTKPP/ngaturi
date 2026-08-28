@@ -12,12 +12,12 @@ Data konfigurasi section disimpan dalam invitation content JSONB v2. Save/publis
 | --- | --- | --- | --- | --- | --- |
 | Cover | `cover@1`: eyebrow dan title | Ada | Cover interaktif, recipient tersanitasi | JSONB owner-only; public hanya published | Baseline siap |
 | Greeting | `greeting@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
-| Couple | `couple-profile@1`: dua partner, parents, media reference | Ada, tetapi media ID masih manual | Ada, `next/image`, fallback terdaftar | JSONB + referensi `invitation_media`; RLS tersedia | Parsial: upload/replace belum terhubung |
+| Couple | `couple-profile@1`: dua partner, parents, media ID | Upload/replace/delete dan alt text | Ada, `next/image`, fallback terdaftar | JSONB media ID + metadata/variant owner-scoped | Image workflow siap; browser E2E lokal masih diperlukan |
 | Quote | `quote@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
 | Event | `event@1`: daftar acara berurutan | Ada | Ada, calendar URL dihitung | JSONB owner-only | Baseline siap; validasi timezone perlu diperketat |
 | Countdown | `countdown@1`: label, target dari event | Ada | Ada dan cleanup timer teruji | JSONB owner-only | Baseline siap |
 | Love Story | `love-story@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
-| Gallery | `gallery@1`: media references | Ada sebagai daftar ID manual | Ada, optimized image dan lazy loading | Metadata/storage/RLS ada | Parsial: upload, reorder, alt text, delete/replace belum terhubung |
+| Gallery | `gallery@1`: ordered media IDs | Multiple upload, reorder, alt, replace, delete | Variant large + Next Image Optimization | Content owner-only; lifecycle media/RPC/RLS | Image workflow dan cleanup lifecycle siap; browser E2E lokal masih diperlukan |
 | Video | `video@1`: URL | Ada | YouTube/Vimeo HTTPS allowlist | URL di JSONB owner-only | Parsial: belum ada consent/privacy dan preview metadata |
 | RSVP | Konfigurasi enablement saja | Toggle saja | Placeholder eksplisit | Belum ada response table/repository/action | Belum fungsional |
 | Gift | `gift@1`: text bebas | Ada | Ada, copy dengan fallback | JSONB owner-only | Parsial: belum structured account/payment model |
@@ -29,39 +29,41 @@ Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset
 
 ## Gap lintas modul
 
-1. **Media image**: `InvitationMediaService`, repository contract/adapter, ownership lookup, private bucket, metadata table, public same-origin route, MIME/size/alt validation, dan RLS sudah ada. Belum ada Server Action/UI upload, lifecycle replace, image dimensions/variant metadata, atau rekonsiliasi orphan.
+1. **Media image**: signed direct upload, browser WebP 400/900/1600, original preservation, SHA-256 deduplication, Couple/Gallery UI, alt/reorder/replace/delete, variant metadata, private paths, object verification, timeout reconciliation, orphan grace/recheck, retry terbatas, cleanup worker, metrics, dan usage view tersedia. Belum ada scheduler/alerting produksi, quota enforcement, atau verified server-side decode/scan.
 2. **Audio user**: registry hanya mengizinkan track paket. Bucket/policy saat ini image-only; belum ada MIME/duration/quota/transcode/scan, media kind, atau resolver audio milik invitation.
 3. **RSVP**: tidak ada guest command, application service, repository contract, table, idempotency, rate limit, spam protection, owner dashboard, atau aggregate attendance.
 4. **Wishes**: tidak ada persistence guest, moderation/status, rate limit, abuse handling, atau pagination.
 5. **Gift**: informasi masih teks bebas. Belum ada schema rekening/e-wallet terstruktur, masking, validation, atau keputusan eksplisit apakah transaksi pembayaran di luar scope.
-6. **Gallery/video/maps**: gallery belum punya workflow media; video/maps memakai URL eksternal dan membutuhkan kebijakan provider, privacy, error telemetry, serta E2E mobile.
-7. **Cleanup storage**: upload rollback menangani insert metadata yang gagal, tetapi delete object dan row tidak atomik. Belum ada outbox/cleanup queue, retry worker, orphan scan, retention, atau operational metrics.
+6. **Gallery/video/maps**: gallery sudah memakai workflow media; video/maps memakai URL eksternal dan membutuhkan kebijakan provider, privacy, error telemetry, serta E2E mobile.
+7. **Cleanup storage**: lifecycle worker sudah menangani stale upload/processing, `failed`, unreferenced `ready`, dan `delete_pending` dengan reference recheck, grace period, bounded retry, locking, tombstone, usage, dan metrics. Gap tersisa adalah scheduler/alerting produksi, runbook remediation, dan quota enforcement.
 
 ## Urutan phase implementasi
 
 ### Phase 1 - owner media workflow
 
-- Tambahkan repository contract media dan application service yang memverifikasi actor serta ownership invitation sebelum storage mutation.
-- Tambahkan Server Actions untuk upload/replace/delete image, editor gallery/couple photo, alt text, ordering, dan optimized preview.
-- Pertahankan path private `{owner}/{invitation}/{uuid}` dan same-origin public media IDs.
+- Selesai pada migration `202608270002_daztore_image_media_workflow.sql`: signed direct upload, tiga variant WebP, Couple/Gallery editor, alt/reorder/replace/delete, dan controlled delivery.
+- Bukti Supabase local reset serta browser E2E tetap diperlukan sebelum rollout production.
 
-### Phase 2 - media lifecycle dan audio
+### Phase 2 - media lifecycle
 
-- Tambahkan media kind, image dimensions, processing/cleanup status, quota, dan cleanup queue melalui migration forward-only.
-- Implementasikan retry/orphan reconciliation sebelum membuka audio upload.
-- Tambahkan audio MIME/duration/size validation serta resolver yang tetap membutuhkan user gesture.
+- Selesai pada migration `202608270003_image_media_lifecycle.sql`: reconciliation, orphan grace/recheck, concurrent claim, bounded retry, idempotent Storage cleanup, tombstone, metrics, dan usage view.
+- Operasionalkan scheduler, alerting, runbook, serta quota enforcement sebelum rollout produksi. Verifikasi fingerprint/dimensi output secara server-side bila threat model membutuhkan proteksi dari owner client yang dimodifikasi.
 
-### Phase 3 - RSVP dan wishes
+### Phase 3 - user audio
+
+- Tambahkan audio MIME/duration/size validation, quota, lifecycle, serta resolver yang tetap membutuhkan user gesture.
+
+### Phase 4 - RSVP dan wishes
 
 - Pisahkan guest submissions dari invitation JSONB.
 - Tambahkan command/schema, application services, repository adapters, tables, RLS atau narrow security-definer RPC, idempotency, rate limiting, moderation, dan owner read models.
 
-### Phase 4 - structured gift dan external embeds
+### Phase 5 - structured gift dan external embeds
 
 - Putuskan scope hadiah transaksional. Untuk informational-only, gunakan schema akun terstruktur dan masking.
 - Finalisasi allowlist provider video/maps, consent/privacy copy, fallback, dan observability.
 
-### Phase 5 - production evidence
+### Phase 6 - production evidence
 
 - Jalankan Supabase local reset dan forward-migration test, HTTP smoke create/edit/preview/publish/public, media lifecycle test, guest interaction abuse tests, serta viewport 360/390 E2E.
 - Baru setelah bukti ini tersedia, tandai RSVP/wishes/audio upload sebagai fungsional production.

@@ -1,5 +1,5 @@
 import { TemplateRenderer } from "@/templates/renderer";
-import { createApplicationRepository } from "@/repositories/supabase";
+import { createApplicationRepository, createInvitationMediaRepository } from "@/repositories/supabase";
 import { getSupabaseEnvironment } from "@/config/supabase";
 
 export const dynamic = "force-dynamic";
@@ -9,5 +9,6 @@ export default async function PublicInvitationPage({ params }: { params: Promise
   if (!getSupabaseEnvironment()) return <main className="state-card"><h1>Layanan belum dikonfigurasi</h1><p>Supabase belum tersedia pada environment ini.</p></main>;
   const invitation = await (await createApplicationRepository()).findPublishedInvitation(slug);
   if (!invitation) return <main className="state-card"><h1>Undangan tidak ditemukan</h1><p>Slug ini tidak ada atau undangannya belum dipublikasikan.</p></main>;
-  return <TemplateRenderer invitation={invitation} />;
+  const media = await (await createInvitationMediaRepository()).listPublishedImages(invitation.id);
+  return <TemplateRenderer invitation={invitation} media={media} />;
 }

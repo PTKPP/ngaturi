@@ -1,7 +1,12 @@
 begin;
 
 update public.category_catalog
-set capabilities = jsonb_set(capabilities, '{music}', case when key = 'wedding' then '"default"'::jsonb else '"optional"'::jsonb, true)
+set capabilities = jsonb_set(
+  capabilities,
+  '{music}',
+  case when key = 'wedding' then '"default"'::jsonb else '"optional"'::jsonb end,
+  true
+)
 where version = 1 and key in ('wedding', 'khitan', 'aqiqah', 'birthday', 'corporate');
 
 update public.template_catalog

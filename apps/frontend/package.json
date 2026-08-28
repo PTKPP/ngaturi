@@ -15,7 +15,13 @@
     "pretypecheck": "npm run templates:generate",
     "typecheck": "tsc --noEmit",
     "pretest": "npm run templates:generate",
-    "test": "vitest run"
+    "test": "vitest run",
+    "supabase:start": "supabase start --workdir ../..",
+    "supabase:reset": "supabase db reset --workdir ../.. --local",
+    "test:supabase:image": "node scripts/test-local-image-media-workflow.mjs",
+    "test:supabase:lifecycle": "node scripts/test-local-media-lifecycle.mjs",
+    "test:supabase": "npm run test:supabase:image && npm run test:supabase:lifecycle",
+    "media:cleanup": "node --conditions=react-server --import tsx scripts/run-media-cleanup.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
@@ -35,6 +41,8 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.3.2",
     "jsdom": "29.1.1",
+    "supabase": "2.116.0",
+    "tsx": "4.23.12",
     "typescript": "6.0.3",
     "vitest": "4.1.10"
   },

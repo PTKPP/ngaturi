@@ -9,22 +9,24 @@ vi.mock("next/font/google", () => ({
   Noto_Naskh_Arabic: () => ({ variable: "font-naskh" }),
 }));
 
-if (!window.matchMedia) {
-  Object.defineProperty(window, "matchMedia", {
-    configurable: true,
-    value: vi.fn().mockImplementation((query: string) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
-  });
-}
+if (typeof window !== "undefined") {
+  if (!window.matchMedia) {
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+  }
 
-Object.defineProperty(HTMLMediaElement.prototype, "pause", { configurable: true, value: vi.fn() });
+  Object.defineProperty(HTMLMediaElement.prototype, "pause", { configurable: true, value: vi.fn() });
+}
 
 afterEach(cleanup);

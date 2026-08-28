@@ -40,7 +40,7 @@ describe("Supabase migration security and integrity", () => {
       const initialCapabilities = Object.fromEntries(Object.entries(category.capabilities).filter(([key]) => key !== "music"));
       expect(architectureSql).toContain(`('${category.key}',${category.version},'${category.name}','${JSON.stringify(category.requiredModules)}','${JSON.stringify(initialCapabilities)}')`);
     }
-    expect(compositionSql).toContain("jsonb_set(capabilities, '{music}'");
+    expect(compositionSql).toMatch(/jsonb_set\(\s*capabilities,\s*'\{music\}',[\s\S]*?true\s*\)/);
     expect(compositionSql).toContain("key = 'wedding' then '\"default\"'::jsonb else '\"optional\"'::jsonb");
     for (const templateModule of Object.values(templateRegistry)) {
       const manifest = templateModule.manifest;

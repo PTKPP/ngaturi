@@ -31,7 +31,7 @@ const headingFont = Cormorant_Garamond({ subsets: ["latin"], variable: "--daztor
 const scriptFont = Sacramento({ weight: "400", subsets: ["latin"], variable: "--daztore-font-script", display: "swap" });
 const arabicFont = Noto_Naskh_Arabic({ subsets: ["arabic"], variable: "--daztore-font-arabic", display: "swap" });
 
-export function DaztoreInv1Template({ invitation, content, moduleContent, theme }: InvitationTemplateProps<WeddingRenderModel>) {
+export function DaztoreInv1Template({ invitation, content, moduleContent, media = [], theme }: InvitationTemplateProps<WeddingRenderModel>) {
   const { opened } = useInvitationExperience();
   const viewModel: DaztoreInv1ViewModel = { ...invitation, ...content, content: content.copy };
   const events = [...content.events].sort((left, right) => left.sortOrder - right.sortOrder);
@@ -53,12 +53,12 @@ export function DaztoreInv1Template({ invitation, content, moduleContent, theme 
     <main>
       <HeroSection invitation={viewModel} event={mainEvent} />
       <GreetingSection text={content.copy.openingText} />
-      <CoupleSection invitation={viewModel} />
+      <CoupleSection invitation={viewModel} media={media} />
       <QuoteSection invitation={viewModel} />
       <EventSection events={events} />
       {isModuleEnabled(moduleContent, "countdown") ? <CountdownSection event={mainEvent} label={countdown.label} /> : null}
       <StorySection story={content.copy.story} />
-      <GallerySection gallery={content.gallery} coupleNames={coupleNames} />
+      <GallerySection gallery={content.gallery} coupleNames={coupleNames} media={media} />
       {isModuleEnabled(moduleContent, "video") ? <VideoSection url={video.url} /> : null}
       {isModuleEnabled(moduleContent, "rsvp") && rsvp.enabled ? <GuestInteractionSection kind="rsvp" /> : null}
       {hasGift ? <GiftSection information={content.copy.giftInformation} /> : null}

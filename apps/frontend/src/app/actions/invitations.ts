@@ -5,7 +5,9 @@ import { redirect } from "next/navigation";
 import { InvitationSchema, InvitationStatusSchema } from "@/domain";
 import { requireProfile } from "@/application/auth";
 import { InvitationApplicationService } from "@/application/invitation-service";
-import { createApplicationRepository } from "@/repositories/supabase";
+import { InvitationMediaService } from "@/application/media-service";
+import { createApplicationRepository, createInvitationMediaRepository } from "@/repositories/supabase";
+import { z } from "zod";
 
 const versioned = (value: string) => { const [key, raw] = value.split("@"); const version = Number(raw); if (!key || !Number.isInteger(version)) throw new Error("Pilihan versi tidak valid."); return [key, version] as const; };
 
@@ -29,7 +31,12 @@ export async function saveInvitationAction(formData: FormData) {
   const actor = await requireProfile();
   const invitation = InvitationSchema.parse(JSON.parse(String(formData.get("invitation") ?? "{}")));
   const service = new InvitationApplicationService(await createApplicationRepository());
-  await service.save(actor, invitation);
+  const saved = await service.save(actor, invitation);
+  const deleteMediaIds = z.array(z.string().uuid()).max(100).parse(JSON.parse(String(formData.get("deleteMediaIds") ?? "[]")));
+  if (deleteMediaIds.length) {
+    const mediaService = new InvitationMediaService(await createInvitationMediaRepository());
+    for (const mediaId of new Set(deleteMediaIds)) await mediaService.requestImageDeletion(actor, invitation.id, mediaId, saved.updatedAt);
+  }
   revalidatePath(`/dashboard/invitations/${invitation.id}/edit`);
   revalidatePath(`/dashboard/invitations/${invitation.id}/preview`);
 }
