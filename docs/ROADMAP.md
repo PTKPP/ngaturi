@@ -4,8 +4,8 @@
 
 - Pertahankan `daztore-inv1@1` sebagai satu-satunya template untuk create production; dua template lama compatibility-only.
 - Pertahankan reset migration Supabase lokal dan forward migration dari invitation content v1 sebagai regression gate.
-- Smoke test create Daztore -> module editor -> preview -> publish -> guest, termasuk viewport 360/390 px.
-- Image workflow dan Media Lifecycle sudah tervalidasi terhadap Supabase lokal; lengkapi smoke test Couple/Gallery dengan browser nyata pada viewport 360/390 px.
+- Full browser E2E create Daztore -> 14 module editor -> media/Gift/Video/Maps -> preview -> publish -> RSVP/Wishes/moderation lulus pada Playwright Chromium 360x800, 390x844, dan 1440x900.
+- Image workflow dan Media Lifecycle sudah tervalidasi terhadap Supabase lokal dan browser nyata, termasuk Couple/Gallery upload, replace, delete, reorder, retry, serta failure state.
 - Scheduler Media Operations dan hard quota atomik sudah tersedia; operasionalkan alert delivery dan review nilai quota berdasarkan pemakaian production.
 - User Audio untuk `daztore-inv1` sudah memakai signed direct upload, lifecycle/quota/cleanup media yang sama, controlled private delivery, dan music controller Cover yang sudah ada; lengkapi smoke test MP3/M4A pada Safari iOS, Chrome Android, dan desktop browser production target.
 - RSVP `daztore-inv1` sudah memakai tabel khusus, Server Action, service/repository, RPC service-role-only, idempotency, rate limit atomik, form guest tanpa reload, dan owner summary; kalibrasi rate limit dari metrics production dan tambahkan pagination UI bila respons melebihi 100.
@@ -15,7 +15,7 @@
 
 ## Next
 
-- Full browser E2E Video/Maps pada viewport 360/390 px dan browser production target, termasuk kondisi provider diblokir jaringan/CSP.
+- Tambah smoke lintas-engine/device fisik untuk Safari iOS, Chrome Android, serta kebijakan codec audio sebelum memperluas target browser resmi.
 - Tambah alert delivery ringan untuk retry exhausted, backlog, dan drift Storage/DB berdasarkan runbook Media Operations.
 - Tambah recovery/invite password, audit log, observability, serta E2E tests terhadap Supabase lokal.
 - Tambah template kategori khitan/aqiqah/birthday/corporate sebelum kategori tersebut dapat dipilih untuk create production.

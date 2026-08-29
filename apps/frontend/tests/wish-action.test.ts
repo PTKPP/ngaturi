@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
   requireProfile: vi.fn(),
 }));
 
-vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-real-ip": "203.0.113.8", "user-agent": "Wishes test browser" }) }));
+vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-forwarded-for": "203.0.113.8", "user-agent": "Wishes test browser" }) }));
 vi.mock("@/application/auth", () => ({ requireProfile: mocks.requireProfile }));
 vi.mock("@/repositories/supabase", () => ({ createInvitationWishRepository: () => mocks }));
 
@@ -25,6 +25,7 @@ const input = { invitationId, clientSubmissionId: wishId, guestName: "Tamu Satu"
 
 describe("Wishes Server Action boundaries", () => {
   beforeEach(() => {
+    process.env.NGATURI_TRUSTED_PROXY_HOPS = "1";
     process.env.GUEST_SUBMISSION_RATE_LIMIT_SECRET = "local-wishes-test-secret";
     for (const mock of Object.values(mocks)) mock.mockReset();
     mocks.requireProfile.mockResolvedValue(owner);

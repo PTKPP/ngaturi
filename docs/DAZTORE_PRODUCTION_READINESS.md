@@ -12,12 +12,12 @@ Data konfigurasi section disimpan dalam invitation content JSONB v2. Save/publis
 | --- | --- | --- | --- | --- | --- |
 | Cover | `cover@1`: eyebrow dan title | Ada | Cover interaktif, recipient tersanitasi | JSONB owner-only; public hanya published | Baseline siap |
 | Greeting | `greeting@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
-| Couple | `couple-profile@1`: dua partner, parents, media ID | Upload/replace/delete dan alt text | Ada, `next/image`, fallback terdaftar | JSONB media ID + metadata/variant owner-scoped | Image workflow siap; browser E2E lokal masih diperlukan |
+| Couple | `couple-profile@1`: dua partner, parents, media ID | Upload/replace/delete dan alt text | Ada, `next/image`, fallback terdaftar | JSONB media ID + metadata/variant owner-scoped | Image workflow siap; Playwright 360/390/1440 px tervalidasi |
 | Quote | `quote@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
 | Event | `event@2`: daftar acara berurutan + allowlisted map link | Ada | Ada, calendar URL dihitung | JSONB owner-only | Baseline siap; validasi timezone perlu diperketat |
 | Countdown | `countdown@1`: label, target dari event | Ada | Ada dan cleanup timer teruji | JSONB owner-only | Baseline siap |
 | Love Story | `love-story@1`: text | Ada | Ada | JSONB owner-only | Baseline siap |
-| Gallery | `gallery@1`: ordered media IDs | Multiple upload, reorder, alt, replace, delete | Variant large + Next Image Optimization | Content owner-only; lifecycle media/RPC/RLS | Image workflow dan cleanup lifecycle siap; browser E2E lokal masih diperlukan |
+| Gallery | `gallery@1`: ordered media IDs | Multiple upload, reorder, alt, replace, delete | Variant large + Next Image Optimization | Content owner-only; lifecycle media/RPC/RLS | Image workflow, cleanup lifecycle, dan Playwright 360/390/1440 px tervalidasi |
 | Video | `video@2`: provider + canonical ID | URL owner dinormalisasi | Consent-gated YouTube no-cookie/Vimeo DNT + fallback | JSONB owner-only; tidak menyimpan iframe | Baseline siap; browser E2E provider production tersisa |
 | RSVP | Konfigurasi enablement + response schema relasional | Toggle + owner summary/list | Form guest tanpa reload | Table khusus, Server Action, service/repository, RPC/RLS | Baseline production siap; browser E2E dan kalibrasi rate limit production tersisa |
 | Gift | `gift@2`: bank, e-wallet, physical gift, legacy adapter | Add/remove/reorder, mask/reveal/copy, toggle alamat | Card mobile + copy per nomor/alamat | JSONB owner-only; module schema/version validation | Baseline production siap; privacy copy dan browser E2E tersisa |
@@ -65,5 +65,5 @@ Music bukan section visual ke-14, tetapi menjadi bagian experience shell. Preset
 
 ### Phase 6 - production evidence
 
-- Jalankan Supabase local reset dan forward-migration test, HTTP smoke create/edit/preview/publish/public, media lifecycle test, guest interaction abuse tests, serta viewport 360/390 E2E.
-- Baru setelah bukti ini tersedia, tandai RSVP/wishes/audio upload sebagai fungsional production.
+- Playwright Chromium lokal mencakup create/edit 14 section, image/audio, preview/publish/public, Gift, Video/Maps fallback, RSVP, Wishes moderation, retry/failure, refresh, dan publish/unpublish pada 360x800, 390x844, serta 1440x900.
+- Prosedur environment, proxy, PM2, migration, backup/restore, readiness, logging, security header, dan rollback tersedia di `docs/PRODUCTION_RUNBOOK.md`.

@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   listOwned: vi.fn(),
 }));
 
-vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-real-ip": "203.0.113.7", "user-agent": "RSVP test browser" }) }));
+vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-forwarded-for": "203.0.113.7", "user-agent": "RSVP test browser" }) }));
 vi.mock("@/repositories/supabase", () => ({ createInvitationRsvpRepository: () => mocks }));
 
 import { submitRsvpAction } from "@/app/actions/rsvp";
@@ -24,6 +24,7 @@ const input = {
 
 describe("RSVP Server Action boundary", () => {
   beforeEach(() => {
+    process.env.NGATURI_TRUSTED_PROXY_HOPS = "1";
     process.env.RSVP_RATE_LIMIT_SECRET = "local-test-secret";
     mocks.submit.mockReset();
     mocks.submit.mockResolvedValue({ id: "7ab6d9dc-73ef-4da8-8e70-713a0cc53b30", submittedAt: "2026-08-28T00:00:00.000Z", idempotent: false });

@@ -47,6 +47,7 @@ export function VideoSection({ video }: { video: VideoModule }) {
       {requested && video.embedEnabled && !failed ? <div className={styles.videoFrame} aria-busy={!loaded}>
         {!loaded ? <p className={styles.embedLoading} role="status">Memuat video dari {providerLabel}...</p> : null}
         <iframe src={embedUrl} title="Video perjalanan pasangan" loading="lazy" allow="fullscreen; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen onLoad={() => setLoaded(true)} onError={failEmbed} />
+        <a className={styles.secondaryAction} href={externalUrl} target="_blank" rel="noopener noreferrer" onClick={() => reportEmbedTelemetry("fallback_used", "video", video.provider)}>Buka di {providerLabel}</a>
       </div> : null}
     </Reveal>
   </section>;

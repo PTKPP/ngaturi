@@ -17,10 +17,12 @@ OpenStreetMap is supported as an external link in this phase; it is not embedded
 
 ## CSP and telemetry
 
-Ngaturi currently does not install a global CSP because Next.js script nonces require a separate deployment-wide design. If a deployment already sends CSP, its narrow frame policy must include only:
+Ngaturi mengirim CSP global yang sengaja hanya mengunci boundary yang tidak memerlukan nonce. Kebijakan frame production dibatasi ke:
 
 ```text
 frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com https://www.google.com;
 ```
+
+`script-src` belum ditetapkan karena nonce Next.js memerlukan desain deployment tersendiri. Aplikasi tidak memuat script provider; hanya iframe yang dibuat setelah consent guest.
 
 Lightweight structured telemetry emits `ngaturi:telemetry` browser events and warning logs for `invalid_provider_url`, `embed_load_failure`, and `fallback_used`. Payloads contain only module/provider/event identifiers and a timestamp—never the submitted URL, video ID, address, invitation ID, or guest data.

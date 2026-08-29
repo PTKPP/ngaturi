@@ -36,7 +36,7 @@ describe("Supabase datetime mapping", () => {
     ["canonical UTC", "2026-08-26T15:30:45.123Z", "2026-08-26T15:30:45.123Z"],
     ["UTC offset", "2026-08-26T15:30:45.123+00:00", "2026-08-26T15:30:45.123Z"],
     ["positive offset", "2026-08-26T22:30:45.123+07:00", "2026-08-26T15:30:45.123Z"],
-    ["PostgreSQL microseconds", "2026-08-26T15:30:45.123456+00:00", "2026-08-26T15:30:45.123Z"],
+    ["PostgreSQL microseconds", "2026-08-26T15:30:45.123456+00:00", "2026-08-26T15:30:45.123456Z"],
   ])("normalizes %s invitation timestamps", (_label, rawValue, expected) => {
     const mapped = mapInvitation(invitationRow({ created_at: rawValue, updated_at: rawValue }));
 
@@ -89,8 +89,8 @@ describe("Supabase datetime mapping", () => {
     const route = mapRoute({ id: "route-1", owner_id: "owner-1", slug: "route-test", assigned_by: "user", ...timestamps });
     const profile = mapProfile({ id: "owner-1", name: "Owner", email: "owner@example.com", role: "user", status: "active", route_quota: 2, ...timestamps });
 
-    expect(route).toMatchObject({ createdAt: "2026-08-26T15:30:45.123Z", updatedAt: "2026-08-26T15:30:45.123Z" });
-    expect(profile).toMatchObject({ createdAt: "2026-08-26T15:30:45.123Z", updatedAt: "2026-08-26T15:30:45.123Z" });
+    expect(route).toMatchObject({ createdAt: "2026-08-26T15:30:45.123Z", updatedAt: "2026-08-26T15:30:45.123456Z" });
+    expect(profile).toMatchObject({ createdAt: "2026-08-26T15:30:45.123Z", updatedAt: "2026-08-26T15:30:45.123456Z" });
   });
 });
 

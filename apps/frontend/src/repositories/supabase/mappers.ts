@@ -14,7 +14,17 @@ function dateTimeValue(row: Row, key: string): string {
     throw new Error(`Invalid datetime value for ${key}.`);
   }
 
-  return new Date(parsedValue.data).toISOString();
+  const parsedDate = new Date(parsedValue.data);
+  if (Number.isNaN(parsedDate.getTime())) {
+    throw new Error(`Invalid datetime value for ${key}.`);
+  }
+
+  // PostgreSQL timestamps can carry microseconds. Date#toISOString truncates
+  // them to milliseconds, which breaks exact optimistic-lock comparisons in
+  // media RPCs. Convert the offset to UTC while preserving the original
+  // fractional-second precision.
+  const fraction = parsedValue.data.match(/\.(\d+)(?:Z|[+-]\d{2}:\d{2})$/)?.[1] ?? "000";
+  return `${parsedDate.toISOString().slice(0, 19)}.${fraction}Z`;
 }
 
 function nullableDateTimeValue(row: Row, key: string): string | null {

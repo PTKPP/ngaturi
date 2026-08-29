@@ -248,13 +248,23 @@ async function main() {
   ]);
   assert.ok(unauthorizedLocks.every((result) => result.error));
 
+  const cascade = await createOwner(admin, status, "cascade");
+  const cascadePayload = uploadPayload(cascade.ownerId, cascade.invitation.id, 41);
+  const cascadePrepared = await prepare(cascade.owner, cascadePayload);
+  if (cascadePrepared.error) throw cascadePrepared.error;
+  const cascadeDelete = await admin.from("invitations").delete().eq("id", cascade.invitation.id);
+  if (cascadeDelete.error) throw cascadeDelete.error;
+  const cascadeOwnerUsage = await admin.from("owner_media_quota_usage").select("active_bytes,active_media_count").eq("owner_id", cascade.ownerId).single();
+  if (cascadeOwnerUsage.error) throw cascadeOwnerUsage.error;
+  assert.deepEqual(cascadeOwnerUsage.data, { active_bytes: 0, active_media_count: 0 }, "Cascade delete harus melepaskan quota owner tanpa parent invitation.");
+
   console.log(JSON.stringify({
     defaults: { userBytes: 524288000, invitationBytes: 209715200, galleryImages: 30 },
     reservationBytes: reservation,
     validated: [
       "quota exact boundary", "user/invitation/gallery exceed", "concurrent prepare serialization",
       "FAILED and DELETE_PENDING retain quota", "DELETED releases quota", "crash lease reclaim and idempotent completion",
-      "distributed scheduler overlap lock", "signed upload unavailable after quota rejection",
+      "distributed scheduler overlap lock", "signed upload unavailable after quota rejection", "invitation cascade releases owner quota",
     ],
   }, null, 2));
 }

@@ -78,6 +78,7 @@ describe("external video and maps contracts", () => {
     fireEvent.click(screen.getByRole("button", { name: "Tampilkan video" }));
     const iframe = screen.getByTitle("Video perjalanan pasangan");
     expect(iframe).toHaveAttribute("src", "https://www.youtube-nocookie.com/embed/abcdefghijk?rel=0");
+    expect(screen.getByRole("link", { name: "Buka di YouTube" })).toBeInTheDocument();
     act(() => vi.advanceTimersByTime(12_000));
     expect(screen.getByText(/Embed tidak dapat dimuat/)).toBeInTheDocument();
     expect(telemetry).toHaveBeenCalled();

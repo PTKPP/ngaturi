@@ -11,8 +11,11 @@ __pycache__/
 .venv/
 node_modules/
 .next/
+.next-e2e/
 dist/
 build/
 coverage/
+playwright-report/
+test-results/
 *.tsbuildinfo
 .runtime/
