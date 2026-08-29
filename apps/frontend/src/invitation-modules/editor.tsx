@@ -6,7 +6,7 @@ import { moduleRegistry } from "./registry";
 import { toWeddingRenderModel, updateFromWeddingRenderModel, type InvitationModuleContent } from "./content";
 import { InvitationMusicSchema } from "@/invitation-music/registry";
 import type { InvitationAudioMedia, InvitationImageMedia, InvitationOwnedMedia } from "@/repositories/contracts";
-import { DaztoreImageMediaEditor } from "@/invitation-media/DaztoreImageMediaEditor";
+import { InvitationImageMediaEditor } from "@/invitation-media/InvitationImageMediaEditor";
 import { InvitationAudioMediaEditor } from "@/invitation-media/InvitationAudioMediaEditor";
 import { GiftModuleEditor } from "./editors/GiftModuleEditor";
 import { GiftModuleSchema } from "./definitions/gift";
@@ -90,7 +90,7 @@ export function InvitationModuleEditor({ template, invitationId, media = [], val
     <WeddingModuleEditor value={weddingContent} hideMediaFields={hasImageWorkflow} onChange={(next) => onChange(updateFromWeddingRenderModel(value, next))} />
     {maps ? <MapsModuleEditor content={weddingContent} value={maps} onContentChange={(next) => onChange(updateFromWeddingRenderModel(value, next))} onChange={(next) => onChange({ ...value, modules: { ...value.modules, maps: next } })} /> : null}
     {template.supportedModules.includes("gift") ? <GiftModuleEditor value={GiftModuleSchema.parse(value.modules.gift)} onChange={(gift) => onChange({ ...value, modules: { ...value.modules, gift } })} /> : null}
-    {hasImageWorkflow && invitationId ? <DaztoreImageMediaEditor
+    {hasImageWorkflow && invitationId ? <InvitationImageMediaEditor
       invitationId={invitationId}
       value={toWeddingRenderModel(value, false)}
       media={media.filter((item): item is InvitationImageMedia => item.kind === "image")}

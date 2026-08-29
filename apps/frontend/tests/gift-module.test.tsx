@@ -10,7 +10,7 @@ import {
   type GiftModule,
 } from "@/invitation-modules/definitions/gift";
 import { GiftModuleEditor } from "@/invitation-modules/editors/GiftModuleEditor";
-import { GiftSection } from "@/templates/daztore-inv1/components/GiftSection";
+import { GiftSection } from "@/templates/wedding-default/components/GiftSection";
 
 const fixture = () => GiftModuleSchema.parse(structuredClone(giftFixture));
 

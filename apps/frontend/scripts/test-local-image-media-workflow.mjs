@@ -152,10 +152,10 @@ async function main() {
   const createdInvitation = await owner.rpc("claim_route_and_create_invitation", {
     p_slug: `media-${suffix}`,
     p_title: "Local media integration",
-    p_template_key: "daztore-inv1",
+    p_template_key: "wedding-default",
     p_template_version: 1,
     p_content_schema_version: 2,
-    p_theme_key: "daztore-inv1-default",
+    p_theme_key: "wedding-default-default",
     p_theme_version: 1,
     p_content: {},
   });

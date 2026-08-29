@@ -1,15 +1,31 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const frontendRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
-const templatesRoot = join(frontendRoot, "src", "templates");
-const outputPath = join(templatesRoot, "generated-registry.ts");
 const directoryPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const packages = readdirSync(templatesRoot, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory() && directoryPattern.test(entry.name) && existsSync(join(templatesRoot, entry.name, "index.ts")) && existsSync(join(templatesRoot, entry.name, "manifest.ts")))
-  .map((entry) => entry.name)
-  .sort();
+const requiredPackageFiles = ["index.ts", "manifest.ts", "Template.tsx", "themes.ts"];
+
+function option(name, fallback) {
+  const index = process.argv.indexOf(name);
+  if (index === -1) return fallback;
+  const value = process.argv[index + 1];
+  if (!value || value.startsWith("--")) throw new Error(`Nilai ${name} tidak tersedia.`);
+  return resolve(frontendRoot, value);
+}
+
+const templatesRoot = option("--templates-root", join(frontendRoot, "src", "templates"));
+const outputPath = option("--output", join(templatesRoot, "generated-registry.ts"));
+const candidates = readdirSync(templatesRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && directoryPattern.test(entry.name))
+  .filter((entry) => requiredPackageFiles.some((file) => existsSync(join(templatesRoot, entry.name, file))));
+
+for (const entry of candidates) {
+  const missing = requiredPackageFiles.filter((file) => !existsSync(join(templatesRoot, entry.name, file)));
+  if (missing.length) throw new Error(`Paket template ${entry.name} belum lengkap: ${missing.join(", ")}.`);
+}
+
+const packages = candidates.map((entry) => entry.name).sort();
 
 if (packages.length === 0) throw new Error("Tidak ada paket template yang ditemukan.");
 

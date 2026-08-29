@@ -10,6 +10,7 @@ import { RsvpOwnerPanel } from "@/components/RsvpOwnerPanel";
 import { InvitationWishService } from "@/application/wish-service";
 import { createInvitationWishRepository } from "@/repositories/supabase";
 import { WishesOwnerPanel } from "@/components/WishesOwnerPanel";
+import { getTemplateModule } from "@/templates/registry";
 
 export default async function EditInvitationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,10 +21,11 @@ export default async function EditInvitationPage({ params }: { params: Promise<{
   const mediaService = new InvitationMediaService(await createInvitationMediaRepository());
   const [images, audio] = await Promise.all([mediaService.listOwnedImages(profile, id), mediaService.listOwnedAudio(profile, id)]);
   const media = [...images, ...audio];
-  const rsvp = invitation.templateKey === "daztore-inv1"
+  const supportedModules = new Set(getTemplateModule(invitation.templateKey, invitation.templateVersion)?.manifest.supportedModules ?? []);
+  const rsvp = supportedModules.has("rsvp")
     ? await new InvitationRsvpService(createInvitationRsvpRepository()).getOwnerDashboard(profile, id)
     : null;
-  const wishes = invitation.templateKey === "daztore-inv1"
+  const wishes = supportedModules.has("wishes")
     ? await new InvitationWishService(createInvitationWishRepository()).getOwnerDashboard(profile, id)
     : null;
   const routeSlug = routes.find(({ route }) => route.id === invitation.routeId)?.route.slug ?? "route-tidak-tersedia";

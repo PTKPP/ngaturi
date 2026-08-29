@@ -1,0 +1,32 @@
+import { TemplateSchema } from "@/domain";
+
+export const manifest = TemplateSchema.parse({
+  key: "wedding-default",
+  version: 1,
+  name: "Wedding Default",
+  description: "Template pernikahan monokrom bernuansa klasik-Islami dengan cover interaktif, tipografi elegan, countdown, rangkaian acara, dan musik latar.",
+  thumbnail: "/templates/wedding-default/thumbnail.svg",
+  status: "active",
+  categoryKey: "wedding", categoryVersion: 1, activeContentSchemaVersion: 2, themeSchemaVersion: 1,
+  supportedModules: ["cover", "greeting", "couple-profile", "quote", "event", "countdown", "love-story", "gallery", "video", "rsvp", "gift", "wishes", "maps", "music", "closing"],
+  requiredModules: ["cover", "couple-profile", "event", "closing"],
+  optionalModules: ["video", "rsvp", "gift", "wishes"],
+  defaultEnabledModules: ["greeting", "quote", "countdown", "love-story", "gallery", "maps", "music"],
+  sections: [
+    { id: "cover", moduleId: "cover", renderer: "wedding-default-cover" },
+    { id: "greeting", moduleId: "greeting", renderer: "wedding-default-greeting" },
+    { id: "couple", moduleId: "couple-profile", renderer: "wedding-default-couple" },
+    { id: "quote", moduleId: "quote", renderer: "wedding-default-quote" },
+    { id: "events", moduleId: "event", renderer: "wedding-default-events" },
+    { id: "countdown", moduleId: "countdown", renderer: "wedding-default-countdown" },
+    { id: "story", moduleId: "love-story", renderer: "wedding-default-story" },
+    { id: "gallery", moduleId: "gallery", renderer: "wedding-default-gallery" },
+    { id: "video", moduleId: "video", renderer: "wedding-default-video" },
+    { id: "rsvp", moduleId: "rsvp", renderer: "wedding-default-rsvp" },
+    { id: "gift", moduleId: "gift", renderer: "wedding-default-gift" },
+    { id: "wishes", moduleId: "wishes", renderer: "wedding-default-wishes" },
+    { id: "maps", moduleId: "maps", renderer: "wedding-default-maps" },
+    { id: "closing", moduleId: "closing", renderer: "wedding-default-closing" },
+  ],
+  supportedSections: ["cover", "greeting", "couple", "quote", "events", "countdown", "story", "gallery", "video", "rsvp", "gift", "wishes", "maps", "closing", "navigation"],
+});

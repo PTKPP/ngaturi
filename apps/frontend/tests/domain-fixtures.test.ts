@@ -17,7 +17,7 @@ describe("dummy data contract", () => {
     expect(parsed.every((user) => Number.isInteger(user.routeQuota) && user.routeQuota >= 0)).toBe(true);
   });
   it("treats the three structural renderers as templates", () => {
-    expect(TemplatesSchema.parse(templates).map((item) => `${item.key}@${item.version}`)).toEqual(["elegant-gold@1", "minimal-white@1", "daztore-inv1@1"]);
+    expect(TemplatesSchema.parse(templates).map((item) => `${item.key}@${item.version}`)).toEqual(["elegant-gold@1", "minimal-white@1", "wedding-default@1"]);
   });
   it("registers at least two compatible themes including one default for every template", () => {
     const parsed = InvitationThemesSchema.parse(themes);

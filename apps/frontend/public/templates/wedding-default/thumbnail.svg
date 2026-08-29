@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img" aria-labelledby="title desc">
+  <title id="title">Wedding Default</title>
+  <desc id="desc">Thumbnail monokrom dengan dua profil pasangan dan ornamen hati.</desc>
+  <rect width="640" height="400" rx="32" fill="#f4f1eb"/>
+  <path d="M0 80Q130 25 260 72T520 62T700 70V0H0Z" fill="#2c2d2e"/>
+  <circle cx="260" cy="195" r="78" fill="#dad5cc" stroke="#fff" stroke-width="8"/>
+  <circle cx="380" cy="195" r="78" fill="#bcb7af" stroke="#fff" stroke-width="8"/>
+  <circle cx="260" cy="172" r="30" fill="#444648"/>
+  <path d="M208 255c8-46 31-65 52-65s44 19 52 65" fill="#444648"/>
+  <circle cx="380" cy="172" r="30" fill="#74716c"/>
+  <path d="M328 255c8-46 31-65 52-65s44 19 52 65" fill="#74716c"/>
+  <path d="M320 148c-22-29-65 4 0 51 65-47 22-80 0-51Z" fill="#f4f1eb" stroke="#2c2d2e" stroke-width="4"/>
+  <text x="320" y="320" text-anchor="middle" font-family="Georgia,serif" font-size="34" fill="#27282a">The Wedding Of</text>
+  <text x="320" y="356" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" letter-spacing="5" fill="#66635f">DAZTORE INVITATION 1</text>
+</svg>

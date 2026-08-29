@@ -8,7 +8,8 @@ import { categoryRegistry } from "@/invitation-categories/registry";
 const initialSql = readFileSync(join(process.cwd(), "../../supabase/migrations/202608240001_initial_architecture.sql"), "utf8");
 const architectureSql = readFileSync(join(process.cwd(), "../../supabase/migrations/202608260001_category_module_architecture.sql"), "utf8");
 const compositionSql = readFileSync(join(process.cwd(), "../../supabase/migrations/202608270001_daztore_music_composition.sql"), "utf8");
-const sql = `${initialSql}\n${architectureSql}\n${compositionSql}`;
+const canonicalTemplateSql = readFileSync(join(process.cwd(), "../../supabase/migrations/202608290003_wedding_default_canonical_template.sql"), "utf8");
+const sql = `${initialSql}\n${architectureSql}\n${compositionSql}\n${canonicalTemplateSql}`;
 
 describe("Supabase migration security and integrity", () => {
   it("defines all required tables, JSON object constraint, and focused indexes", () => {
@@ -44,8 +45,12 @@ describe("Supabase migration security and integrity", () => {
     expect(compositionSql).toContain("key = 'wedding' then '\"default\"'::jsonb else '\"optional\"'::jsonb");
     for (const templateModule of Object.values(templateRegistry)) {
       const manifest = templateModule.manifest;
-      expect(sql).toContain(`('${manifest.key}',${manifest.version},'${manifest.name}'`);
-      expect(initialSql).toContain(`('${manifest.key}',${manifest.version},'${manifest.name}'`);
+      if (manifest.key === "wedding-default") {
+        expect(canonicalTemplateSql).toContain("set key = 'wedding-default'");
+        expect(canonicalTemplateSql).toContain("name = 'Wedding Default'");
+      } else {
+        expect(initialSql).toContain(`('${manifest.key}',${manifest.version},'${manifest.name}'`);
+      }
       expect(architectureSql).toContain(`active_content_schema_version = 2`);
       expect(sql).toContain(JSON.stringify(manifest.sections));
       expect(sql).toContain(JSON.stringify(manifest.supportedModules));
@@ -54,12 +59,21 @@ describe("Supabase migration security and integrity", () => {
       expect(sql).toContain(JSON.stringify(manifest.defaultEnabledModules));
     }
     for (const theme of themeRegistry) {
-      expect(initialSql).toContain(`('${theme.key}',${theme.version},'${theme.templateKey}',${theme.templateVersion},'${theme.name}'`);
-      expect(architectureSql).toContain(`when '${theme.key}'`);
+      expect(sql).toContain(`'${theme.key}'`);
+      expect(sql).toContain(`'${theme.templateKey}'`);
     }
     expect(architectureSql).toContain('"headingFont"');
     expect(architectureSql).toContain("invitation_theme_override_keys_safe");
     expect(architectureSql).toContain("invitation_category_immutable");
+  });
+
+  it("renames the pre-production canonical template through constrained cascades without rewriting content", () => {
+    expect(canonicalTemplateSql).toContain("set key = 'wedding-default'");
+    expect(canonicalTemplateSql).toContain("where key = 'daztore-inv1' and version = 1");
+    expect(canonicalTemplateSql).toContain("alter table public.invitations disable trigger invitations_enforce");
+    expect(canonicalTemplateSql).toContain("alter table public.invitations disable trigger invitations_touch");
+    expect(canonicalTemplateSql).toContain("alter table public.invitations enable trigger invitations_enforce");
+    expect(canonicalTemplateSql).not.toMatch(/update public\.invitations[\s\S]*?set content\s*=/i);
   });
 
   it("backfills before constraints and keeps legacy rows readable without weakening category integrity", () => {

@@ -33,7 +33,7 @@ describe("production persistence and auth boundary", () => {
   });
 
   it("keeps media on controlled same-origin optimized image paths", () => {
-    const image = source("src/templates/daztore-inv1/components/ThemeImage.tsx");
+    const image = source("src/templates/wedding-default/components/ThemeImage.tsx");
     expect(image).toMatch(/next\/image/);
     expect(image).not.toMatch(/unoptimized|loader=/);
     expect(image).toMatch(/\/api\/public-media\//);

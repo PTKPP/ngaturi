@@ -10,8 +10,10 @@ Satu paket template minimal menyediakan:
 - `index.ts` yang mengekspor `templateModule` melalui `defineTemplate()`;
 - renderer section, asset registry, dan test terarah.
 
-`npm run templates:generate` memindai folder bernama aman yang memiliki `index.ts` dan `manifest.ts`, lalu menghasilkan `generated-registry.ts` berisi import statis. Generator berjalan sebelum dev, lint, typecheck, test, dan build. Tidak ada filesystem discovery di runtime, `eval`, remote module, uploaded code, atau arbitrary dynamic import.
+`npm run templates:generate` memindai folder bernama aman yang memiliki `index.ts`, `manifest.ts`, `Template.tsx`, dan `themes.ts`, lalu menghasilkan `generated-registry.ts` berisi import statis. Generator berjalan sebelum dev, lint, typecheck, test, dan build. Tidak ada filesystem discovery di runtime, `eval`, remote module, uploaded code, atau arbitrary dynamic import.
 
-Template baru tidak memerlukan perubahan registry, service, route, atau switch/case global. Ia tetap memerlukan migration data forward-only untuk memasukkan manifest dan preset ke katalog Supabase; migration tersebut menambah data katalog, bukan mengubah database logic. Fixture parity dan test paket tetap wajib.
+Template baru yang hanya memakai invitation module existing tidak memerlukan perubahan registry, application service, repository, route, editor router, switch/case global, atau adapter Supabase. Developer cukup membuat paket lengkap `templates/<template>/`, menjalankan `templates:generate`/`templates:check`, dan menambah migration katalog forward-only bila template ingin tersedia untuk create/switch. Migration tersebut menambah data katalog, bukan mengubah database logic. Fixture parity dan test paket tetap wajib.
 
 `availability: "production"` membuat template dapat dipilih untuk undangan baru. `availability: "compatibility"` mempertahankan render/edit undangan lama tanpa menawarkan template tersebut untuk create atau switch baru.
+
+Template ID yang sudah masuk production tidak boleh di-rename lagi. Hanya display name dan deskripsi yang boleh berubah; key/version tetap menjadi referensi immutable untuk invitation tersimpan.

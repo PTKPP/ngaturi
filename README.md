@@ -28,11 +28,11 @@ Jika Supabase CLI dan Docker tersedia, jalankan `supabase db reset` dari root un
 ## Status
 
 - Arsitektur undangan memisahkan Category (tipe bisnis), Module (schema/default/editor/migrasi semantik), Template (komposisi/renderer), dan Theme (token visual aman).
-- `daztore-inv1@1` adalah template create production. `minimal-white@1` dan `elegant-gold@1` tetap compatibility-only untuk undangan tersimpan.
+- `wedding-default@1` adalah template create production. `minimal-white@1` dan `elegant-gold@1` tetap compatibility-only untuk undangan tersimpan.
 - Template adalah paket self-contained di `apps/frontend/src/templates/<key>/`; registry import statis dihasilkan saat build.
 - Adapter v1 tetap membaca undangan lama. Save konten/publish menormalisasi ke v2; ganti template satu kategori mempertahankan modul yang tidak aktif dan ganti kategori ditolak.
 - Production memakai Supabase SSR cookie auth, repository server, Server Actions, RLS, RPC atomik, dan private Storage.
 - Mock browser/localStorage lama berada di `legacy/frontend-browser-demo/` dan tidak termasuk source, test, atau bundle production.
 - SQL di `supabase/migrations/` adalah sumber kebenaran database; registry TypeScript adalah sumber kebenaran kategori, modul, template, dan tema build-time.
 
-Lihat `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, dan `docs/DAZTORE_PRODUCTION_READINESS.md`.
+Lihat `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, dan `docs/WEDDING_DEFAULT_PRODUCTION_READINESS.md`.

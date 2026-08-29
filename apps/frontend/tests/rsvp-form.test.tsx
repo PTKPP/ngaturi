@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ submitRsvpAction: vi.fn() }));
 vi.mock("@/app/actions/rsvp", () => ({ submitRsvpAction: mocks.submitRsvpAction }));
 
-import { RsvpSection } from "@/templates/daztore-inv1/components/RsvpSection";
+import { RsvpSection } from "@/templates/wedding-default/components/RsvpSection";
 
 const invitationId = "3e531e88-863c-4344-baf4-c3d8349f13db";
 

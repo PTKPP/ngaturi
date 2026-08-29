@@ -21,7 +21,7 @@ Frontend tidak boleh dapat diakses langsung dari internet. Load balancer/reverse
 3. Review daftar migration lokal dan apply forward-only migration ke environment target melalui pipeline/operator Supabase yang telah diautentikasi. Jangan memakai reset pada production.
 4. Jalankan smoke query katalog, grants/RLS, private bucket `invitation-media`, dan RPC media/RSVP/Wishes sebelum membuka traffic.
 5. Jalankan `make pm2-start`. `ngaturi-frontend` memakai `start:production`, sedangkan `ngaturi-media-cleanup` memakai scheduler lifecycle yang sama dengan integration test.
-6. Verifikasi `GET /api/health` bernilai 200 dan `GET /api/readiness` bernilai 200. Readiness memeriksa katalog Daztore dan private media bucket; response 503 menahan traffic.
+6. Verifikasi `GET /api/health` bernilai 200 dan `GET /api/readiness` bernilai 200. Readiness memeriksa katalog Wedding Default dan private media bucket; response 503 menahan traffic.
 
 Gunakan satu instance scheduler PM2. Database run lock dan claim lease mencegah overlap/corruption bila proses restart atau operator tanpa sengaja memulai runner kedua. Detail metrics dan remediation worker ada di `docs/MEDIA_OPERATIONS_RUNBOOK.md`.
 

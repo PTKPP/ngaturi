@@ -27,9 +27,9 @@ describe("generic template editor routing", () => {
     const source = InvitationSchema.parse(invitations[0]);
     const invitation = InvitationSchema.parse({
       ...source,
-      templateKey: "daztore-inv1",
+      templateKey: "wedding-default",
       templateVersion: 1,
-      themeKey: "daztore-inv1-default",
+      themeKey: "wedding-default-default",
       themeVersion: 1,
     });
     render(<InvitationEditorClient initialInvitation={invitation} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="raka-dan-sinta-draft" />);
@@ -47,7 +47,7 @@ describe("generic template editor routing", () => {
     const content = structuredClone(invitations[0].content) as unknown as { couple: { partnerOne: { photo: string } }; gallery: string[]; [key: string]: unknown };
     content.couple.partnerOne.photo = partnerMediaId;
     content.gallery = [galleryOneId, galleryTwoId];
-    const invitation = InvitationSchema.parse({ ...source, templateKey: "daztore-inv1", templateVersion: 1, themeKey: "daztore-inv1-default", themeVersion: 1, content });
+    const invitation = InvitationSchema.parse({ ...source, templateKey: "wedding-default", templateVersion: 1, themeKey: "wedding-default-default", themeVersion: 1, content });
     const media = [partnerMediaId, galleryOneId, galleryTwoId].map((id, index): InvitationImageMedia => ({
       kind: "image",
       id,
@@ -90,7 +90,7 @@ describe("generic template editor routing", () => {
 
   it("enables and disables Gift through reusable module capability state", () => {
     const source = InvitationSchema.parse(invitations[0]);
-    const invitation = InvitationSchema.parse({ ...source, templateKey: "daztore-inv1", templateVersion: 1, themeKey: "daztore-inv1-default", themeVersion: 1 });
+    const invitation = InvitationSchema.parse({ ...source, templateKey: "wedding-default", templateVersion: 1, themeKey: "wedding-default-default", themeVersion: 1 });
     const view = render(<InvitationEditorClient initialInvitation={invitation} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="raka-dan-sinta-draft" />);
     const toggle = screen.getByRole("checkbox", { name: "Hadiah" }) as HTMLInputElement;
     const before = toggle.checked;
@@ -144,10 +144,10 @@ describe("generic template editor routing", () => {
 
   it("selects custom audio for the existing music controller and defers delete until save", () => {
     const source = InvitationSchema.parse(invitations[0]);
-    const content = parseTemplateContent("daztore-inv1", 1, source.contentSchemaVersion, source.content);
+    const content = parseTemplateContent("wedding-default", 1, source.contentSchemaVersion, source.content);
     const mediaId = "7ab6d9dc-73ef-4da8-8e70-713a0cc53b30";
     content.modules.music = { trackId: "custom", mediaId, title: "Lagu kami", startAtSeconds: 0, volume: 0.35, loop: true };
-    const invitation = InvitationSchema.parse({ ...source, templateKey: "daztore-inv1", templateVersion: 1, themeKey: "daztore-inv1-default", themeVersion: 1, contentSchemaVersion: 2, content });
+    const invitation = InvitationSchema.parse({ ...source, templateKey: "wedding-default", templateVersion: 1, themeKey: "wedding-default-default", themeVersion: 1, contentSchemaVersion: 2, content });
     const audio: InvitationAudioMedia = { kind: "audio", id: mediaId, invitationId: invitation.id, purpose: "invitation_music", originalFilename: "lagu-kami.mp3", mimeType: "audio/mpeg", sizeBytes: 2048, durationMs: 90_000, status: "ready", createdAt: "2026-08-28T00:00:00.000Z" };
     const view = render(<InvitationEditorClient initialInvitation={invitation} initialMedia={[audio]} templates={TemplatesSchema.parse(templates)} themes={InvitationThemesSchema.parse(themes)} routeSlug="raka-dan-sinta-draft" />);
     expect(screen.getByText("lagu-kami.mp3")).toBeInTheDocument();

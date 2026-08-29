@@ -56,13 +56,13 @@ describe("final invitation architecture", () => {
     source.modules.wishes = { enabled: true, draftMessage: "tetap ada" };
     source.moduleVersions.wishes = 1;
     source.moduleState.wishes = { enabled: false };
-    const switched = adaptContentToTemplate(source, getTemplateModule("daztore-inv1", 1)!.manifest);
+    const switched = adaptContentToTemplate(source, getTemplateModule("wedding-default", 1)!.manifest);
     expect(switched.modules.wishes).toEqual({ enabled: true, draftMessage: "tetap ada" });
     expect(switched.moduleState.wishes.enabled).toBe(false);
   });
 
   it("limits theme references and falls back safely for missing presets or invalid overrides", () => {
-    expect(Object.keys(templateThemeRegistry).sort()).toEqual(["daztore-inv1@1", "elegant-gold@1", "minimal-white@1"]);
+    expect(Object.keys(templateThemeRegistry).sort()).toEqual(["elegant-gold@1", "minimal-white@1", "wedding-default@1"]);
     expect(() => ThemeOverridesSchema.parse({ rawCss: "body{display:none}", headingFont: "https://evil.example/font.woff" })).toThrow();
     const fallback = resolveRegisteredTheme("minimal-white", 1, "missing", 99, { headingFont: "cormorant-garamond" } as never)!;
     expect(fallback.fallbackUsed).toBe(true);

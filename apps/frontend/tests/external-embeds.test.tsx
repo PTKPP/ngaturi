@@ -12,8 +12,8 @@ import {
 import { moduleRegistry } from "@/invitation-modules/registry";
 import type { InvitationEvent } from "@/domain";
 import { InvitationExperienceShell } from "@/templates/shared/InvitationExperienceShell";
-import { VideoSection } from "@/templates/daztore-inv1/components/VideoSection";
-import { MapsSection } from "@/templates/daztore-inv1/components/MapsSection";
+import { VideoSection } from "@/templates/wedding-default/components/VideoSection";
+import { MapsSection } from "@/templates/wedding-default/components/MapsSection";
 
 const event: InvitationEvent = {
   id: "event-map",

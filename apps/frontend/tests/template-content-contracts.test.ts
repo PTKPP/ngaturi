@@ -37,13 +37,13 @@ describe("category, module, template, and theme content contracts", () => {
   it("upgrades legacy free-text Gift into the reusable gift@2 module", () => {
     const invitation = InvitationSchema.parse(invitations[1]);
     const legacyGift = (invitation.content.copy as { giftInformation: string }).giftInformation;
-    const parsed = parseTemplateContent("daztore-inv1", 1, 1, invitation.content);
+    const parsed = parseTemplateContent("wedding-default", 1, 1, invitation.content);
     expect(parsed.moduleVersions.gift).toBe(2);
     expect(parsed.modules.gift).toMatchObject({ bankAccounts: [], eWallets: [], legacyText: legacyGift });
     expect(toWeddingRenderModel(parsed).copy.giftInformation).toBe(legacyGift);
     parsed.modules.gift = { text: "Teks gift dari content envelope v2 lama." };
     parsed.moduleVersions.gift = 1;
-    const upgradedV2 = parseTemplateContent("daztore-inv1", 1, 2, parsed);
+    const upgradedV2 = parseTemplateContent("wedding-default", 1, 2, parsed);
     expect(upgradedV2.moduleVersions.gift).toBe(2);
     expect(upgradedV2.modules.gift).toMatchObject({ legacyText: "Teks gift dari content envelope v2 lama." });
   });
@@ -51,7 +51,7 @@ describe("category, module, template, and theme content contracts", () => {
   it("preserves inactive and unknown legacy data during a same-category switch", () => {
     const source = { ...invitations[0].content, templateOnly: { preserved: true } };
     const current = parseTemplateContent("minimal-white", 1, 1, source);
-    const target = getTemplateModule("daztore-inv1", 1)!;
+    const target = getTemplateModule("wedding-default", 1)!;
     const converted = adaptContentToTemplate(current, target.manifest);
     expect(converted.extensions).toEqual({ legacyV1: { templateOnly: { preserved: true } } });
     expect(converted.modules).toHaveProperty("countdown");

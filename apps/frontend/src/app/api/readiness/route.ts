@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const supabase = createAdminSupabaseClient();
     const [template, bucket] = await Promise.all([
-      supabase.from("template_catalog").select("key", { head: true, count: "exact" }).eq("key", "daztore-inv1").eq("version", 1).eq("status", "active"),
+      supabase.from("template_catalog").select("key", { head: true, count: "exact" }).eq("key", "wedding-default").eq("version", 1).eq("status", "active"),
       supabase.storage.getBucket("invitation-media"),
     ]);
     if (template.error || template.count !== 1 || bucket.error || !bucket.data) throw new Error("dependency_check_failed");

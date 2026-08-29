@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ submitWishAction: vi.fn(), listApprovedWishesAction: vi.fn() }));
 vi.mock("@/app/actions/wishes", () => mocks);
 
-import { WishesSection } from "@/templates/daztore-inv1/components/WishesSection";
+import { WishesSection } from "@/templates/wedding-default/components/WishesSection";
 
 const invitationId = "3e531e88-863c-4344-baf4-c3d8349f13db";
 

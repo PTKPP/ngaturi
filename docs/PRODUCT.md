@@ -18,7 +18,9 @@ Invitation dibuat `draft`, dapat dipreview owner, dan hanya tampil ke guest sete
 
 Kategori adalah tipe bisnis undangan dan sumber kapabilitas modul. Registry awal mencakup `wedding`, `khitan`, `aqiqah`, `birthday`, dan `corporate`, masing-masing dengan modul `required`, `default`, `optional`, atau `unsupported`. Template selalu terikat ke tepat satu versi kategori.
 
-Modul memiliki data semantik reusable, schema, default, editor, dan migrasi sendiri. Template tidak mendefinisikan ulang data pasangan/acara/konten; template hanya menentukan urutan section dan renderer build-time. `daztore-inv1@1` adalah template create production untuk `wedding@1`; `minimal-white@1` dan `elegant-gold@1` dipertahankan sebagai compatibility renderer untuk data lama.
+Modul memiliki data semantik reusable, schema, default, editor, dan migrasi sendiri. Template tidak mendefinisikan ulang data pasangan/acara/konten; template hanya menentukan urutan section dan renderer build-time. `wedding-default@1` adalah template create production untuk `wedding@1`; `minimal-white@1` dan `elegant-gold@1` dipertahankan sebagai compatibility renderer untuk data lama.
+
+Template ID yang sudah masuk production bersifat immutable dan tidak boleh di-rename lagi. Perubahan branding setelah production hanya boleh mengubah display name/deskripsi tanpa mengubah key/version atau merusak referensi invitation tersimpan.
 
 Tema adalah preset token visual tervalidasi untuk tepat satu versi template. Warna, font, ornament, background, dan border hanya dapat memakai token/ID allowlist; raw CSS/HTML/JS dan URL tema arbitrer ditolak. Tema tidak mengubah struktur, perilaku, konten, owner, route, atau publication.
 

@@ -11,12 +11,12 @@ import { getRegisteredTheme, themeRegistry } from "@/themes/registry";
 describe("template registry", () => {
   const invitation = (id: string) => InvitationSchema.parse(invitations.find((item) => item.id === id));
   it("finds all versioned template modules", () => {
-    expect(getTemplateModule("daztore-inv1", 1)?.manifest.name).toBe("Daztore Invitation 1");
+    expect(getTemplateModule("wedding-default", 1)?.manifest.name).toBe("Wedding Default");
     expect(getTemplateModule("elegant-gold", 1)?.manifest.name).toBe("Elegant Gold");
     expect(getTemplateModule("minimal-white", 1)?.manifest.name).toBe("Minimal White");
   });
   it("keeps the dummy catalogue identical to registered manifests", () => {
-    expect(Object.keys(templateRegistry).sort()).toEqual(["daztore-inv1@1", "elegant-gold@1", "minimal-white@1"]);
+    expect(Object.keys(templateRegistry).sort()).toEqual(["elegant-gold@1", "minimal-white@1", "wedding-default@1"]);
     for (const template of templates) {
       expect(getTemplateModule(template.key, template.version)?.manifest).toEqual(template);
     }
